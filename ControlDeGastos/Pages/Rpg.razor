@@ -222,13 +222,17 @@
         ? Math.Min(100, (int)(progreso.ExpActual * 100.0 / progreso.ExpRequerida))
         : 0;
 
-    private string colorGauge => porcentajeExp switch
+    private string colorGauge
     {
-        < 30 => "#ff3355",
-        < 70 => "#ff8c00",
-        < 100 => "#0071c1",
-        _ => "#00b894"
-    };
+        get
+        {
+            var pct = porcentajeExp;
+            if (pct < 30) return "#ff3355";
+            if (pct < 70) return "#ff8c00";
+            if (pct < 100) return "#0071c1";
+            return "#00b894";
+        }
+    }
 
     private List<Logro> logrosOrdenados => logros
         .OrderBy(l => desbloqueados.Any(d => d.Id == l.Id) ? 0 : 1)
