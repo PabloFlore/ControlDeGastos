@@ -18,7 +18,7 @@ public class RevokedListFunction
 
     [Function("RevokedList")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/license/revoked")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "license/revoked")] HttpRequestData req)
     {
         var apiKey = req.Headers.TryGetValues("X-Api-Key", out var values) ? values.FirstOrDefault() : null;
         var expectedKey = Environment.GetEnvironmentVariable("Revocation__ApiKey");

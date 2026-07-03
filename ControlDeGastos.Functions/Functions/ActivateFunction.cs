@@ -19,7 +19,7 @@ public class ActivateFunction
 
     [Function("Activate")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/license/activate")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "license/activate")] HttpRequestData req)
     {
         var requestBody = await req.ReadAsStringAsync();
         var activateReq = JsonSerializer.Deserialize<ValidateRequest>(requestBody ?? "{}");

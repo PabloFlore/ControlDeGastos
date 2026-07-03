@@ -18,7 +18,7 @@ public class ValidateFunction
 
     [Function("Validate")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/license/validate")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "license/validate")] HttpRequestData req)
     {
         var requestBody = await req.ReadAsStringAsync();
         var validateReq = JsonSerializer.Deserialize<ValidateRequest>(requestBody ?? "{}");

@@ -8,7 +8,7 @@ public class HealthFunction
 {
     [Function("Health")]
     public HttpResponseData Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "api/health")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "health")] HttpRequestData req,
         FunctionContext context)
     {
         var response = req.CreateResponse(System.Net.HttpStatusCode.OK);
