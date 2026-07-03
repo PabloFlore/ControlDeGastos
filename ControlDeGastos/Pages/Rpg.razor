@@ -45,10 +45,7 @@
                 <p class="rpg-sub">@ObtenerTituloNivel()</p>
                 @if (tituloActivo is not null)
                 {
-                    <p class="rpg-sub-titulo
-                        @(tituloActivo.Id == "shop_son_of_god" ? "rpg-sub-titulo-solar"
-                            : tituloActivo.Id == "shop_aura_negativa" || tituloActivo.Id == "shop_deudor_aura" ? "rpg-sub-titulo-rojo"
-                            : "rpg-sub-titulo-blanco")">@tituloActivo.Icono @tituloActivo.Nombre</p>
+                    <p class="rpg-sub-titulo @ObtenerClaseTitulo()">@tituloActivo.Icono @tituloActivo.Nombre</p>
                 }
             </div>
         </div>
@@ -115,14 +112,10 @@
                     <div class="next-milestone-info">
                         <span class="next-milestone-name">@proximoHito.Nombre</span>
                         <span class="next-milestone-desc">@proximoHito.Descripcion</span>
-                        @{
-                            var progHito = progresoLogros.GetValueOrDefault(proximoHito.Id);
-                            var pctHito = progHito.requerido > 0 ? Math.Min(100, (int)(progHito.actual * 100.0 / progHito.requerido)) : 0;
-                        }
                         <div class="next-milestone-bar">
-                            <div class="next-milestone-bar-fill" style="width: @pctHito%"></div>
+                            <div class="next-milestone-bar-fill" style="width: @ObtenerPorcentajeHito()%"></div>
                         </div>
-                        <span class="next-milestone-progress">@progHito.actual / @progHito.requerido</span>
+                        <span class="next-milestone-progress">@ObtenerTextoProgresoHito()</span>
                     </div>
                 </div>
             </div>
@@ -294,6 +287,28 @@
         TipoCondicionLogro.PresupuestosCumplidos => "Presupuesto",
         _ => "Otros"
     };
+
+    private string ObtenerClaseTitulo()
+    {
+        if (tituloActivo is null) return "rpg-sub-titulo-blanco";
+        if (tituloActivo.Id == "shop_son_of_god") return "rpg-sub-titulo-solar";
+        if (tituloActivo.Id == "shop_aura_negativa" || tituloActivo.Id == "shop_deudor_aura") return "rpg-sub-titulo-rojo";
+        return "rpg-sub-titulo-blanco";
+    }
+
+    private int ObtenerPorcentajeHito()
+    {
+        if (proximoHito is null) return 0;
+        var prog = progresoLogros.GetValueOrDefault(proximoHito.Id);
+        return prog.requerido > 0 ? Math.Min(100, (int)(prog.actual * 100.0 / prog.requerido)) : 0;
+    }
+
+    private string ObtenerTextoProgresoHito()
+    {
+        if (proximoHito is null) return "";
+        var prog = progresoLogros.GetValueOrDefault(proximoHito.Id);
+        return $"{prog.actual} / {prog.requerido}";
+    }
 
     private static string ObtenerIconoCategoria(string cat) => cat switch
     {
