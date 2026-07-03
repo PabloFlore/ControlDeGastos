@@ -1,0 +1,331 @@
+@page "/categorias"
+@inject ICategoriaService CategoriaService
+@inject IToastService ToastService
+
+<PageTitle>Categorías - Control de Gastos</PageTitle>
+
+<div class="categorias-page">
+    <div class="page-header">
+        <h1 class="page-titulo">Categorías</h1>
+        <p class="page-sub">@categorias.Count en total · @categorias.Count(c => c.Tipo == TipoGasto.Gasto) de gasto · @categorias.Count(c => c.Tipo == TipoGasto.Ingreso) de ingreso</p>
+    </div>
+
+    <div class="secciones">
+        @if (cargando)
+        {
+            <LoadingSpinner Message="Cargando categorías..." />
+        }
+        else if (!categorias.Any())
+        {
+            <EmptyState Icon="🏷️" Title="Sin categorías" Subtitle="Agrega categorías para organizar tus gastos e ingresos" />
+        }
+        else
+        {
+            <div class="seccion">
+                <h2 class="seccion-titulo">💸 Gastos</h2>
+                <div class="categorias-grid">
+                    @foreach (var cat in GastosOrdenados)
+                    {
+                        var esPrimeroGasto = cat == GastosOrdenados.FirstOrDefault();
+                        var esUltimoGasto = cat == GastosOrdenados.LastOrDefault();
+                        <div @key="cat.Id" class="categoria-card">
+                            <div class="card-swatch" style="background: @cat.Color"></div>
+                            <div class="card-icono">@cat.Icono</div>
+                            <div class="card-body">
+                                <div class="card-nombre">@cat.Nombre</div>
+                                <div class="card-orden">
+                                    <button class="btn-orden btn-orden-up" @onclick="() => SubirOrden(cat)" disabled="@esPrimeroGasto" title="Subir">▲</button>
+                                    <span>@cat.Orden</span>
+                                    <button class="btn-orden btn-orden-down" @onclick="() => BajarOrden(cat)" disabled="@esUltimoGasto" title="Bajar">▼</button>
+                                </div>
+                            </div>
+                            <div class="card-acciones">
+                                <button class="btn-card btn-editar" @onclick="() => Editar(cat)" title="Editar">✏️</button>
+                                <button class="btn-card btn-eliminar" @onclick="() => ConfirmarEliminar(cat)" title="Eliminar">🗑️</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="seccion">
+                <h2 class="seccion-titulo">💰 Ingresos</h2>
+                <div class="categorias-grid">
+                    @foreach (var cat in IngresosOrdenados)
+                    {
+                        var esPrimeroIngreso = cat == IngresosOrdenados.FirstOrDefault();
+                        var esUltimoIngreso = cat == IngresosOrdenados.LastOrDefault();
+                        <div @key="cat.Id" class="categoria-card">
+                            <div class="card-swatch" style="background: @cat.Color"></div>
+                            <div class="card-icono">@cat.Icono</div>
+                            <div class="card-body">
+                                <div class="card-nombre">@cat.Nombre</div>
+                                <div class="card-orden">
+                                    <button class="btn-orden btn-orden-up" @onclick="() => SubirOrden(cat)" disabled="@esPrimeroIngreso" title="Subir">▲</button>
+                                    <span>@cat.Orden</span>
+                                    <button class="btn-orden btn-orden-down" @onclick="() => BajarOrden(cat)" disabled="@esUltimoIngreso" title="Bajar">▼</button>
+                                </div>
+                            </div>
+                            <div class="card-acciones">
+                                <button class="btn-card btn-editar" @onclick="() => Editar(cat)" title="Editar">✏️</button>
+                                <button class="btn-card btn-eliminar" @onclick="() => ConfirmarEliminar(cat)" title="Eliminar">🗑️</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <button class="fab-button" @onclick="AbrirModalNuevo" title="Agregar categoría">+</button>
+</div>
+
+<Modal Title="@((editando ? "Editar" : "Nueva") + " categoría")" Visible="@modalAbierto" OnClose="CerrarModal">
+    <Body>
+        <div class="campo">
+            <label class="campo-label">Nombre</label>
+            <input type="text" class="campo-input" @bind="formNombre" placeholder="Ej: Comida" maxlength="30" />
+            @if (string.IsNullOrWhiteSpace(formNombre))
+            {
+                <span class="campo-error">El nombre es obligatorio</span>
+            }
+        </div>
+
+        <div class="campo-row">
+            <div class="campo campo-icono">
+                <label class="campo-label">Icono</label>
+                <input type="text" class="campo-input" @bind="formIcono" placeholder="🍕" maxlength="4" />
+            </div>
+            <div class="campo campo-color">
+                <label class="campo-label">Color</label>
+                <div class="color-picker-row">
+                    <input type="color" class="color-picker" @bind="formColor" />
+                    <span class="color-hex">@formColor</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="campo-row">
+            <div class="campo">
+                <label class="campo-label">Tipo</label>
+                <select class="campo-input" @bind="formTipo">
+                    <option value="@TipoGasto.Gasto">💸 Gasto</option>
+                    <option value="@TipoGasto.Ingreso">💰 Ingreso</option>
+                </select>
+            </div>
+            <div class="campo">
+                <label class="campo-label">Orden</label>
+                <input type="number" class="campo-input" @bind="formOrden" min="1" max="99" />
+            </div>
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Presupuesto por defecto (opcional)</label>
+            <div class="monto-input-wrapper">
+                <span class="monto-simbolo">$</span>
+                <input type="number" class="monto-input" @bind="formPresupuesto" step="0.01" min="0" placeholder="0.00" />
+            </div>
+            <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.25rem;">Se auto-llena al crear un presupuesto para esta categoría</small>
+        </div>
+    </Body>
+    <Footer>
+        <button class="btn-footer btn-cancelar" @onclick="CerrarModal">Cancelar</button>
+        <button class="btn-footer btn-guardar" @onclick="GuardarAsync" disabled="@(!FormularioValido || guardando)">
+            @(guardando ? "Guardando..." : "Guardar")
+        </button>
+    </Footer>
+</Modal>
+
+<ConfirmDialog Visible="@(eliminando is not null)"
+               Icon="⚠️"
+               Title="@($"¿Eliminar «{eliminando?.Nombre}»?")"
+               Message="Los gastos con esta categoría quedarán sin categoría"
+               CancelText="Cancelar"
+               ConfirmText="Eliminar"
+               OnCancel="CancelarEliminar"
+               OnConfirm="EliminarAsync" />
+
+@code {
+    private List<Categoria> categorias = new();
+    private List<Categoria> GastosOrdenados => categorias.Where(c => c.Tipo == TipoGasto.Gasto).OrderBy(c => c.Orden).ToList();
+    private List<Categoria> IngresosOrdenados => categorias.Where(c => c.Tipo == TipoGasto.Ingreso).OrderBy(c => c.Orden).ToList();
+    private bool cargando = true;
+
+    private bool modalAbierto;
+    private bool editando;
+    private Guid? editandoId;
+
+    private string formNombre = "";
+    private string formIcono = "📁";
+    private string formColor = "#6c757d";
+    private TipoGasto formTipo = TipoGasto.Gasto;
+    private int formOrden = 1;
+    private decimal? formPresupuesto;
+    private bool guardando;
+
+    private Categoria? eliminando;
+
+    private bool FormularioValido => !string.IsNullOrWhiteSpace(formNombre);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatosAsync();
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        cargando = true;
+        StateHasChanged();
+
+        try
+        {
+            categorias = await CategoriaService.ObtenerCategoriasAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al cargar: {ex.Message}");
+        }
+
+        cargando = false;
+    }
+
+    private void AbrirModalNuevo()
+    {
+        editando = false;
+        editandoId = null;
+        formNombre = "";
+        formIcono = "📁";
+        formColor = "#6c757d";
+        formTipo = TipoGasto.Gasto;
+        formOrden = (categorias.Where(c => c.Tipo == TipoGasto.Gasto).MaxBy(c => c.Orden)?.Orden ?? 0) + 1;
+        formPresupuesto = null;
+        modalAbierto = true;
+    }
+
+    private void Editar(Categoria cat)
+    {
+        editando = true;
+        editandoId = cat.Id;
+        formNombre = cat.Nombre;
+        formIcono = cat.Icono;
+        formColor = cat.Color;
+        formTipo = cat.Tipo;
+        formOrden = cat.Orden;
+        formPresupuesto = cat.PresupuestoPorDefecto;
+        modalAbierto = true;
+    }
+
+    private void CerrarModal()
+    {
+        modalAbierto = false;
+        guardando = false;
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (!FormularioValido) return;
+
+        guardando = true;
+        StateHasChanged();
+
+        try
+        {
+            if (editando && editandoId.HasValue)
+            {
+                var cat = new Categoria
+                {
+                    Id = editandoId.Value,
+                    UsuarioId = null,
+                    Nombre = formNombre.Trim(),
+                    Icono = formIcono.Trim(),
+                    Color = formColor,
+                    Tipo = formTipo,
+                    Orden = formOrden,
+                    PresupuestoPorDefecto = formPresupuesto,
+                };
+
+                await CategoriaService.ActualizarCategoriaAsync(cat);
+                ToastService.ShowSuccess("Categoría actualizada");
+            }
+            else
+            {
+                var cat = new Categoria
+                {
+                    Nombre = formNombre.Trim(),
+                    Icono = formIcono.Trim(),
+                    Color = formColor,
+                    Tipo = formTipo,
+                    Orden = formOrden,
+                    PresupuestoPorDefecto = formPresupuesto,
+                };
+
+                await CategoriaService.CrearCategoriaAsync(cat);
+                ToastService.ShowSuccess("Categoría creada");
+            }
+
+            CerrarModal();
+            await CargarDatosAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+
+        guardando = false;
+    }
+
+    private async Task SubirOrden(Categoria cat)
+    {
+        var hermanos = categorias.Where(c => c.Tipo == cat.Tipo).OrderBy(c => c.Orden).ToList();
+        var idx = hermanos.FindIndex(c => c.Id == cat.Id);
+        if (idx <= 0) return;
+
+        var arriba = hermanos[idx - 1];
+        (arriba.Orden, cat.Orden) = (cat.Orden, arriba.Orden);
+
+        await CategoriaService.ActualizarCategoriaAsync(arriba);
+        await CategoriaService.ActualizarCategoriaAsync(cat);
+        await CargarDatosAsync();
+    }
+
+    private async Task BajarOrden(Categoria cat)
+    {
+        var hermanos = categorias.Where(c => c.Tipo == cat.Tipo).OrderBy(c => c.Orden).ToList();
+        var idx = hermanos.FindIndex(c => c.Id == cat.Id);
+        if (idx >= hermanos.Count - 1) return;
+
+        var abajo = hermanos[idx + 1];
+        (abajo.Orden, cat.Orden) = (cat.Orden, abajo.Orden);
+
+        await CategoriaService.ActualizarCategoriaAsync(abajo);
+        await CategoriaService.ActualizarCategoriaAsync(cat);
+        await CargarDatosAsync();
+    }
+
+    private void ConfirmarEliminar(Categoria cat)
+    {
+        eliminando = cat;
+    }
+
+    private void CancelarEliminar()
+    {
+        eliminando = null;
+    }
+
+    private async Task EliminarAsync()
+    {
+        if (eliminando is null) return;
+
+        try
+        {
+            await CategoriaService.EliminarCategoriaAsync(eliminando.Id);
+            ToastService.ShowSuccess("Categoría eliminada");
+            CancelarEliminar();
+            await CargarDatosAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+    }
+}

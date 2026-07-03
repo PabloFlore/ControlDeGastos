@@ -1,0 +1,28 @@
+.loading-spinner {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+}
+
+.spinner-ring {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--accent-blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto;
+}
+
+body.rpg-theme .spinner-ring {
+    border-top-color: var(--rpg-accent-cyan);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.spinner-msg {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+}

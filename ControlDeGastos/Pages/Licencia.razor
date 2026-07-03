@@ -1,0 +1,280 @@
+@page "/licencia"
+@inject ILicenciaService LicenciaService
+@* @inject IHogarService HogarService *@
+@inject IUsuarioService UsuarioService
+@* @inject ISupabaseService SupabaseService *@
+@* @inject IGastoService GastoService *@
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Licencia - Control de Gastos</PageTitle>
+
+<div class="licencia-wrapper">
+    <div class="licencia-card">
+        <div class="licencia-header">
+            <div class="licencia-icon">
+                @if (estado == EstadoLicencia.Cargando)
+                {
+                    <span class="licencia-spinner">⏳</span>
+                }
+                else if (estado == EstadoLicencia.SinActivar || estado == EstadoLicencia.Invalido)
+                {
+                    <span>🔒</span>
+                }
+                else if (estado == EstadoLicencia.TrialActivo)
+                {
+                    <span class="icon-success">✅</span>
+                }
+                else if (estado == EstadoLicencia.ParaSiempre)
+                {
+                    <span class="icon-forever">👑</span>
+                }
+                else if (estado == EstadoLicencia.Expirada)
+                {
+                    <span>⛔</span>
+                }
+            </div>
+            <h1>Control de Gastos</h1>
+        </div>
+
+        @if (estado == EstadoLicencia.Cargando)
+        {
+            <p class="licencia-subtitle">Verificando licencia...</p>
+        }
+        else if (estado == EstadoLicencia.SinActivar || estado == EstadoLicencia.Expirada || estado == EstadoLicencia.Invalido)
+        {
+            @if (estado == EstadoLicencia.SinActivar)
+            {
+                <p class="licencia-subtitle">Elige cómo acceder</p>
+            }
+
+            <div class="licencia-opciones">
+                <div class="licencia-opcion">
+                    <p class="opcion-titulo">🔑 Tengo un código de activación</p>
+                    <div class="licencia-form">
+                        <input @bind="tokenInput" @bind:event="oninput" type="text" class="licencia-input"
+                               placeholder="Pega tu código aquí" disabled="@procesando" autocomplete="off" spellcheck="false" />
+                        <button class="btn-licencia" @onclick="ActivarAsync" disabled="@procesando">
+                            @if (procesandoToken) { <span>Validando...</span> } else { <span>Activar</span> }
+                        </button>
+                    </div>
+                </div>
+
+                @* Comentado: unirse a hogar — proximamente
+                @if (estado != EstadoLicencia.Expirada && estado != EstadoLicencia.Invalido)
+                {
+                    ...
+                }
+                *@
+            </div>
+
+            @if (!string.IsNullOrEmpty(mensajeError))
+            {
+                <div class="licencia-error">@mensajeError</div>
+            }
+        }
+        else if (estado == EstadoLicencia.TrialActivo)
+        {
+            <div class="licencia-success">
+                @if (diasRestantes > 0)
+                {
+                    <p>Licencia de prueba activa</p>
+                    <div class="licencia-days">
+                        <span class="days-number">@diasRestantes</span>
+                        <span class="days-label">días restantes</span>
+                    </div>
+                }
+                else
+                {
+                    <p>Licencia de prueba activa</p>
+                    <div class="licencia-days">
+                        <span class="days-number">@horasRestantes</span>
+                        <span class="days-label">horas restantes</span>
+                    </div>
+                }
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: @porcentajeRestante%"></div>
+                </div>
+                <button class="btn-licencia btn-secondary" @onclick="IrAlDashboard">
+                    Ir al Dashboard
+                </button>
+            </div>
+        }
+        else if (estado == EstadoLicencia.ParaSiempre)
+        {
+            <div class="licencia-success">
+                <p>Licencia de por vida</p>
+                <p class="licencia-forever-text">Activada correctamente</p>
+                <button class="btn-licencia" @onclick="IrAlDashboard">
+                    Ir al Dashboard
+                </button>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(mensajeInfo))
+        {
+            <div class="licencia-info">@mensajeInfo</div>
+        }
+    </div>
+</div>
+
+
+
+@code {
+    private string? tokenInput;
+    // Comentado: campos de invitacion hogar — proximamente
+    // private string? invitacionEmail;
+    // private string? invitacionPassword;
+    // private string? invitacionCodigo;
+    private string? mensajeError;
+    private string? mensajeInfo;
+    private bool procesando;
+    private bool procesandoToken;
+    private bool procesandoInvitacion;
+    private EstadoLicencia estado = EstadoLicencia.Cargando;
+    private int diasRestantes;
+    private int horasRestantes;
+    private int diasTotales = 180;
+    private int porcentajeRestante => diasTotales > 0 ? Math.Max(0, (int)Math.Round((double)diasRestantes * 100 / diasTotales)) : 0;
+
+    private enum EstadoLicencia
+    {
+        Cargando,
+        SinActivar,
+        TrialActivo,
+        ParaSiempre,
+        Expirada,
+        Invalido
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await VerificarEstadoAsync();
+    }
+
+    private async Task VerificarEstadoAsync()
+    {
+        estado = EstadoLicencia.Cargando;
+        StateHasChanged();
+
+        try
+        {
+            var licencia = await LicenciaService.ObtenerEstadoLicenciaAsync();
+
+            if (!licencia.Valida || string.IsNullOrEmpty(licencia.Token))
+            {
+                estado = EstadoLicencia.SinActivar;
+                return;
+            }
+
+            var vigente = await LicenciaService.VerificarYActualizarVigenciaAsync();
+
+            if (!vigente)
+            {
+                estado = EstadoLicencia.Expirada;
+                mensajeError = "Tu licencia ha expirado. Ingresa un nuevo código.";
+                return;
+            }
+
+            if (licencia.LicenciaTipo == Models.TipoLicencia.ParaSiempre)
+            {
+                estado = EstadoLicencia.ParaSiempre;
+            }
+            else
+            {
+                diasRestantes = licencia.DiasRestantes;
+                horasRestantes = licencia.HorasRestantes;
+                estado = EstadoLicencia.TrialActivo;
+            }
+        }
+        catch
+        {
+            estado = EstadoLicencia.SinActivar;
+        }
+    }
+
+    private async Task ActivarAsync()
+    {
+        procesando = true;
+        procesandoToken = true;
+        mensajeError = null;
+        mensajeInfo = null;
+        StateHasChanged();
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(tokenInput))
+            {
+                mensajeError = "Ingresa un código de activación";
+                procesando = false;
+                procesandoToken = false;
+                return;
+            }
+
+            var (valido, tipo, expiracion, mensaje, _, _) = LicenciaService.ValidarToken(tokenInput.Trim());
+
+            if (!valido)
+            {
+                estado = EstadoLicencia.Invalido;
+                mensajeError = mensaje;
+                procesando = false;
+                procesandoToken = false;
+                return;
+            }
+
+            var licencia = await LicenciaService.ActivarLicenciaAsync(tokenInput.Trim());
+
+            if (licencia.Valida)
+            {
+                var usuario = await UsuarioService.ObtenerUsuarioAsync();
+                if (usuario is not null)
+                {
+                    if (licencia.ModoGamificadoIncluido && !usuario.ModoGamificadoActivo)
+                    {
+                        usuario.ModoGamificadoActivo = true;
+                        await UsuarioService.GuardarUsuarioAsync(usuario);
+                    }
+                        await UsuarioService.GuardarUsuarioAsync(usuario);
+                }
+            }
+
+            if (!licencia.Valida)
+            {
+                estado = EstadoLicencia.Invalido;
+                mensajeError = licencia.Mensaje;
+                procesando = false;
+                procesandoToken = false;
+                return;
+            }
+
+            if (tipo == Models.TipoLicencia.ParaSiempre)
+            {
+                estado = EstadoLicencia.ParaSiempre;
+                mensajeInfo = "Disfruta de Control de Gastos sin límites";
+            }
+            else
+            {
+                diasRestantes = licencia.DiasRestantes;
+                horasRestantes = licencia.HorasRestantes;
+                estado = EstadoLicencia.TrialActivo;
+                mensajeInfo = "Tu prueba ha comenzado";
+            }
+        }
+        catch (Exception ex)
+        {
+            estado = EstadoLicencia.Invalido;
+            mensajeError = $"Error al activar: {ex.Message}";
+        }
+
+        procesando = false;
+        procesandoToken = false;
+    }
+
+    // Comentado: UnirseAHogarAsync — proximamente
+    // private async Task UnirseAHogarAsync() { ... }
+
+    private void IrAlDashboard()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

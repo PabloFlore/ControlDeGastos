@@ -1,0 +1,857 @@
+@page "/configuracion"
+@inject IUsuarioService UsuarioService
+@inject ILicenciaService LicenciaService
+@inject IThemeService ThemeService
+@inject IToastService ToastService
+@inject IPinLockService PinLockService
+@inject IExportImportService ExportImportService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>Configuración - Control de Gastos</PageTitle>
+
+@if (cargandoConfig)
+{
+    <LoadingSpinner Message="Cargando configuración..." />
+}
+else
+{
+
+<div class="config-page">
+    <section class="config-seccion">
+        <h2 class="seccion-titulo">👤 Perfil</h2>
+        <div class="seccion-cuerpo">
+            <div class="campo">
+                <label class="campo-label">Nombre</label>
+                <input type="text" class="campo-input" @bind="nombreInput" placeholder="Tu nombre" />
+            </div>
+            <div class="campo">
+                <label class="campo-label">Moneda</label>
+                <select class="campo-input" @bind="monedaInput">
+                    <option value="MXN">$ MXN - Peso Mexicano</option>
+                    <option value="USD">$ USD - Dólar</option>
+                    <option value="EUR">€ EUR - Euro</option>
+                </select>
+            </div>
+            <button class="btn-guardar" @onclick="GuardarPerfilAsync" disabled="@(!perfilModificado)">
+                @(guardandoPerfil ? "Guardando..." : "Guardar cambios")
+            </button>
+        </div>
+    </section>
+
+    <section class="config-seccion">
+        <h2 class="seccion-titulo">🎮 Experiencia</h2>
+        <div class="seccion-cuerpo">
+            <div class="toggle-row">
+                <div class="toggle-info">
+                    <div class="toggle-label">Modo Gamificado</div>
+                    <div class="toggle-desc">
+                        @(modoGamificado
+                            ? "Tema RPG oscuro con niveles, EXP y HP."
+                            : "Mientras este desactivado no generas recompensas.")
+                    </div>
+                    @if (estadoLicencia is not null && !estadoLicencia.Valida)
+                    {
+                        <p class="toggle-licencia-msg">🔒 Activa una licencia para desbloquear</p>
+                    }
+                    else if (estadoLicencia is not null && !estadoLicencia.ModoGamificadoIncluido)
+                    {
+                        <p class="toggle-licencia-msg">🔒 Tu licencia no incluye el modo RPG</p>
+                    }
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" checked="@modoGamificado" @onchange="OnToggleModoGamificadoAsync" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="toggle-row">
+                <div class="toggle-info">
+                    <div class="toggle-label">Mostrar minutos en fechas</div>
+                    <div class="toggle-desc">
+                        Al activarlo, las fechas de gastos, recurrencias y financiamiento incluirán la hora y minutos
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" checked="@mostrarMinutos" @onchange="OnToggleMostrarMinutosAsync" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <section class="config-seccion">
+        <h2 class="seccion-titulo">💰 Presupuesto</h2>
+        <div class="seccion-cuerpo">
+            <div class="toggle-row">
+                <div class="toggle-info">
+                    <div class="toggle-label">Excluir gastos recurrentes</div>
+                    <div class="toggle-desc">
+                        Los gastos generados por recurrencias no contarán para los límites de presupuesto
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" checked="@excluirRecurrentes" @onchange="OnToggleExcluirRecurrentesAsync" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="toggle-row">
+                <div class="toggle-info">
+                    <div class="toggle-label">Excluir pagos de crédito</div>
+                    <div class="toggle-desc">
+                        Los pagos de tarjetas y préstamos no contarán para los límites de presupuesto
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" checked="@excluirCreditos" @onchange="OnToggleExcluirCreditosAsync" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <section class="config-seccion">
+        <h2 class="seccion-titulo">💾 Datos</h2>
+        <div class="seccion-cuerpo">
+            <p class="plan-desc">Exporta tus datos como respaldo JSON o impórtalos desde otro dispositivo.</p>
+            <div class="datos-acciones">
+                <button class="btn-plan" @onclick="ExportarDatosAsync" disabled="@exportando">
+                    @(exportando ? "Exportando..." : "📤 Exportar datos")
+                </button>
+                <button class="btn-plan" @onclick="TriggerImportar" disabled="@importando">
+                    @(importando ? "Importando..." : "📥 Importar datos")
+                </button>
+            </div>
+
+            <input type="file" accept=".json" id="importFileJson" style="display:none" @onchange="OnFileSelected" />
+
+            @if (mostrarConfirmacionImportacion && resultadoPreview is not null)
+            {
+                <div class="modal-overlay" @onclick="CancelarImportacion">
+                    <div class="confirm-dialog" @onclick:stopPropagation>
+                        <div class="confirm-icon">⚠️</div>
+                        <p class="confirm-title">¿Importar datos?</p>
+                        <p class="confirm-msg">Se reemplazarán TODOS los datos actuales por los del archivo seleccionado. Esta acción no se puede deshacer.</p>
+                        <ul class="import-resumen">
+                            <li><strong>@resultadoPreview.TotalGastos</strong> gastos</li>
+                            <li><strong>@resultadoPreview.TotalCategorias</strong> categorías</li>
+                            <li><strong>@resultadoPreview.TotalPresupuestos</strong> presupuestos</li>
+                            <li><strong>@resultadoPreview.TotalRecurrencias</strong> recurrencias</li>
+                            <li><strong>@resultadoPreview.TotalFinanciamientos</strong> financiamientos</li>
+                        </ul>
+                        <div class="confirm-actions">
+                            <button class="btn-confirm-cancel" @onclick="CancelarImportacion">Cancelar</button>
+                            <button class="btn-confirm-ok" @onclick="ConfirmarImportacion">Sí, importar</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="config-seccion">
+        <h2 class="seccion-titulo">🔒 Privacidad</h2>
+        <div class="seccion-cuerpo">
+            @if (!pinConfigurado)
+            {
+                <p class="plan-desc">Protege tus datos con un PIN de 4 dígitos. Nadie podrá acceder sin él.</p>
+                <button class="btn-plan" @onclick="MostrarModalConfigurarPin">
+                    🔐 Configurar PIN
+                </button>
+            }
+            else
+            {
+                <div class="config-pin-estado">
+                    <span class="estado-badge estado-forever">✅ PIN activo</span>
+                </div>
+                <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap">
+                    <button class="btn-plan" @onclick="MostrarModalCambiarPin">🔄 Cambiar PIN</button>
+                    <button class="btn-plan btn-peligro" @onclick="MostrarModalEliminarPin">🗑️ Eliminar PIN</button>
+                </div>
+            }
+
+            <div class="campo" style="margin-top:0.75rem">
+                <label class="campo-label">Auto-bloqueo al minimizar</label>
+                <select class="campo-input" value="@pinDelayInput" @onchange="GuardarDelayPinAsync">
+                    <option value="0">Nunca</option>
+                    <option value="30">30 segundos</option>
+                    <option value="60">1 minuto</option>
+                    <option value="300">5 minutos</option>
+                </select>
+            </div>
+
+            @if (mostrarModalPin)
+            {
+                <div class="modal-overlay" @onclick="CancelarPinModal">
+                    <div class="confirm-dialog" @onclick:stopPropagation>
+                        <div class="confirm-icon">@(modalPinEliminar ? "🗑️" : modalPinCambiar ? "🔄" : "🔐")</div>
+                        <p class="confirm-title">@modalPinTitulo</p>
+                        @if (modalPinEliminar)
+                        {
+                            <p class="confirm-msg">Ingresa tu PIN actual para eliminarlo.</p>
+                            <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4"
+                                   class="pin-modal-input @(modalPinError is not null ? "pin-input-error" : "")"
+                                   @bind="modalPinInput1" placeholder="• • • •" />
+                        }
+                        else
+                        {
+                            <p class="confirm-msg">@modalPinMensaje</p>
+                            <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4"
+                                   class="pin-modal-input @(modalPinError is not null ? "pin-input-error" : "")"
+                                   @bind="modalPinInput1" placeholder="PIN actual" />
+                            @if (!modalPinConfigurar)
+                            {
+                                <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4"
+                                       class="pin-modal-input @(modalPinError is not null ? "pin-input-error" : "")"
+                                       @bind="modalPinInput2" placeholder="PIN nuevo" />
+                            }
+                            else
+                            {
+                                <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4"
+                                       class="pin-modal-input"
+                                       @bind="modalPinInput2" placeholder="Confirmar PIN" />
+                            }
+                        }
+                        @if (modalPinError is not null)
+                        {
+                            <p class="campo-error">@modalPinError</p>
+                        }
+                        <div class="confirm-actions">
+                            <button class="btn-confirm-cancel" @onclick="CancelarPinModal">Cancelar</button>
+                            <button class="btn-confirm-ok" @onclick="EjecutarAccionPinAsync">
+                                @(modalPinEliminar ? "Eliminar" : modalPinCambiar ? "Cambiar" : "Configurar")
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <button class="btn-plan" @onclick="() => mostrarAvisoPrivacidadConfig = true">
+                🔏 Ver Aviso de Privacidad
+            </button>
+        </div>
+    </section>
+
+    <OnboardingStepper Visible="@mostrarAvisoPrivacidadConfig"
+                       ModoAvisoPrivacidad="true"
+                       OnAceptarPrivacidad="() => mostrarAvisoPrivacidadConfig = false" />
+
+    <section class="config-seccion">
+        <h2 class="seccion-titulo">🔐 Licencia</h2>
+        <div class="seccion-cuerpo">
+            <div class="estadoLicencia-estado">
+                @if (estadoLicencia is null)
+                {
+                    <div class="estado-badge estado-cargando">⏳ Verificando...</div>
+                }
+                else if (!estadoLicencia.Valida || string.IsNullOrEmpty(estadoLicencia.Token))
+                {
+                    <div class="estado-badge estado-sin">🔒 Sin activar</div>
+                }
+                else if (estadoLicencia.LicenciaTipo == Models.TipoLicencia.ParaSiempre)
+                {
+                    <div class="estado-badge estado-forever">👑 Para siempre</div>
+                }
+                else if (estadoLicencia.DiasRestantes > 0)
+                {
+                    <div class="estado-badge estado-trial">✅ @estadoLicencia.DiasRestantes días restantes</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: @PorcentajeLicencia%"></div>
+                    </div>
+                }
+                else if (estadoLicencia.HorasRestantes > 0)
+                {
+                    <div class="estado-badge estado-trial">✅ @estadoLicencia.HorasRestantes horas restantes</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: @PorcentajeLicencia%"></div>
+                    </div>
+                }
+                else
+                {
+                    <div class="estado-badge estado-expirada">⛔ Expirada</div>
+                }
+            </div>
+
+            <button class="btn-plan" @onclick="ToggleCambioPlan">
+                @(mostrarCambioPlan ? "✕ Cerrar" : "🔑 Cambiar licencia")
+            </button>
+
+            @if (mostrarCambioPlan)
+            {
+                <div class="cambio-plan">
+                    <p class="info-sub">Pega un token nuevo para extender días, activar modo RPG o subir a para siempre.</p>
+                    <div class="cambio-plan-form">
+                        <input type="text" class="campo-input" @bind="nuevoToken" placeholder="Pega el token aquí..." />
+                        <button class="btn-plan" @onclick="ActualizarLicenciaAsync" disabled="@string.IsNullOrWhiteSpace(nuevoToken)">
+                            Actualizar licencia
+                        </button>
+                    </div>
+                    @if (!string.IsNullOrEmpty(mensajeCambioPlan))
+                    {
+                        <p class="cambio-plan-msg">@mensajeCambioPlan</p>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="config-seccion">
+        <h2 class="seccion-titulo">☁️ Plan Nube</h2>
+        <div class="seccion-cuerpo">
+            <div class="plan-actual">
+                <span class="plan-badge plan-local">Local</span>
+                <span class="plan-desc">Todo se guarda localmente en este dispositivo</span>
+            </div>
+            <p class="info-sub">📡 Próximamente: sincronización en la nube entre dispositivos.</p>
+        </div>
+    </section>
+
+    <section class="config-seccion">
+        <h2 class="seccion-titulo">👨‍👩‍👧‍👦 Compartir en pareja</h2>
+        <div class="seccion-cuerpo">
+            <p class="info-sub">📡 Próximamente: comparte gastos con tu pareja.</p>
+        </div>
+    </section>
+
+    <section class="config-seccion">
+        <h2 class="seccion-titulo">🔄 Sincronización</h2>
+        <div class="seccion-cuerpo">
+            <p class="info-sub">📡 Próximamente: sincronización automática entre dispositivos.</p>
+        </div>
+    </section>
+
+    <section class="config-seccion config-info">
+        <div class="seccion-cuerpo info-texto">
+            <p>Control de Gastos v1.0.0</p>
+            <p class="info-sub">Blazor WebAssembly · PWA para iOS</p>
+        </div>
+    </section>
+</div>
+
+}
+
+@code {
+    private bool cargandoConfig = true;
+    private Usuario? usuario;
+    private Models.Licencia? estadoLicencia;
+    private PlanType plan;
+    private bool modoGamificado;
+    private bool excluirRecurrentes;
+    private bool excluirCreditos;
+    private bool mostrarMinutos;
+    private bool mostrarCambioPlan;
+    private bool mostrarAvisoPrivacidadConfig;
+    private string nuevoToken = "";
+    private string? mensajeCambioPlan;
+
+    private string nombreInput = "";
+    private string monedaInput = "MXN";
+    private bool guardandoPerfil;
+    private bool perfilModificado => nombreInput.Trim() != (usuario?.Nombre ?? "") || monedaInput != (usuario?.Moneda ?? "MXN");
+
+    // Fields below were used for cloud/hogar/sync — kept for reference
+    // private bool mostrarFormNube;
+    // private bool mostrarFormReauth;
+    // private bool conectadoSupabase;
+    // private string? supabaseEmail;
+    // private string? supabasePassword;
+    // private bool reauthenticating;
+    // private string? partnerEmail;
+    // private bool conectando;
+    // private bool tieneHogar;
+    // private string? hogarId;
+    // private string? hogarCodigo;
+    // private string? codigoInvitacionInput;
+    // private bool codigoInvitacionValido => !string.IsNullOrWhiteSpace(codigoInvitacionInput) && codigoInvitacionInput.Trim().Length >= 4;
+    // private bool creandoHogar;
+    // private List<HogarMiembro> miembros = new();
+    // private SyncState? estadoSync;
+
+    private const int DiasTrial = 180;
+    private int PorcentajeLicencia
+    {
+        get
+        {
+            if (estadoLicencia?.LicenciaTipo == Models.TipoLicencia.ParaSiempre) return 100;
+            if (estadoLicencia?.FechaExpiracion == null) return 0;
+            var total = (estadoLicencia.FechaExpiracion.Value - estadoLicencia.FechaActivacion).Days;
+            if (total <= 0) return 0;
+            return Math.Max(0, Math.Min(100, (estadoLicencia.DiasRestantes * 100) / total));
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatosAsync();
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            usuario = await UsuarioService.ObtenerUsuarioAsync();
+            estadoLicencia = await LicenciaService.ObtenerEstadoLicenciaAsync();
+            if (usuario is null) return;
+            plan = usuario.PlanActivo;
+            modoGamificado = usuario.ModoGamificadoActivo;
+            excluirRecurrentes = usuario.ExcluirRecurrentesDePresupuesto;
+            excluirCreditos = usuario.ExcluirCreditosDePresupuesto;
+            mostrarMinutos = usuario.MostrarMinutos;
+
+            nombreInput = usuario.Nombre;
+            monedaInput = usuario.Moneda;
+
+            pinConfigurado = await PinLockService.EstaConfiguradoAsync();
+            pinDelayInput = (usuario.PinDelaySegundos).ToString();
+
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al cargar configuración: {ex.Message}");
+        }
+        finally
+        {
+            cargandoConfig = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task GuardarPerfilAsync()
+    {
+        if (!perfilModificado) return;
+
+        guardandoPerfil = true;
+        StateHasChanged();
+
+        try
+        {
+            if (usuario is null) return;
+            usuario.Nombre = nombreInput.Trim();
+            usuario.Moneda = monedaInput;
+            await UsuarioService.GuardarUsuarioAsync(usuario);
+            ToastService.ShowSuccess("Perfil actualizado");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+
+        guardandoPerfil = false;
+    }
+
+    private async Task OnToggleModoGamificadoAsync(ChangeEventArgs e)
+    {
+        var nuevoValor = (bool)(e.Value ?? false);
+
+        try
+        {
+            if (nuevoValor)
+            {
+                var licencia = await LicenciaService.ObtenerEstadoLicenciaAsync();
+                if (!licencia.Valida || !licencia.ModoGamificadoIncluido)
+                {
+                    ToastService.ShowError("🔒 Tu licencia no incluye el modo RPG. Activa una licencia compatible en la sección Licencia.");
+                    return;
+                }
+            }
+
+            await UsuarioService.CambiarModoGamificadoAsync(nuevoValor);
+            modoGamificado = nuevoValor;
+
+            if (modoGamificado)
+                ToastService.ShowInfo("🎮 Modo gamificado activado — tema RPG forzado");
+            else
+                ToastService.ShowInfo("Modo tradicional activado — tema sigue al iPhone");
+
+            Navigation.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task OnToggleExcluirRecurrentesAsync(ChangeEventArgs e)
+    {
+        var nuevoValor = (bool)(e.Value ?? false);
+        try
+        {
+            await UsuarioService.CambiarExcluirRecurrentesAsync(nuevoValor);
+            excluirRecurrentes = nuevoValor;
+            ToastService.ShowSuccess(nuevoValor
+                ? "Gastos recurrentes excluidos del presupuesto"
+                : "Gastos recurrentes incluidos en el presupuesto");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task OnToggleExcluirCreditosAsync(ChangeEventArgs e)
+    {
+        var nuevoValor = (bool)(e.Value ?? false);
+        try
+        {
+            await UsuarioService.CambiarExcluirCreditosAsync(nuevoValor);
+            excluirCreditos = nuevoValor;
+            ToastService.ShowSuccess(nuevoValor
+                ? "Pagos de crédito excluidos del presupuesto"
+                : "Pagos de crédito incluidos en el presupuesto");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task OnToggleMostrarMinutosAsync(ChangeEventArgs e)
+    {
+        var nuevoValor = (bool)(e.Value ?? false);
+        try
+        {
+            await UsuarioService.CambiarMostrarMinutosAsync(nuevoValor);
+            mostrarMinutos = nuevoValor;
+            ToastService.ShowSuccess(nuevoValor
+                ? "Minutos visibles en fechas"
+                : "Minutos ocultos en fechas");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+    }
+
+    private void ToggleCambioPlan()
+    {
+        mostrarCambioPlan = !mostrarCambioPlan;
+        if (!mostrarCambioPlan)
+        {
+            nuevoToken = "";
+            mensajeCambioPlan = null;
+        }
+    }
+
+    private async Task ActualizarLicenciaAsync()
+    {
+        mensajeCambioPlan = null;
+        var token = nuevoToken.Trim();
+        if (string.IsNullOrEmpty(token)) return;
+
+        var (valido, tipo, expiracion, mensaje, plan, game) = LicenciaService.ValidarToken(token);
+        if (!valido)
+        {
+            mensajeCambioPlan = mensaje;
+            return;
+        }
+
+        if (estadoLicencia?.Valida == true)
+        {
+            var error = TokenNoEsMejor(estadoLicencia, tipo, expiracion, game);
+            if (error is not null)
+            {
+                mensajeCambioPlan = error;
+                return;
+            }
+        }
+
+        var resultado = await LicenciaService.ActivarLicenciaAsync(token);
+        if (resultado.Valida)
+        {
+            var usuario = await UsuarioService.ObtenerUsuarioAsync();
+            if (usuario is not null)
+            {
+                if (resultado.ModoGamificadoIncluido && !usuario.ModoGamificadoActivo)
+                {
+                    usuario.ModoGamificadoActivo = true;
+                    await UsuarioService.GuardarUsuarioAsync(usuario);
+                }
+            }
+
+            estadoLicencia = resultado;
+            nuevoToken = "";
+            ToastService.ShowSuccess("✅ Licencia actualizada");
+        }
+        else
+        {
+            mensajeCambioPlan = resultado.Mensaje;
+        }
+    }
+
+    private static string? TokenNoEsMejor(Models.Licencia actual, TipoLicencia nuevoTipo, DateTime? nuevaExp, bool nuevoGame)
+    {
+        if (actual.LicenciaTipo == TipoLicencia.ParaSiempre && nuevoTipo == TipoLicencia.Trial)
+            return "❌ No puedes bajar de una licencia para siempre a una temporal.";
+
+        if (actual.ModoGamificadoIncluido && !nuevoGame)
+            return "❌ Tu licencia actual ya incluye modo RPG. Este token no lo incluye.";
+
+        if (nuevoTipo == TipoLicencia.ParaSiempre)
+            return null;
+
+        if (nuevoTipo == TipoLicencia.Trial && actual.LicenciaTipo == TipoLicencia.Trial)
+        {
+            if (nuevaExp is null || actual.FechaExpiracion is null)
+                return null;
+            if (nuevaExp <= actual.FechaExpiracion)
+                return "❌ Este token no da más días de los que ya tienes.";
+        }
+
+        return null;
+    }
+
+    #region Comentado: metodos de nube/hogar/sync (proximamente)
+    // private async Task MostrarFormularioNube() { ... }
+    // private async Task ConectarSupabaseAsync() { ... }
+    // private async Task DesconectarSupabaseAsync() { ... }
+    // private void MostrarFormularioReauth() { ... }
+    // private async Task ReautenticarSupabaseAsync() { ... }
+    // private async Task CargarHogarAsync() { ... }
+    // private async Task CrearHogarAsync() { ... }
+    // private async Task UnirseAHogarAsync() { ... }
+    // private async Task SalirDelHogarAsync() { ... }
+    // private async Task CargarEstadoSyncAsync() { ... }
+    // private async Task SincronizarAhoraAsync() { ... }
+    // private async Task CerrarSesionSupabaseAsync() { ... }
+    #endregion
+
+    // Exportar / Importar datos
+
+    private bool exportando;
+    private bool importando;
+    private bool mostrarConfirmacionImportacion;
+    private ResultadoImportacion? resultadoPreview;
+    private byte[]? archivoImportar;
+
+    private async Task ExportarDatosAsync()
+    {
+        exportando = true;
+        StateHasChanged();
+
+        try
+        {
+            var bytes = await ExportImportService.ExportarDatosAsync();
+            var json = System.Text.Encoding.UTF8.GetString(bytes);
+            var nombre = $"ControlDeGastos_{DateTime.Now:yyyy-MM-dd}.json";
+            await JS.InvokeVoidAsync("descargarArchivo", nombre, json, "application/json");
+            ToastService.ShowSuccess("Datos exportados correctamente");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al exportar: {ex.Message}");
+        }
+
+        exportando = false;
+    }
+
+    private async Task TriggerImportar()
+    {
+        await JS.InvokeVoidAsync("importFileInputClick");
+    }
+
+    private async Task OnFileSelected(ChangeEventArgs e)
+    {
+        try
+        {
+            importando = true;
+            StateHasChanged();
+
+            var json = await JS.InvokeAsync<string>("leerArchivoJson");
+
+            if (string.IsNullOrEmpty(json))
+            {
+                ToastService.ShowError("No se pudo leer el archivo");
+                return;
+            }
+
+            archivoImportar = System.Text.Encoding.UTF8.GetBytes(json);
+            resultadoPreview = await ExportImportService.ImportarDatosAsync(archivoImportar);
+
+            if (!resultadoPreview.Exito)
+            {
+                ToastService.ShowError(resultadoPreview.Mensaje ?? "Error al procesar el archivo");
+                return;
+            }
+
+            mostrarConfirmacionImportacion = true;
+        }
+        catch (JSException)
+        {
+            // Usuario canceló la selección, no mostrar error
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al leer archivo: {ex.Message}");
+        }
+
+        importando = false;
+    }
+
+    private async Task ConfirmarImportacion()
+    {
+        mostrarConfirmacionImportacion = false;
+        importando = true;
+        StateHasChanged();
+
+        try
+        {
+            if (archivoImportar is null) return;
+
+            var resultado = await ExportImportService.ImportarDatosAsync(archivoImportar);
+
+            if (resultado.Exito)
+            {
+                ToastService.ShowSuccess(resultado.Mensaje ?? "Datos importados");
+                Navigation.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                ToastService.ShowError(resultado.Mensaje ?? "Error al importar");
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al importar: {ex.Message}");
+        }
+
+        archivoImportar = null;
+        importando = false;
+    }
+
+    private void CancelarImportacion()
+    {
+        mostrarConfirmacionImportacion = false;
+        resultadoPreview = null;
+        archivoImportar = null;
+    }
+
+    // Bloqueo PIN
+
+    private bool pinConfigurado;
+    private string pinDelayInput = "30";
+
+    private bool mostrarModalPin;
+    private bool modalPinConfigurar;
+    private bool modalPinCambiar;
+    private bool modalPinEliminar;
+    private string modalPinTitulo = "";
+    private string modalPinMensaje = "";
+    private string modalPinInput1 = "";
+    private string modalPinInput2 = "";
+    private string? modalPinError;
+
+    private void MostrarModalConfigurarPin()
+    {
+        modalPinConfigurar = true;
+        modalPinCambiar = false;
+        modalPinEliminar = false;
+        modalPinTitulo = "Configurar PIN";
+        modalPinMensaje = "Ingresa un PIN de 4 dígitos para proteger tus datos.";
+        modalPinInput1 = "";
+        modalPinInput2 = "";
+        modalPinError = null;
+        mostrarModalPin = true;
+    }
+
+    private void MostrarModalCambiarPin()
+    {
+        modalPinConfigurar = false;
+        modalPinCambiar = true;
+        modalPinEliminar = false;
+        modalPinTitulo = "Cambiar PIN";
+        modalPinMensaje = "Ingresa tu PIN actual y el nuevo PIN.";
+        modalPinInput1 = "";
+        modalPinInput2 = "";
+        modalPinError = null;
+        mostrarModalPin = true;
+    }
+
+    private void MostrarModalEliminarPin()
+    {
+        modalPinConfigurar = false;
+        modalPinCambiar = false;
+        modalPinEliminar = true;
+        modalPinTitulo = "Eliminar PIN";
+        modalPinInput1 = "";
+        modalPinInput2 = "";
+        modalPinError = null;
+        mostrarModalPin = true;
+    }
+
+    private void CancelarPinModal()
+    {
+        mostrarModalPin = false;
+        modalPinInput1 = "";
+        modalPinInput2 = "";
+        modalPinError = null;
+    }
+
+    private async Task EjecutarAccionPinAsync()
+    {
+        modalPinError = null;
+
+        try
+        {
+            if (modalPinEliminar)
+            {
+                if (string.IsNullOrWhiteSpace(modalPinInput1) || modalPinInput1.Length != 4 || !modalPinInput1.All(char.IsDigit))
+                {
+                    modalPinError = "Ingresa tu PIN actual de 4 dígitos.";
+                    return;
+                }
+                await PinLockService.DesactivarPinAsync(modalPinInput1);
+                pinConfigurado = false;
+                CancelarPinModal();
+                ToastService.ShowSuccess("PIN eliminado correctamente");
+            }
+            else if (modalPinCambiar)
+            {
+                if (string.IsNullOrWhiteSpace(modalPinInput1) || modalPinInput1.Length != 4 || !modalPinInput1.All(char.IsDigit))
+                {
+                    modalPinError = "Ingresa tu PIN actual de 4 dígitos.";
+                    return;
+                }
+                if (string.IsNullOrWhiteSpace(modalPinInput2) || modalPinInput2.Length != 4 || !modalPinInput2.All(char.IsDigit))
+                {
+                    modalPinError = "El nuevo PIN debe tener exactamente 4 dígitos numéricos.";
+                    return;
+                }
+                await PinLockService.CambiarPinAsync(modalPinInput1, modalPinInput2);
+                CancelarPinModal();
+                ToastService.ShowSuccess("PIN cambiado correctamente");
+            }
+            else if (modalPinConfigurar)
+            {
+                if (modalPinInput1.Length != 4 || !modalPinInput1.All(char.IsDigit))
+                {
+                    modalPinError = "El PIN debe tener exactamente 4 dígitos numéricos.";
+                    return;
+                }
+                if (modalPinInput1 != modalPinInput2)
+                {
+                    modalPinError = "Los PIN no coinciden. Intenta de nuevo.";
+                    return;
+                }
+                await PinLockService.ConfigurarPinAsync(modalPinInput1);
+                pinConfigurado = true;
+                CancelarPinModal();
+                ToastService.ShowSuccess("PIN configurado correctamente");
+            }
+        }
+        catch (Exception ex)
+        {
+            modalPinError = ex.Message;
+        }
+    }
+
+    private async Task GuardarDelayPinAsync(ChangeEventArgs e)
+    {
+        var valor = e.Value?.ToString() ?? "30";
+        pinDelayInput = valor;
+        if (int.TryParse(valor, out var segundos))
+        {
+            await PinLockService.GuardarDelayBloqueoSegundosAsync(segundos);
+            ToastService.ShowSuccess("Tiempo de auto-bloqueo actualizado");
+        }
+    }
+
+}

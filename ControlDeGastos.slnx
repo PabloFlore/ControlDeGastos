@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/ControlDeGastos.Tests/ControlDeGastos.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/TokenGenerator/TokenGenerator.csproj" />
+    <Project Path="tools/KeyGenerator/KeyGenerator.csproj" />
+  </Folder>
+  <Project Path="ControlDeGastos/ControlDeGastos.csproj" />
+  <Project Path="ControlDeGastos.Api/ControlDeGastos.Api.csproj" />
+</Solution>

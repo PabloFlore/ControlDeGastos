@@ -1,0 +1,28 @@
+@if (Visible)
+{
+    <div class="modal-overlay" @onclick="OnCancel">
+        <div class="confirm-dialog" @onclick:stopPropagation>
+            <div class="confirm-icon">@Icon</div>
+            <p class="confirm-title">@Title</p>
+            @if (!string.IsNullOrEmpty(Message))
+            {
+                <p class="confirm-msg">@Message</p>
+            }
+            <div class="confirm-actions">
+                <button class="btn-confirm-cancel" @onclick="OnCancel">@CancelText</button>
+                <button class="btn-confirm-ok" @onclick="OnConfirm">@ConfirmText</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string Icon { get; set; } = "⚠️";
+    [Parameter] public string Title { get; set; } = "¿Confirmar?";
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public string CancelText { get; set; } = "Cancelar";
+    [Parameter] public string ConfirmText { get; set; } = "Eliminar";
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+}

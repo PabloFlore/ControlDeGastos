@@ -1,0 +1,2519 @@
+/* ==========================================
+   SKINS DE TARJETAS DE GASTO
+   Se aplican como clase adicional en .gasto-item
+   ========================================== */
+
+/* --- SKIN OSCURA (Void Estelar) --- */
+@keyframes skin-oscura-glow {
+    0%, 100% { box-shadow: 0 0 6px rgba(120, 80, 200, 0.08), inset 0 0 0 1px rgba(120, 80, 200, 0.02); }
+    50% { box-shadow: 0 0 14px rgba(120, 80, 200, 0.2), 0 0 28px rgba(120, 80, 200, 0.06), inset 0 0 0 1px rgba(120, 80, 200, 0.05); }
+}
+
+.gasto-item.skin-oscura {
+    position: relative;
+    background:
+        radial-gradient(ellipse 100% 60% at 50% 30%, rgba(80, 60, 140, 0.06) 0%, transparent 70%),
+        linear-gradient(180deg, #0d0d14 0%, #0a0a12 100%);
+    border-color: #2a2a3a;
+    box-shadow: 0 0 6px rgba(80, 60, 140, 0.04);
+    overflow: hidden;
+}
+
+.gasto-item.skin-oscura::after {
+    content: "";
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    top: 30%;
+    left: 60%;
+    background: rgba(180, 160, 240, 0.6);
+    border-radius: 50%;
+    box-shadow:
+        15px 8px 0 0 rgba(180, 160, 240, 0.3),
+        32px -5px 0 0 rgba(180, 160, 240, 0.4),
+        -28px 20px 0 0 rgba(180, 160, 240, 0.25),
+        -15px -10px 0 0 rgba(180, 160, 240, 0.35),
+        40px 15px 0 0 rgba(200, 180, 255, 0.2),
+        -40px -20px 0 0 rgba(200, 180, 255, 0.2),
+        10px -25px 0 0 rgba(180, 160, 240, 0.3),
+        50px 5px 0 0 rgba(200, 180, 255, 0.15),
+        -50px 10px 0 0 rgba(200, 180, 255, 0.15),
+        -20px -30px 0 0 rgba(180, 160, 240, 0.25),
+        -60px -5px 0 0 rgba(200, 180, 255, 0.2),
+        60px -15px 0 0 rgba(200, 180, 255, 0.15),
+        20px 35px 0 0 rgba(180, 160, 240, 0.2),
+        -35px 30px 0 0 rgba(180, 160, 240, 0.2),
+        70px 20px 0 0 rgba(200, 180, 255, 0.15),
+        -70px -15px 0 0 rgba(200, 180, 255, 0.15);
+    pointer-events: none;
+}
+
+.gasto-item.skin-oscura:hover {
+    border-color: #5555aa;
+    animation: skin-oscura-glow 3s ease-in-out infinite;
+}
+
+.gasto-item.skin-oscura .gasto-categoria {
+    color: #c0c0e0;
+}
+
+.gasto-item.skin-oscura .gasto-descripcion {
+    color: #666688;
+}
+
+.gasto-item.skin-oscura .gasto-fecha {
+    color: #555577;
+}
+
+.gasto-item.skin-oscura .gasto-icono {
+    border: 1px solid #2a2a3a;
+}
+
+.gasto-item.skin-oscura .monto-gasto {
+    color: #ff4466;
+}
+
+.gasto-item.skin-oscura .monto-ingreso {
+    color: #44ff88;
+}
+
+body.rpg-theme .gasto-item.skin-oscura {
+    position: relative;
+    background:
+        radial-gradient(ellipse 100% 60% at 50% 30%, rgba(60, 40, 120, 0.1) 0%, transparent 70%),
+        linear-gradient(180deg, #05050a 0%, #030308 100%);
+    border-color: #1a1a2e;
+    box-shadow: 0 0 8px rgba(60, 40, 120, 0.06);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-oscura::after {
+    content: "";
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    top: 30%;
+    left: 60%;
+    background: rgba(140, 120, 220, 0.7);
+    border-radius: 50%;
+    box-shadow:
+        15px 8px 0 0 rgba(140, 120, 220, 0.4),
+        32px -5px 0 0 rgba(140, 120, 220, 0.5),
+        -28px 20px 0 0 rgba(140, 120, 220, 0.35),
+        -15px -10px 0 0 rgba(140, 120, 220, 0.45),
+        40px 15px 0 0 rgba(160, 140, 240, 0.3),
+        -40px -20px 0 0 rgba(160, 140, 240, 0.3),
+        10px -25px 0 0 rgba(140, 120, 220, 0.4),
+        50px 5px 0 0 rgba(160, 140, 240, 0.25),
+        -50px 10px 0 0 rgba(160, 140, 240, 0.25),
+        -20px -30px 0 0 rgba(140, 120, 220, 0.35),
+        -60px -5px 0 0 rgba(160, 140, 240, 0.3),
+        60px -15px 0 0 rgba(160, 140, 240, 0.25),
+        20px 35px 0 0 rgba(140, 120, 220, 0.3),
+        -35px 30px 0 0 rgba(140, 120, 220, 0.3),
+        70px 20px 0 0 rgba(160, 140, 240, 0.25),
+        -70px -15px 0 0 rgba(160, 140, 240, 0.25);
+    pointer-events: none;
+}
+
+body.rpg-theme .gasto-item.skin-oscura:hover {
+    border-color: #3a3a66;
+    animation: skin-oscura-glow 3s ease-in-out infinite;
+}
+
+/* --- SKIN NEON (Tubo Neón / Pulse) --- */
+@keyframes skin-neon-pulse {
+    0%, 100% { box-shadow: 0 0 6px rgba(0, 240, 255, 0.15), 0 0 12px rgba(0, 240, 255, 0.04), inset 0 0 0 1px rgba(0, 240, 255, 0.08); }
+    50% { box-shadow: 0 0 12px rgba(0, 240, 255, 0.35), 0 0 24px rgba(0, 240, 255, 0.1), inset 0 0 0 1px rgba(0, 240, 255, 0.12); }
+}
+
+@keyframes skin-neon-pulse-pink {
+    0%, 100% { box-shadow: 0 0 10px rgba(255, 45, 120, 0.25), 0 0 20px rgba(255, 45, 120, 0.08), inset 0 0 0 1px rgba(255, 45, 120, 0.12); }
+    50% { box-shadow: 0 0 18px rgba(255, 45, 120, 0.5), 0 0 36px rgba(255, 45, 120, 0.15), inset 0 0 0 1px rgba(255, 45, 120, 0.18); }
+}
+
+.gasto-item.skin-neon {
+    position: relative;
+    border-color: #00f0ff;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 3px,
+            rgba(0, 240, 255, 0.015) 3px,
+            rgba(0, 240, 255, 0.015) 4px
+        ),
+        linear-gradient(135deg, rgba(0, 240, 255, 0.04), rgba(0, 200, 220, 0.02));
+    box-shadow:
+        0 0 6px rgba(0, 240, 255, 0.15),
+        0 0 12px rgba(0, 240, 255, 0.04),
+        inset 0 0 0 3px rgba(0, 240, 255, 0.05),
+        inset 0 0 0 5px rgba(0, 240, 255, 0.02);
+    animation: skin-neon-pulse 2.5s ease-in-out infinite;
+    overflow: hidden;
+}
+
+.gasto-item.skin-neon::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(0, 240, 255, 0.06);
+    pointer-events: none;
+}
+
+.gasto-item.skin-neon:hover {
+    border-color: #ff2d78;
+    animation: skin-neon-pulse-pink 2.5s ease-in-out infinite;
+}
+
+.gasto-item.skin-neon .gasto-categoria {
+    color: #00f0ff;
+    text-shadow: 0 0 4px rgba(0, 240, 255, 0.2);
+    transition: color 0.3s ease;
+}
+
+.gasto-item.skin-neon:hover .gasto-categoria {
+    color: #ff2d78;
+    text-shadow: 0 0 6px rgba(255, 45, 120, 0.3);
+}
+
+.gasto-item.skin-neon .gasto-descripcion {
+    color: rgba(0, 200, 220, 0.5);
+}
+
+.gasto-item.skin-neon .gasto-fecha {
+    color: rgba(0, 200, 220, 0.35);
+}
+
+.gasto-item.skin-neon .gasto-icono {
+    border: 1px solid rgba(0, 240, 255, 0.2);
+}
+
+.gasto-item.skin-neon .monto-gasto {
+    color: #ff2d78;
+}
+
+.gasto-item.skin-neon .monto-ingreso {
+    color: #22ff88;
+}
+
+body.rpg-theme .gasto-item.skin-neon {
+    position: relative;
+    border-color: #00f0ff;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 3px,
+            rgba(0, 240, 255, 0.025) 3px,
+            rgba(0, 240, 255, 0.025) 4px
+        ),
+        linear-gradient(135deg, rgba(0, 240, 255, 0.06), rgba(0, 160, 200, 0.04));
+    box-shadow:
+        0 0 10px rgba(0, 240, 255, 0.3),
+        0 0 20px rgba(0, 240, 255, 0.08),
+        inset 0 0 0 3px rgba(0, 240, 255, 0.08),
+        inset 0 0 0 5px rgba(0, 240, 255, 0.03);
+    animation: skin-neon-pulse 2.5s ease-in-out infinite;
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-neon::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(0, 240, 255, 0.08);
+    pointer-events: none;
+}
+
+body.rpg-theme .gasto-item.skin-neon:hover {
+    border-color: #ff2d78;
+    animation: skin-neon-pulse-pink 2.5s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-neon .gasto-categoria {
+    color: #00f0ff;
+    text-shadow: 0 0 6px rgba(0, 240, 255, 0.3);
+    transition: color 0.3s ease;
+}
+
+body.rpg-theme .gasto-item.skin-neon:hover .gasto-categoria {
+    color: #ff2d78;
+    text-shadow: 0 0 8px rgba(255, 45, 120, 0.4);
+}
+
+/* --- SKIN ORO (Sol Radiante / Dorado) --- */
+@keyframes skin-oro-glow {
+    0%, 100% { box-shadow: 0 0 12px rgba(255, 215, 0, 0.25), 0 0 24px rgba(255, 215, 0, 0.08), 0 0 40px rgba(255, 200, 0, 0.03); }
+    50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 220, 50, 0.2), 0 0 60px rgba(255, 200, 0, 0.08); }
+}
+
+.gasto-item.skin-oro {
+    position: relative;
+    background:
+        linear-gradient(155deg, rgba(255, 215, 0, 0.08) 0%, transparent 35%),
+        linear-gradient(140deg, rgba(255, 220, 50, 0.06) 0%, transparent 30%),
+        linear-gradient(130deg, rgba(255, 215, 0, 0.05) 0%, transparent 28%),
+        linear-gradient(110deg, rgba(255, 220, 50, 0.04) 0%, transparent 25%),
+        radial-gradient(ellipse 120% 60% at 50% -8%, rgba(255, 215, 0, 0.12) 0%, rgba(255, 230, 100, 0.06) 40%, transparent 70%),
+        #fffdf5;
+    border-color: #e8d8b0;
+    box-shadow: 0 1px 4px rgba(200, 180, 100, 0.04);
+    overflow: hidden;
+}
+
+.gasto-item.skin-oro::before {
+    content: "\2726";
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 0.7rem;
+    color: rgba(200, 180, 100, 0.2);
+    pointer-events: none;
+}
+
+.gasto-item.skin-oro::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 245, 200, 0.5), transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+    opacity: 0;
+    transition: none;
+}
+
+.gasto-item.skin-oro .skin-oro-sparkle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    top: 50%; left: 50%;
+    background: rgba(255, 215, 0, 0.6);
+    border-radius: 50%;
+    box-shadow:
+        -76px -24px 0 0 rgba(255, 215, 0, 0.4),
+        45px -36px 0 0 rgba(255, 215, 0, 0.3),
+        82px 18px 0 0 rgba(255, 220, 50, 0.35),
+        -52px 30px 0 0 rgba(255, 215, 0, 0.3),
+        -24px -50px 0 0 rgba(255, 220, 50, 0.25),
+        60px 44px 0 0 rgba(255, 215, 0, 0.2),
+        -90px 12px 0 0 rgba(255, 215, 0, 0.25),
+        30px -60px 0 0 rgba(255, 220, 50, 0.2);
+    pointer-events: none;
+}
+
+.gasto-item.skin-oro:hover {
+    border-color: #d8c898;
+    animation: skin-oro-glow 2.5s ease-in-out infinite;
+}
+
+.gasto-item.skin-oro:hover::after {
+    left: 200%;
+    opacity: 1;
+    transition: left 0.9s ease-in-out, opacity 0.2s ease-in;
+}
+
+.gasto-item.skin-oro:hover::before {
+    color: rgba(255, 215, 0, 0.5);
+    transition: color 0.3s ease;
+}
+
+.gasto-item.skin-oro .gasto-categoria {
+    color: #c8a850;
+    font-weight: 500;
+}
+
+.gasto-item.skin-oro .gasto-descripcion {
+    color: #b8a878;
+}
+
+.gasto-item.skin-oro .gasto-fecha {
+    color: #d0c098;
+}
+
+.gasto-item.skin-oro .gasto-icono {
+    border: 1px solid rgba(200, 180, 100, 0.15);
+    background: rgba(200, 180, 100, 0.04);
+}
+
+.gasto-item.skin-oro .monto-gasto {
+    color: #c0392b;
+}
+
+.gasto-item.skin-oro .monto-ingreso {
+    color: #27ae60;
+}
+
+.gasto-item.skin-oro .gasto-monto {
+    font-weight: 700;
+}
+
+body.rpg-theme .gasto-item.skin-oro {
+    position: relative;
+    background:
+        linear-gradient(155deg, rgba(255, 215, 0, 0.12) 0%, transparent 35%),
+        linear-gradient(140deg, rgba(255, 220, 50, 0.1) 0%, transparent 30%),
+        linear-gradient(130deg, rgba(255, 215, 0, 0.08) 0%, transparent 28%),
+        linear-gradient(110deg, rgba(255, 220, 50, 0.06) 0%, transparent 25%),
+        radial-gradient(ellipse 130% 65% at 50% -10%, rgba(255, 215, 0, 0.2) 0%, rgba(255, 200, 50, 0.08) 35%, transparent 65%),
+        #0f0800;
+    border-color: rgba(255, 215, 0, 0.25);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.05), inset 0 0 0 1px rgba(255, 215, 0, 0.02);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-oro::before {
+    content: "\2726";
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 0.7rem;
+    color: rgba(255, 215, 0, 0.25);
+    pointer-events: none;
+}
+
+body.rpg-theme .gasto-item.skin-oro::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 230, 120, 0.1), transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+    opacity: 0;
+    transition: none;
+}
+
+body.rpg-theme .gasto-item.skin-oro .skin-oro-sparkle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    top: 50%; left: 50%;
+    background: rgba(255, 215, 0, 0.7);
+    border-radius: 50%;
+    box-shadow:
+        -76px -24px 0 0 rgba(255, 215, 0, 0.5),
+        45px -36px 0 0 rgba(255, 215, 0, 0.4),
+        82px 18px 0 0 rgba(255, 220, 50, 0.45),
+        -52px 30px 0 0 rgba(255, 215, 0, 0.4),
+        -24px -50px 0 0 rgba(255, 220, 50, 0.35),
+        60px 44px 0 0 rgba(255, 215, 0, 0.3),
+        -90px 12px 0 0 rgba(255, 215, 0, 0.35),
+        30px -60px 0 0 rgba(255, 220, 50, 0.3);
+    pointer-events: none;
+}
+
+body.rpg-theme .gasto-item.skin-oro:hover {
+    border-color: rgba(255, 215, 0, 0.5);
+    animation: skin-oro-glow 2.5s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-oro:hover::after {
+    left: 200%;
+    opacity: 1;
+    transition: left 0.9s ease-in-out, opacity 0.2s ease-in;
+}
+
+body.rpg-theme .gasto-item.skin-oro:hover::before {
+    color: rgba(255, 215, 0, 0.5);
+    transition: color 0.3s ease;
+}
+
+body.rpg-theme .gasto-item.skin-oro .gasto-categoria {
+    color: #ffd700;
+}
+
+body.rpg-theme .gasto-item.skin-oro .gasto-descripcion {
+    color: rgba(255, 200, 100, 0.5);
+}
+
+body.rpg-theme .gasto-item.skin-oro .gasto-fecha {
+    color: rgba(255, 200, 100, 0.3);
+}
+
+body.rpg-theme .gasto-item.skin-oro .gasto-icono {
+    border: 1px solid rgba(255, 215, 0, 0.12);
+    background: rgba(255, 215, 0, 0.03);
+}
+
+body.rpg-theme .gasto-item.skin-oro .monto-gasto {
+    color: #ff4466;
+}
+
+body.rpg-theme .gasto-item.skin-oro .monto-ingreso {
+    color: #33ff99;
+}
+
+/* --- SKIN ÉLITE (Premium / Minimalista con acento) --- */
+.gasto-item.skin-elite {
+    position: relative;
+    border-radius: 4px;
+    border: 1px solid #d0d0d0;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f8fc 50%, #f0f0f5 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.03),
+        0 2px 4px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+.gasto-item.skin-elite::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    background: linear-gradient(180deg, #667eea, #764ba2);
+    border-radius: 2px;
+    opacity: 0.6;
+    transition: opacity 0.3s ease, box-shadow 0.3s ease;
+}
+
+.gasto-item.skin-elite::after {
+    content: "\2726";
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    font-size: 0.6rem;
+    color: rgba(102, 126, 234, 0.15);
+    pointer-events: none;
+    transition: color 0.3s ease;
+}
+
+.gasto-item.skin-elite:hover {
+    border-color: #667eea;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.03),
+        0 4px 16px rgba(102, 126, 234, 0.2),
+        0 8px 24px rgba(102, 126, 234, 0.08),
+        0 2px 4px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+}
+
+.gasto-item.skin-elite:hover::before {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
+}
+
+.gasto-item.skin-elite:hover::after {
+    color: rgba(102, 126, 234, 0.4);
+}
+
+.gasto-item.skin-elite .gasto-icono {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    margin-left: 4px;
+}
+
+.gasto-item.skin-elite .gasto-categoria {
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    color: #555;
+}
+
+.gasto-item.skin-elite .gasto-descripcion {
+    font-style: italic;
+    color: #888;
+}
+
+.gasto-item.skin-elite .gasto-monto {
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: -0.3px;
+}
+
+.gasto-item.skin-elite .monto-gasto {
+    color: #c62828;
+}
+
+.gasto-item.skin-elite .monto-ingreso {
+    color: #2e7d32;
+}
+
+.gasto-item.skin-elite .accion-btn {
+    opacity: 0.35;
+    transition: opacity 0.2s ease;
+}
+
+.gasto-item.skin-elite:hover .accion-btn {
+    opacity: 0.7;
+}
+
+.gasto-item.skin-elite .gasto-fecha {
+    font-weight: 300;
+    font-size: 0.75rem;
+    color: #aaa;
+}
+
+body.rpg-theme .gasto-item.skin-elite {
+    position: relative;
+    background: linear-gradient(135deg, #0f0f1e 0%, #16162a 50%, #1a1a2e 100%);
+    border-color: rgba(120, 130, 255, 0.25);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.03),
+        0 0 15px rgba(100, 120, 255, 0.06),
+        0 2px 8px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-elite::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #667eea, #a855f7, #22ff88);
+    border-radius: 0;
+    opacity: 0.8;
+    box-shadow: 0 0 6px rgba(102, 126, 234, 0.3);
+    transition: opacity 0.3s ease, box-shadow 0.3s ease;
+}
+
+body.rpg-theme .gasto-item.skin-elite::after {
+    content: "\2726";
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    font-size: 0.6rem;
+    color: rgba(120, 130, 255, 0.2);
+    pointer-events: none;
+    transition: color 0.3s ease;
+}
+
+body.rpg-theme .gasto-item.skin-elite:hover {
+    border-color: rgba(120, 130, 255, 0.5);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.03),
+        0 0 25px rgba(100, 120, 255, 0.2),
+        0 4px 20px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+}
+
+body.rpg-theme .gasto-item.skin-elite:hover::before {
+    opacity: 1;
+    box-shadow: 0 0 12px rgba(102, 126, 234, 0.5);
+}
+
+body.rpg-theme .gasto-item.skin-elite:hover::after {
+    color: rgba(120, 130, 255, 0.5);
+}
+
+body.rpg-theme .gasto-item.skin-elite .gasto-categoria {
+    color: #a0a0e0;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-size: 0.7rem;
+}
+
+body.rpg-theme .gasto-item.skin-elite .gasto-descripcion {
+    color: #8888bb;
+    font-style: italic;
+}
+
+body.rpg-theme .gasto-item.skin-elite .gasto-monto {
+    color: #e0e0ff;
+}
+
+body.rpg-theme .gasto-item.skin-elite .monto-gasto {
+    color: #ff4466;
+}
+
+body.rpg-theme .gasto-item.skin-elite .monto-ingreso {
+    color: #22ffaa;
+}
+
+body.rpg-theme .gasto-item.skin-elite .gasto-fecha {
+    color: #6666aa;
+}
+
+body.rpg-theme .gasto-item.skin-elite .gasto-icono {
+    border: 1px solid rgba(120, 130, 255, 0.2);
+    background: rgba(120, 130, 255, 0.05);
+}
+
+/* --- SKIN ESMERALDA (Gema Esmeralda facetada) --- */
+@keyframes skin-esmeralda-glow {
+    0%, 100% { box-shadow: 0 2px 8px rgba(46, 204, 113, 0.08), 0 0 12px rgba(46, 204, 113, 0.04); }
+    50% { box-shadow: 0 2px 8px rgba(46, 204, 113, 0.15), 0 0 24px rgba(46, 204, 113, 0.1), 0 0 36px rgba(46, 204, 113, 0.04); }
+}
+
+.gasto-item.skin-esmeralda {
+    position: relative;
+    background:
+        linear-gradient(135deg, rgba(46, 204, 113, 0.06) 0%, transparent 30%),
+        linear-gradient(225deg, rgba(46, 204, 113, 0.04) 0%, transparent 30%),
+        linear-gradient(45deg, rgba(100, 230, 150, 0.03) 0%, transparent 30%),
+        linear-gradient(315deg, rgba(46, 204, 113, 0.05) 0%, transparent 30%),
+        linear-gradient(180deg, #f0faf4 0%, #e8f5e9 100%);
+    border-color: #2ecc71;
+    box-shadow: 0 2px 8px rgba(46, 204, 113, 0.06);
+    overflow: hidden;
+}
+
+.gasto-item.skin-esmeralda::before {
+    content: "\2726";
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 0.7rem;
+    color: rgba(46, 204, 113, 0.2);
+    pointer-events: none;
+    transition: color 0.3s ease;
+}
+
+.gasto-item.skin-esmeralda::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -30%;
+    width: 25%; height: 100%;
+    background: linear-gradient(110deg, transparent, rgba(100, 230, 150, 0.12), transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+    opacity: 0;
+    transition: none;
+}
+
+.gasto-item.skin-esmeralda:hover {
+    border-color: #27ae60;
+    animation: skin-esmeralda-glow 2.5s ease-in-out infinite;
+}
+
+.gasto-item.skin-esmeralda:hover::before {
+    color: rgba(46, 204, 113, 0.5);
+}
+
+.gasto-item.skin-esmeralda:hover::after {
+    left: 130%;
+    opacity: 1;
+    transition: left 0.8s ease-in-out, opacity 0.2s ease-in;
+}
+
+.gasto-item.skin-esmeralda .gasto-categoria {
+    color: #1abc9c;
+    font-weight: 500;
+}
+
+.gasto-item.skin-esmeralda .gasto-descripcion {
+    color: #7d9b8a;
+}
+
+.gasto-item.skin-esmeralda .gasto-fecha {
+    color: #a0b8aa;
+}
+
+.gasto-item.skin-esmeralda .gasto-icono {
+    border: 1px solid rgba(46, 204, 113, 0.2);
+    background: rgba(46, 204, 113, 0.05);
+}
+
+.gasto-item.skin-esmeralda .monto-gasto {
+    color: #c0392b;
+}
+
+.gasto-item.skin-esmeralda .monto-ingreso {
+    color: #27ae60;
+}
+
+.gasto-item.skin-esmeralda .gasto-monto {
+    font-weight: 700;
+}
+
+body.rpg-theme .gasto-item.skin-esmeralda {
+    position: relative;
+    background:
+        linear-gradient(135deg, rgba(46, 204, 113, 0.1) 0%, transparent 30%),
+        linear-gradient(225deg, rgba(46, 204, 113, 0.08) 0%, transparent 30%),
+        linear-gradient(45deg, rgba(80, 200, 120, 0.06) 0%, transparent 30%),
+        linear-gradient(315deg, rgba(46, 204, 113, 0.09) 0%, transparent 30%),
+        linear-gradient(180deg, #0a1f14 0%, #0d2818 100%);
+    border-color: rgba(46, 204, 113, 0.4);
+    box-shadow: 0 2px 10px rgba(46, 204, 113, 0.08), inset 0 0 0 1px rgba(46, 204, 113, 0.04);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-esmeralda::before {
+    content: "\2726";
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 0.7rem;
+    color: rgba(46, 204, 113, 0.25);
+    pointer-events: none;
+    transition: color 0.3s ease;
+}
+
+body.rpg-theme .gasto-item.skin-esmeralda::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -30%;
+    width: 25%; height: 100%;
+    background: linear-gradient(110deg, transparent, rgba(46, 204, 113, 0.08), transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+    opacity: 0;
+    transition: none;
+}
+
+body.rpg-theme .gasto-item.skin-esmeralda:hover {
+    border-color: rgba(46, 204, 113, 0.65);
+    animation: skin-esmeralda-glow 2.5s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-esmeralda:hover::before {
+    color: rgba(46, 204, 113, 0.5);
+}
+
+body.rpg-theme .gasto-item.skin-esmeralda:hover::after {
+    left: 130%;
+    opacity: 1;
+    transition: left 0.8s ease-in-out, opacity 0.2s ease-in;
+}
+
+body.rpg-theme .gasto-item.skin-esmeralda .gasto-categoria {
+    color: #2ecc71;
+}
+
+body.rpg-theme .gasto-item.skin-esmeralda .gasto-descripcion {
+    color: rgba(46, 204, 113, 0.55);
+}
+
+body.rpg-theme .gasto-item.skin-esmeralda .gasto-fecha {
+    color: rgba(46, 204, 113, 0.4);
+}
+
+body.rpg-theme .gasto-item.skin-esmeralda .gasto-icono {
+    border: 1px solid rgba(46, 204, 113, 0.2);
+    background: rgba(46, 204, 113, 0.06);
+}
+
+body.rpg-theme .gasto-item.skin-esmeralda .monto-gasto {
+    color: #ff4466;
+}
+
+body.rpg-theme .gasto-item.skin-esmeralda .monto-ingreso {
+    color: #33ff99;
+}
+
+/* --- SKIN RETRO (Vaporwave/Synthwave con grid y sol) --- */
+@keyframes skin-retro-sun {
+    0%, 100% { background-position: 50% 100%, 0% 0%; }
+    50% { background-position: 50% 80%, 100% 0%; }
+}
+
+@keyframes skin-retro-glow-pulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(255, 105, 180, 0.1), 0 0 16px rgba(0, 180, 255, 0.05); }
+    50% { box-shadow: 0 0 16px rgba(255, 105, 180, 0.2), 0 0 32px rgba(0, 180, 255, 0.1), 0 0 48px rgba(255, 105, 180, 0.05); }
+}
+
+.gasto-item.skin-retro {
+    position: relative;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 12px,
+            rgba(255, 20, 147, 0.02) 12px,
+            rgba(255, 20, 147, 0.02) 13px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 10px,
+            rgba(0, 180, 255, 0.015) 10px,
+            rgba(0, 180, 255, 0.015) 11px
+        ),
+        linear-gradient(180deg, rgba(255, 69, 0, 0.06) 0%, rgba(255, 20, 147, 0.04) 30%, rgba(100, 0, 180, 0.04) 60%, rgba(0, 180, 255, 0.03) 100%);
+    background-size: auto, auto, 100% 200%;
+    border-color: #ff69b4;
+    border-width: 2px;
+    border-style: double;
+    box-shadow: 0 0 8px rgba(255, 105, 180, 0.1);
+    overflow: hidden;
+}
+
+.gasto-item.skin-retro::before {
+    content: "";
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px; height: 24px;
+    background: radial-gradient(circle, rgba(255, 69, 0, 0.15) 0%, rgba(255, 100, 50, 0.08) 30%, rgba(255, 20, 147, 0.03) 60%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: skin-retro-sun 6s ease-in-out infinite;
+}
+
+.gasto-item.skin-retro:hover {
+    border-color: #ff1493;
+    animation: skin-retro-glow-pulse 2.5s ease-in-out infinite;
+    transform: scale(1.005);
+}
+
+.gasto-item.skin-retro .gasto-categoria {
+    color: #00b4ff;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+}
+
+.gasto-item.skin-retro .gasto-descripcion {
+    color: rgba(255, 105, 180, 0.7);
+}
+
+.gasto-item.skin-retro .gasto-fecha {
+    color: rgba(0, 180, 255, 0.5);
+}
+
+.gasto-item.skin-retro .gasto-icono {
+    border: 1px solid rgba(255, 105, 180, 0.3);
+    background: rgba(255, 105, 180, 0.05);
+}
+
+.gasto-item.skin-retro .monto-gasto {
+    color: #ff1493;
+}
+
+.gasto-item.skin-retro .monto-ingreso {
+    color: #00e5ff;
+}
+
+body.rpg-theme .gasto-item.skin-retro {
+    position: relative;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 12px,
+            rgba(255, 20, 147, 0.03) 12px,
+            rgba(255, 20, 147, 0.03) 13px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 10px,
+            rgba(0, 180, 255, 0.025) 10px,
+            rgba(0, 180, 255, 0.025) 11px
+        ),
+        linear-gradient(180deg, rgba(255, 69, 0, 0.1) 0%, rgba(255, 20, 147, 0.08) 30%, rgba(80, 0, 140, 0.06) 60%, rgba(0, 120, 200, 0.04) 100%);
+    background-size: auto, auto, 100% 200%;
+    border-color: #ff69b4;
+    border-width: 2px;
+    border-style: double;
+    box-shadow: 0 0 12px rgba(255, 105, 180, 0.15), inset 0 0 0 1px rgba(255, 105, 180, 0.03);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-retro::before {
+    content: "";
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px; height: 30px;
+    background: radial-gradient(circle, rgba(255, 69, 0, 0.25) 0%, rgba(255, 100, 50, 0.12) 30%, rgba(255, 20, 147, 0.05) 60%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: skin-retro-sun 6s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-retro:hover {
+    border-color: #ff1493;
+    animation: skin-retro-glow-pulse 2.5s ease-in-out infinite;
+    transform: scale(1.005);
+}
+
+body.rpg-theme .gasto-item.skin-retro .gasto-categoria {
+    color: #00b4ff;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+}
+
+body.rpg-theme .gasto-item.skin-retro .gasto-descripcion {
+    color: rgba(255, 105, 180, 0.7);
+}
+
+body.rpg-theme .gasto-item.skin-retro .monto-gasto {
+    color: #ff2d78;
+}
+
+body.rpg-theme .gasto-item.skin-retro .monto-ingreso {
+    color: #22ff88;
+}
+
+/* --- SKIN FUEGO (Flame / Llamas con brasas + humo) --- */
+@keyframes skin-fuego-flicker {
+    0%, 100% { background-position: 0% 50%, 0% 50%, 0% 0%; }
+    25% { background-position: 20% 50%, -20% 50%, 0% 0%; }
+    50% { background-position: -10% 50%, 10% 50%, 0% 0%; }
+    75% { background-position: 15% 50%, -10% 50%, 0% 0%; }
+}
+
+@keyframes skin-fuego-glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(255, 69, 0, 0.15), 0 0 16px rgba(255, 140, 0, 0.05); }
+    50% { box-shadow: 0 0 16px rgba(255, 69, 0, 0.3), 0 0 32px rgba(255, 140, 0, 0.12), 0 0 48px rgba(255, 69, 0, 0.04); }
+}
+
+@keyframes skin-fuego-heat {
+    0%, 100% { opacity: 0.25; transform: scale(1); }
+    50% { opacity: 0.55; transform: scale(1.08); }
+}
+
+.gasto-item.skin-fuego {
+    position: relative;
+    background:
+        linear-gradient(90deg, rgba(255, 69, 0, 0.05), rgba(255, 140, 0, 0.03), rgba(255, 200, 0, 0.02), rgba(255, 69, 0, 0.04)),
+        linear-gradient(180deg, rgba(255, 69, 0, 0.04), rgba(255, 140, 0, 0.03), rgba(200, 50, 0, 0.05)),
+        linear-gradient(135deg, rgba(255, 69, 0, 0.03), rgba(255, 140, 0, 0.02));
+    background-size: 200% 100%, 100% 200%, auto;
+    border-color: #ff4500;
+    box-shadow: 0 0 6px rgba(255, 69, 0, 0.1);
+    animation: skin-fuego-flicker 4s ease-in-out infinite;
+    overflow: hidden;
+}
+
+/* Calor central */
+.gasto-item.skin-fuego::before {
+    content: "";
+    position: absolute;
+    top: 30%; left: 25%;
+    width: 50%; height: 40%;
+    background: radial-gradient(ellipse, rgba(255, 100, 20, 0.2) 0%, transparent 70%);
+    pointer-events: none;
+    animation: skin-fuego-heat 3s ease-in-out infinite;
+}
+
+/* Brasas + humo */
+.gasto-item.skin-fuego::after {
+    content: "";
+    position: absolute;
+    width: 3px; height: 3px;
+    top: 60%; left: 50%;
+    background: rgba(255, 200, 100, 0.7);
+    border-radius: 50%;
+    box-shadow:
+        /* Brasas anaranjadas (20) */
+        18px 8px 0 0 rgba(255, 200, 100, 0.5),
+        -22px -5px 0 0 rgba(255, 150, 50, 0.6),
+        40px 12px 0 0 rgba(255, 200, 100, 0.4),
+        -35px 15px 0 0 rgba(255, 150, 50, 0.45),
+        8px -18px 0 0 rgba(255, 200, 100, 0.55),
+        55px -2px 0 0 rgba(255, 150, 50, 0.35),
+        -50px 8px 0 0 rgba(255, 200, 100, 0.4),
+        -12px -25px 0 0 rgba(255, 150, 50, 0.45),
+        30px 22px 0 0 rgba(255, 200, 100, 0.35),
+        -45px -12px 0 0 rgba(255, 150, 50, 0.4),
+        /* Brasas nuevas */
+        28px -35px 0 0 rgba(255, 180, 60, 0.3),
+        -58px 20px 0 0 rgba(255, 130, 40, 0.35),
+        60px -15px 0 0 rgba(255, 200, 80, 0.25),
+        -15px 40px 0 0 rgba(255, 160, 50, 0.3),
+        -65px -25px 0 0 rgba(255, 140, 40, 0.25),
+        70px 25px 0 0 rgba(255, 190, 70, 0.2),
+        10px 50px 0 0 rgba(255, 150, 50, 0.25),
+        -40px -40px 0 0 rgba(255, 170, 60, 0.2),
+        48px -30px 0 0 rgba(255, 210, 90, 0.2),
+        -70px 5px 0 0 rgba(255, 140, 40, 0.3),
+        /* Partículas de humo (grises) */
+        -28px 30px 0 2px rgba(180, 170, 160, 0.15),
+        36px -45px 0 1px rgba(160, 150, 140, 0.12),
+        -55px -35px 0 3px rgba(190, 180, 170, 0.1),
+        65px 40px 0 2px rgba(170, 160, 150, 0.12),
+        -8px 55px 0 3px rgba(180, 170, 160, 0.08);
+    pointer-events: none;
+}
+
+.gasto-item.skin-fuego:hover {
+    border-color: #ff6a00;
+    animation: skin-fuego-flicker 4s ease-in-out infinite, skin-fuego-glow 2.5s ease-in-out infinite;
+}
+
+.gasto-item.skin-fuego:hover::before {
+    opacity: 0.8;
+    transition: opacity 0.4s ease;
+}
+
+.gasto-item.skin-fuego .gasto-categoria {
+    color: #ff6a00;
+}
+
+.gasto-item.skin-fuego .gasto-descripcion {
+    color: rgba(180, 80, 20, 0.7);
+}
+
+.gasto-item.skin-fuego .gasto-fecha {
+    color: rgba(200, 100, 30, 0.5);
+}
+
+.gasto-item.skin-fuego .gasto-icono {
+    border: 1px solid rgba(255, 69, 0, 0.25);
+    background: rgba(255, 69, 0, 0.06);
+}
+
+.gasto-item.skin-fuego .monto-gasto {
+    color: #cc3300;
+}
+
+.gasto-item.skin-fuego .monto-ingreso {
+    color: #ff8c00;
+}
+
+.gasto-item.skin-fuego .gasto-monto {
+    font-weight: 700;
+}
+
+body.rpg-theme .gasto-item.skin-fuego {
+    position: relative;
+    background:
+        linear-gradient(90deg, rgba(255, 50, 0, 0.08), rgba(200, 80, 0, 0.05), rgba(200, 150, 0, 0.04), rgba(255, 50, 0, 0.07)),
+        linear-gradient(180deg, rgba(255, 50, 0, 0.07), rgba(200, 80, 0, 0.05), rgba(150, 30, 0, 0.08)),
+        linear-gradient(135deg, rgba(255, 50, 0, 0.06), rgba(200, 80, 0, 0.04));
+    background-size: 200% 100%, 100% 200%, auto;
+    border-color: #ff4500;
+    box-shadow: 0 0 10px rgba(255, 69, 0, 0.15), inset 0 0 0 1px rgba(255, 69, 0, 0.04);
+    animation: skin-fuego-flicker 4s ease-in-out infinite;
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-fuego::before {
+    content: "";
+    position: absolute;
+    top: 30%; left: 25%;
+    width: 50%; height: 40%;
+    background: radial-gradient(ellipse, rgba(255, 80, 10, 0.25) 0%, transparent 70%);
+    pointer-events: none;
+    animation: skin-fuego-heat 3s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-fuego::after {
+    content: "";
+    position: absolute;
+    width: 3px; height: 3px;
+    top: 60%; left: 50%;
+    background: rgba(255, 200, 100, 0.8);
+    border-radius: 50%;
+    box-shadow:
+        /* Brasas anaranjadas (20) */
+        18px 8px 0 0 rgba(255, 200, 100, 0.6),
+        -22px -5px 0 0 rgba(255, 150, 50, 0.7),
+        40px 12px 0 0 rgba(255, 200, 100, 0.5),
+        -35px 15px 0 0 rgba(255, 150, 50, 0.55),
+        8px -18px 0 0 rgba(255, 200, 100, 0.65),
+        55px -2px 0 0 rgba(255, 150, 50, 0.45),
+        -50px 8px 0 0 rgba(255, 200, 100, 0.5),
+        -12px -25px 0 0 rgba(255, 150, 50, 0.55),
+        30px 22px 0 0 rgba(255, 200, 100, 0.45),
+        -45px -12px 0 0 rgba(255, 150, 50, 0.5),
+        /* Brasas nuevas */
+        28px -35px 0 0 rgba(255, 180, 60, 0.4),
+        -58px 20px 0 0 rgba(255, 130, 40, 0.45),
+        60px -15px 0 0 rgba(255, 200, 80, 0.35),
+        -15px 40px 0 0 rgba(255, 160, 50, 0.4),
+        -65px -25px 0 0 rgba(255, 140, 40, 0.35),
+        70px 25px 0 0 rgba(255, 190, 70, 0.3),
+        10px 50px 0 0 rgba(255, 150, 50, 0.35),
+        -40px -40px 0 0 rgba(255, 170, 60, 0.3),
+        48px -30px 0 0 rgba(255, 210, 90, 0.3),
+        -70px 5px 0 0 rgba(255, 140, 40, 0.4),
+        /* Partículas de humo (grises) */
+        -28px 30px 0 2px rgba(180, 170, 160, 0.2),
+        36px -45px 0 1px rgba(160, 150, 140, 0.18),
+        -55px -35px 0 3px rgba(190, 180, 170, 0.15),
+        65px 40px 0 2px rgba(170, 160, 150, 0.18),
+        -8px 55px 0 3px rgba(180, 170, 160, 0.12);
+    pointer-events: none;
+}
+
+body.rpg-theme .gasto-item.skin-fuego:hover {
+    border-color: #ff6a00;
+    animation: skin-fuego-flicker 4s ease-in-out infinite, skin-fuego-glow 2.5s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-fuego:hover::before {
+    opacity: 0.85;
+    transition: opacity 0.4s ease;
+}
+
+body.rpg-theme .gasto-item.skin-fuego .gasto-categoria {
+    color: #ff6a00;
+}
+
+body.rpg-theme .gasto-item.skin-fuego .monto-gasto {
+    color: #ff3355;
+}
+
+body.rpg-theme .gasto-item.skin-fuego .monto-ingreso {
+    color: #ffd700;
+}
+
+
+/* --- SKIN MÍSTICA (Purple Cosmic / Nebulosa) --- */
+@keyframes mistica-float {
+    0%   { transform: translate(0, 0) scale(1); opacity: 0.2; }
+    33%  { transform: translate(40px, -10px) scale(1.2); opacity: 0.7; }
+    66%  { transform: translate(-20px, 15px) scale(0.9); opacity: 0.9; }
+    100% { transform: translate(70px, 5px) scale(1.1); opacity: 0.5; }
+}
+
+@keyframes mistica-pulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(156, 92, 255, 0.12), 0 0 16px rgba(120, 60, 200, 0.04); }
+    50% { box-shadow: 0 0 16px rgba(156, 92, 255, 0.25), 0 0 32px rgba(120, 60, 200, 0.1), 0 0 48px rgba(156, 92, 255, 0.04); }
+}
+
+.gasto-item.skin-mistica {
+    position: relative;
+    background:
+        radial-gradient(ellipse 120% 50% at 30% 20%, rgba(180, 80, 255, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 50% at 70% 80%, rgba(80, 60, 200, 0.04) 0%, transparent 60%),
+        linear-gradient(135deg, rgba(180, 80, 255, 0.04), rgba(120, 60, 200, 0.03), rgba(80, 40, 180, 0.02));
+    border-color: #9c5cff;
+    box-shadow: 0 0 6px rgba(156, 92, 255, 0.1);
+    overflow: hidden;
+}
+
+.gasto-item.skin-mistica::before {
+    content: "\2726\2003\2726";
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    font-size: 0.6rem;
+    color: rgba(156, 92, 255, 0.15);
+    pointer-events: none;
+    letter-spacing: 4px;
+}
+
+.gasto-item.skin-mistica::after {
+    content: "";
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    top: 50%;
+    left: 50%;
+    background: rgba(156, 92, 255, 0.7);
+    border-radius: 50%;
+    box-shadow:
+        -180px -35px 0 0 rgba(156, 92, 255, 0.5),
+        -160px -28px 0 0 rgba(156, 92, 255, 0.5),
+        -112px -38px 0 0 rgba(180, 80, 255, 0.4),
+        -100px -8px 0 0 rgba(180, 80, 255, 0.4),
+        -48px -26px 0 0 rgba(200, 150, 255, 0.35),
+        -40px -32px 0 0 rgba(200, 150, 255, 0.35),
+        -8px 26px 0 0 rgba(156, 92, 255, 0.4),
+        20px 4px 0 0 rgba(156, 92, 255, 0.45),
+        32px -16px 0 0 rgba(180, 80, 255, 0.5),
+        80px -20px 0 0 rgba(180, 80, 255, 0.5),
+        100px 16px 0 0 rgba(200, 150, 255, 0.3),
+        140px 8px 0 0 rgba(200, 150, 255, 0.3),
+        152px -28px 0 0 rgba(156, 92, 255, 0.35),
+        -140px 16px 0 0 rgba(156, 92, 255, 0.4),
+        -80px 28px 0 0 rgba(180, 80, 255, 0.35),
+        -60px 8px 0 0 rgba(200, 150, 255, 0.45),
+        0px 20px 0 0 rgba(200, 150, 255, 0.5),
+        60px -4px 0 0 rgba(156, 92, 255, 0.45),
+        72px 32px 0 0 rgba(180, 80, 255, 0.35),
+        120px 24px 0 0 rgba(180, 80, 255, 0.3),
+        128px -6px 0 0 rgba(200, 150, 255, 0.4),
+        160px -12px 0 0 rgba(200, 150, 255, 0.4),
+        180px 30px 0 0 rgba(156, 92, 255, 0.35),
+        -168px 0px 0 0 rgba(156, 92, 255, 0.35),
+        -152px 34px 0 0 rgba(180, 80, 255, 0.4),
+        -32px -4px 0 0 rgba(180, 80, 255, 0.45),
+        -20px -16px 0 0 rgba(180, 80, 255, 0.5),
+        8px -30px 0 0 rgba(200, 150, 255, 0.4),
+        88px -32px 0 0 rgba(200, 150, 255, 0.4),
+        112px 4px 0 0 rgba(156, 92, 255, 0.4),
+        168px 16px 0 0 rgba(156, 92, 255, 0.3),
+        -128px 30px 0 0 rgba(180, 80, 255, 0.45),
+        -88px 18px 0 0 rgba(200, 150, 255, 0.35),
+        40px 12px 0 0 rgba(200, 150, 255, 0.35),
+        48px -38px 0 0 rgba(156, 92, 255, 0.4),
+        -60px 0px 0 0 rgba(156, 92, 255, 0.4),
+        -8px 32px 0 0 rgba(180, 80, 255, 0.3),
+        12px -10px 0 0 rgba(200, 150, 255, 0.45),
+        -120px -16px 0 0 rgba(180, 80, 255, 0.35),
+        -20px 12px 0 0 rgba(156, 92, 255, 0.4),
+        -190px 22px 0 0 rgba(200, 150, 255, 0.25),
+        170px -35px 0 0 rgba(200, 150, 255, 0.25),
+        -80px -42px 0 0 rgba(180, 80, 255, 0.3),
+        110px 42px 0 0 rgba(200, 150, 255, 0.25),
+        -170px -28px 0 0 rgba(200, 150, 255, 0.25);
+    pointer-events: none;
+    animation: mistica-float 7s ease-in-out infinite alternate;
+}
+
+.gasto-item.skin-mistica:hover {
+    border-color: #b47cff;
+    animation: mistica-pulse 2.5s ease-in-out infinite;
+}
+
+.gasto-item.skin-mistica:hover::before {
+    color: rgba(156, 92, 255, 0.4);
+    transition: color 0.3s ease;
+}
+
+.gasto-item.skin-mistica .gasto-categoria {
+    color: #7c3aed;
+}
+
+.gasto-item.skin-mistica .gasto-descripcion {
+    color: rgba(124, 58, 237, 0.6);
+}
+
+.gasto-item.skin-mistica .gasto-fecha {
+    color: rgba(156, 92, 255, 0.5);
+}
+
+.gasto-item.skin-mistica .gasto-icono {
+    border: 1px solid rgba(156, 92, 255, 0.2);
+    background: rgba(156, 92, 255, 0.05);
+}
+
+.gasto-item.skin-mistica .monto-gasto {
+    color: #7c3aed;
+}
+
+.gasto-item.skin-mistica .monto-ingreso {
+    color: #a78bfa;
+}
+
+body.rpg-theme .gasto-item.skin-mistica {
+    position: relative;
+    background:
+        radial-gradient(ellipse 120% 50% at 30% 20%, rgba(140, 60, 220, 0.1) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 50% at 70% 80%, rgba(60, 40, 180, 0.08) 0%, transparent 60%),
+        linear-gradient(135deg, rgba(120, 60, 200, 0.08), rgba(80, 30, 150, 0.06), rgba(40, 20, 100, 0.04));
+    border-color: #9c5cff;
+    box-shadow: 0 0 10px rgba(156, 92, 255, 0.15), inset 0 0 0 1px rgba(156, 92, 255, 0.04);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-mistica::before {
+    content: "\2726\2003\2726";
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    font-size: 0.6rem;
+    color: rgba(156, 92, 255, 0.3);
+    pointer-events: none;
+    letter-spacing: 4px;
+}
+
+body.rpg-theme .gasto-item.skin-mistica::after {
+    background: rgba(180, 120, 255, 0.7);
+    box-shadow:
+        -180px -35px 0 0 rgba(180, 120, 255, 0.6),
+        -160px -28px 0 0 rgba(180, 120, 255, 0.6),
+        -112px -38px 0 0 rgba(200, 100, 255, 0.5),
+        -100px -8px 0 0 rgba(200, 100, 255, 0.5),
+        -48px -26px 0 0 rgba(220, 180, 255, 0.45),
+        -40px -32px 0 0 rgba(220, 180, 255, 0.45),
+        -8px 26px 0 0 rgba(180, 120, 255, 0.5),
+        20px 4px 0 0 rgba(180, 120, 255, 0.55),
+        32px -16px 0 0 rgba(200, 100, 255, 0.6),
+        80px -20px 0 0 rgba(200, 100, 255, 0.6),
+        100px 16px 0 0 rgba(220, 180, 255, 0.4),
+        140px 8px 0 0 rgba(220, 180, 255, 0.4),
+        152px -28px 0 0 rgba(180, 120, 255, 0.45),
+        -140px 16px 0 0 rgba(180, 120, 255, 0.5),
+        -80px 28px 0 0 rgba(200, 100, 255, 0.45),
+        -60px 8px 0 0 rgba(220, 180, 255, 0.55),
+        0px 20px 0 0 rgba(220, 180, 255, 0.6),
+        60px -4px 0 0 rgba(180, 120, 255, 0.55),
+        72px 32px 0 0 rgba(200, 100, 255, 0.45),
+        120px 24px 0 0 rgba(200, 100, 255, 0.4),
+        128px -6px 0 0 rgba(220, 180, 255, 0.5),
+        160px -12px 0 0 rgba(220, 180, 255, 0.5),
+        180px 30px 0 0 rgba(180, 120, 255, 0.45),
+        -168px 0px 0 0 rgba(180, 120, 255, 0.45),
+        -152px 34px 0 0 rgba(200, 100, 255, 0.5),
+        -32px -4px 0 0 rgba(200, 100, 255, 0.55),
+        -20px -16px 0 0 rgba(200, 100, 255, 0.6),
+        8px -30px 0 0 rgba(220, 180, 255, 0.5),
+        88px -32px 0 0 rgba(220, 180, 255, 0.5),
+        112px 4px 0 0 rgba(180, 120, 255, 0.5),
+        168px 16px 0 0 rgba(180, 120, 255, 0.4),
+        -128px 30px 0 0 rgba(200, 100, 255, 0.55),
+        -88px 18px 0 0 rgba(220, 180, 255, 0.45),
+        40px 12px 0 0 rgba(220, 180, 255, 0.45),
+        48px -38px 0 0 rgba(180, 120, 255, 0.5),
+        -60px 0px 0 0 rgba(180, 120, 255, 0.5),
+        -8px 32px 0 0 rgba(200, 100, 255, 0.4),
+        12px -10px 0 0 rgba(220, 180, 255, 0.55),
+        -120px -16px 0 0 rgba(200, 100, 255, 0.45),
+        -20px 12px 0 0 rgba(180, 120, 255, 0.5),
+        -190px 22px 0 0 rgba(220, 180, 255, 0.35),
+        170px -35px 0 0 rgba(220, 180, 255, 0.35),
+        -80px -42px 0 0 rgba(200, 100, 255, 0.4),
+        110px 42px 0 0 rgba(220, 180, 255, 0.35),
+        -170px -28px 0 0 rgba(220, 180, 255, 0.35);
+    filter: drop-shadow(0 0 3px rgba(156, 92, 255, 0.3));
+}
+
+body.rpg-theme .gasto-item.skin-mistica:hover {
+    border-color: #b47cff;
+    animation: mistica-pulse 2.5s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-mistica:hover::before {
+    color: rgba(156, 92, 255, 0.5);
+    transition: color 0.3s ease;
+}
+
+body.rpg-theme .gasto-item.skin-mistica .gasto-categoria {
+    color: #b47cff;
+}
+
+body.rpg-theme .gasto-item.skin-mistica .gasto-descripcion {
+    color: rgba(180, 124, 255, 0.6);
+}
+
+body.rpg-theme .gasto-item.skin-mistica .monto-gasto {
+    color: #ff5577;
+}
+
+body.rpg-theme .gasto-item.skin-mistica .monto-ingreso {
+    color: #a78bfa;
+}
+
+/* --- SKIN DRAGÓN (Dragon Scales / Escamas con brillo) --- */
+@keyframes skin-dragon-shimmer {
+    0%   { left: -40%; opacity: 0; }
+    20%  { opacity: 0.5; }
+    80%  { opacity: 0.5; }
+    100% { left: 140%; opacity: 0; }
+}
+
+@keyframes skin-dragon-glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(200, 160, 80, 0.12), 0 0 16px rgba(200, 160, 80, 0.04); }
+    50% { box-shadow: 0 0 16px rgba(200, 160, 80, 0.3), 0 0 32px rgba(200, 160, 80, 0.1), 0 0 48px rgba(200, 160, 80, 0.04); }
+}
+
+.gasto-item.skin-dragon {
+    position: relative;
+    background: linear-gradient(135deg, rgba(60, 30, 10, 0.06), rgba(100, 50, 20, 0.03));
+    border-color: #c8a050;
+    border-width: 2px;
+    box-shadow: 0 0 6px rgba(200, 160, 80, 0.1);
+    overflow: hidden;
+}
+
+.gasto-item.skin-dragon::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 4px,
+        rgba(200, 160, 80, 0.04) 4px,
+        rgba(200, 160, 80, 0.04) 5px
+    ),
+    repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 4px,
+        rgba(200, 160, 80, 0.04) 4px,
+        rgba(200, 160, 80, 0.04) 5px
+    );
+    pointer-events: none;
+}
+
+.gasto-item.skin-dragon::after {
+    content: "\2726";
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 0.7rem;
+    color: rgba(200, 160, 80, 0.2);
+    pointer-events: none;
+    transition: color 0.3s ease;
+}
+
+.gasto-item.skin-dragon:hover {
+    border-color: #e8c060;
+    animation: skin-dragon-glow 2.5s ease-in-out infinite;
+    transform: scale(1.008);
+}
+
+.gasto-item.skin-dragon:hover::after {
+    color: rgba(200, 160, 80, 0.5);
+}
+
+.gasto-item.skin-dragon .gasto-categoria {
+    color: #b8943e;
+    font-weight: 600;
+}
+
+.gasto-item.skin-dragon .gasto-descripcion {
+    color: rgba(160, 130, 60, 0.7);
+}
+
+.gasto-item.skin-dragon .gasto-fecha {
+    color: rgba(180, 150, 70, 0.5);
+}
+
+.gasto-item.skin-dragon .gasto-icono {
+    border: 1px solid rgba(200, 160, 80, 0.25);
+    background: rgba(200, 160, 80, 0.06);
+}
+
+.gasto-item.skin-dragon .monto-gasto {
+    color: #b8860b;
+    font-weight: 700;
+}
+
+.gasto-item.skin-dragon .monto-ingreso {
+    color: #6b8e23;
+    font-weight: 700;
+}
+
+body.rpg-theme .gasto-item.skin-dragon {
+    position: relative;
+    background: linear-gradient(135deg, rgba(40, 20, 5, 0.7), rgba(60, 30, 10, 0.5));
+    border-color: #c8a050;
+    border-width: 2px;
+    box-shadow: 0 0 10px rgba(200, 160, 80, 0.15), inset 0 0 0 1px rgba(200, 160, 80, 0.04);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-dragon::before {
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 4px,
+        rgba(200, 160, 80, 0.06) 4px,
+        rgba(200, 160, 80, 0.06) 5px
+    ),
+    repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 4px,
+        rgba(200, 160, 80, 0.06) 4px,
+        rgba(200, 160, 80, 0.06) 5px
+    );
+}
+
+body.rpg-theme .gasto-item.skin-dragon::after {
+    content: "\2726";
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 0.7rem;
+    color: rgba(200, 160, 80, 0.25);
+    pointer-events: none;
+    transition: color 0.3s ease;
+}
+
+body.rpg-theme .gasto-item.skin-dragon:hover {
+    border-color: #e8c060;
+    animation: skin-dragon-glow 2.5s ease-in-out infinite;
+    transform: scale(1.008);
+}
+
+body.rpg-theme .gasto-item.skin-dragon:hover::after {
+    color: rgba(200, 160, 80, 0.5);
+}
+
+body.rpg-theme .gasto-item.skin-dragon .gasto-categoria {
+    color: #e8c060;
+}
+
+body.rpg-theme .gasto-item.skin-dragon .gasto-descripcion {
+    color: rgba(200, 160, 80, 0.6);
+}
+
+body.rpg-theme .gasto-item.skin-dragon .monto-gasto {
+    color: #ff6b35;
+}
+
+body.rpg-theme .gasto-item.skin-dragon .monto-ingreso {
+    color: #44ff88;
+}
+
+/* --- SKIN NEGRO BRILLANTE (Estrellas Oscuras / Nebulosa) --- */
+@keyframes skin-negro-brillante-stars {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
+@keyframes skin-negro-brillante-glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(180, 200, 255, 0.2), 0 0 16px rgba(180, 200, 255, 0.05); }
+    50% { box-shadow: 0 0 18px rgba(200, 220, 255, 0.5), 0 0 32px rgba(180, 200, 255, 0.18), 0 0 48px rgba(180, 200, 255, 0.06); }
+}
+
+.gasto-item.skin-negro-brillante {
+    position: relative;
+    background:
+        radial-gradient(ellipse 80% 40% at 30% 25%, rgba(100, 120, 180, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 35% at 70% 75%, rgba(60, 80, 160, 0.04) 0%, transparent 60%),
+        linear-gradient(135deg, transparent 30%, rgba(150, 180, 220, 0.06) 42%, rgba(180, 200, 230, 0.09) 44%, rgba(180, 200, 230, 0.11) 46%, transparent 48%),
+        linear-gradient(140deg, transparent 35%, rgba(150, 180, 220, 0.03) 50%, transparent 52%),
+        #121216;
+    border-color: #404048;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.gasto-item.skin-negro-brillante::before {
+    content: "\2726";
+    position: absolute;
+    inset: 0;
+    color: rgba(200, 220, 255, 0.15);
+    text-align: right;
+    line-height: 1;
+    padding: 6px;
+    font-size: 0.6rem;
+    pointer-events: none;
+    box-shadow:
+        12px 18px 0 0 rgba(200, 220, 255, 0.5),
+        45px 8px 0 0 rgba(180, 210, 255, 0.3),
+        80px 30px 0 0 rgba(200, 220, 255, 0.4),
+        110px 50px 0 0 rgba(180, 210, 255, 0.25),
+        30px 55px 0 0 rgba(200, 220, 255, 0.3),
+        95px 65px 0 0 rgba(180, 210, 255, 0.35),
+        55px 80px 0 0 rgba(200, 220, 255, 0.25),
+        20px 90px 0 0 rgba(180, 210, 255, 0.3),
+        70px 100px 0 0 rgba(200, 220, 255, 0.3),
+        120px 85px 0 0 rgba(180, 210, 255, 0.2),
+        140px 25px 0 0 rgba(200, 220, 255, 0.2),
+        10px 40px 0 0 rgba(180, 210, 255, 0.25),
+        130px 55px 0 0 rgba(200, 220, 255, 0.15),
+        60px 20px 0 0 rgba(180, 210, 255, 0.2),
+        35px 75px 0 0 rgba(200, 220, 255, 0.2),
+        100px 10px 0 0 rgba(180, 210, 255, 0.25),
+        25px 35px 0 0 rgba(200, 220, 255, 0.15),
+        115px 70px 0 0 rgba(180, 210, 255, 0.2),
+        50px 45px 0 0 rgba(200, 220, 255, 0.15),
+        90px 95px 0 0 rgba(180, 210, 255, 0.15);
+    animation: skin-negro-brillante-stars 3.5s ease-in-out infinite;
+}
+
+.gasto-item.skin-negro-brillante::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(200, 220, 255, 0.15), transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+    opacity: 0;
+    transition: none;
+}
+
+.gasto-item.skin-negro-brillante:hover {
+    border-color: #585868;
+    animation: skin-negro-brillante-glow 2.5s ease-in-out infinite;
+}
+
+.gasto-item.skin-negro-brillante:hover::before {
+    color: rgba(200, 220, 255, 0.4);
+    transition: color 0.3s ease;
+}
+
+.gasto-item.skin-negro-brillante:hover::after {
+    left: 200%;
+    opacity: 1;
+    transition: left 0.9s ease-in-out, opacity 0.2s ease-in;
+}
+
+.gasto-item.skin-negro-brillante .gasto-categoria {
+    color: #808090;
+    font-weight: 500;
+}
+
+.gasto-item.skin-negro-brillante .gasto-descripcion {
+    color: #686878;
+}
+
+.gasto-item.skin-negro-brillante .gasto-fecha {
+    color: #585868;
+}
+
+.gasto-item.skin-negro-brillante .gasto-icono {
+    border: 1px solid rgba(150, 160, 180, 0.12);
+    background: rgba(150, 160, 180, 0.03);
+}
+
+.gasto-item.skin-negro-brillante .monto-gasto {
+    color: #e84860;
+}
+
+.gasto-item.skin-negro-brillante .monto-ingreso {
+    color: #38d890;
+}
+
+.gasto-item.skin-negro-brillante .gasto-monto {
+    font-weight: 700;
+}
+
+body.rpg-theme .gasto-item.skin-negro-brillante {
+    position: relative;
+    background:
+        radial-gradient(ellipse 80% 40% at 30% 25%, rgba(80, 100, 180, 0.1) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 35% at 70% 75%, rgba(40, 60, 140, 0.08) 0%, transparent 60%),
+        linear-gradient(135deg, transparent 25%, rgba(150, 200, 255, 0.1) 40%, rgba(180, 220, 255, 0.15) 42%, rgba(180, 220, 255, 0.18) 44%, transparent 47%),
+        linear-gradient(140deg, transparent 30%, rgba(150, 200, 255, 0.05) 48%, transparent 50%),
+        #08080a;
+    border-color: rgba(150, 180, 220, 0.12);
+    box-shadow: 0 0 10px rgba(150, 180, 220, 0.03), inset 0 0 0 1px rgba(150, 180, 220, 0.02);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-negro-brillante::before {
+    content: "\2726";
+    position: absolute;
+    inset: 0;
+    color: rgba(200, 230, 255, 0.2);
+    text-align: right;
+    line-height: 1;
+    padding: 6px;
+    font-size: 0.6rem;
+    pointer-events: none;
+    box-shadow:
+        12px 18px 0 0 rgba(200, 230, 255, 0.7),
+        45px 8px 0 0 rgba(180, 220, 255, 0.4),
+        80px 30px 0 0 rgba(200, 230, 255, 0.6),
+        110px 50px 0 0 rgba(180, 220, 255, 0.35),
+        30px 55px 0 0 rgba(200, 230, 255, 0.4),
+        95px 65px 0 0 rgba(180, 220, 255, 0.5),
+        55px 80px 0 0 rgba(200, 230, 255, 0.35),
+        20px 90px 0 0 rgba(180, 220, 255, 0.4),
+        70px 100px 0 0 rgba(200, 230, 255, 0.4),
+        120px 85px 0 0 rgba(180, 220, 255, 0.3),
+        140px 20px 0 0 rgba(200, 230, 255, 0.35),
+        15px 45px 0 0 rgba(180, 220, 255, 0.25),
+        130px 60px 0 0 rgba(200, 230, 255, 0.3),
+        60px 15px 0 0 rgba(180, 220, 255, 0.3),
+        35px 80px 0 0 rgba(200, 230, 255, 0.3),
+        100px 5px 0 0 rgba(180, 220, 255, 0.35),
+        25px 40px 0 0 rgba(200, 230, 255, 0.25),
+        115px 75px 0 0 rgba(180, 220, 255, 0.3),
+        50px 50px 0 0 rgba(200, 230, 255, 0.25),
+        90px 100px 0 0 rgba(180, 220, 255, 0.25);
+    animation: skin-negro-brillante-stars 3.5s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-negro-brillante::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(200, 230, 255, 0.08), transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+    opacity: 0;
+    transition: none;
+}
+
+body.rpg-theme .gasto-item.skin-negro-brillante:hover {
+    border-color: rgba(180, 210, 255, 0.35);
+    animation: skin-negro-brillante-glow 2.5s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-negro-brillante:hover::before {
+    color: rgba(200, 230, 255, 0.5);
+    transition: color 0.3s ease;
+}
+
+body.rpg-theme .gasto-item.skin-negro-brillante:hover::after {
+    left: 200%;
+    opacity: 1;
+    transition: left 0.9s ease-in-out, opacity 0.2s ease-in;
+}
+
+body.rpg-theme .gasto-item.skin-negro-brillante .gasto-categoria {
+    color: #9098b0;
+}
+
+body.rpg-theme .gasto-item.skin-negro-brillante .gasto-descripcion {
+    color: rgba(150, 180, 220, 0.45);
+}
+
+body.rpg-theme .gasto-item.skin-negro-brillante .gasto-fecha {
+    color: rgba(150, 180, 220, 0.25);
+}
+
+body.rpg-theme .gasto-item.skin-negro-brillante .gasto-icono {
+    border: 1px solid rgba(150, 180, 220, 0.1);
+    background: rgba(150, 180, 220, 0.02);
+}
+
+body.rpg-theme .gasto-item.skin-negro-brillante .monto-gasto {
+    color: #ff4466;
+}
+
+body.rpg-theme .gasto-item.skin-negro-brillante .monto-ingreso {
+    color: #33ff99;
+}
+
+/* --- SKIN HACKER (Matrix Green / CRT) --- */
+@keyframes skin-hacker-scan {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+}
+
+@keyframes skin-hacker-glow {
+    0%, 100% { text-shadow: 0 0 4px rgba(0, 255, 68, 0.3); }
+    50% { text-shadow: 0 0 12px rgba(0, 255, 68, 0.8), 0 0 24px rgba(0, 255, 68, 0.2); }
+}
+
+.gasto-item.skin-hacker {
+    position: relative;
+    border-color: #00aa33;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 255, 68, 0.015) 2px,
+            rgba(0, 255, 68, 0.015) 4px
+        ),
+        linear-gradient(135deg, rgba(0, 255, 68, 0.03), rgba(0, 80, 20, 0.04));
+    box-shadow: 0 0 6px rgba(0, 255, 68, 0.1), inset 0 0 0 1px rgba(0, 255, 68, 0.04);
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+}
+
+.gasto-item.skin-hacker::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 8px,
+        rgba(0, 255, 68, 0.02) 8px,
+        rgba(0, 255, 68, 0.02) 9px
+    );
+    pointer-events: none;
+}
+
+.gasto-item.skin-hacker::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 68, 0.15), transparent);
+    pointer-events: none;
+    animation: skin-hacker-scan 4s linear infinite;
+    opacity: 0;
+}
+
+.gasto-item.skin-hacker:hover {
+    border-color: #00ff55;
+    box-shadow: 0 0 14px rgba(0, 255, 68, 0.25), 0 0 30px rgba(0, 255, 68, 0.08);
+}
+
+.gasto-item.skin-hacker:hover::after {
+    opacity: 1;
+}
+
+.gasto-item.skin-hacker .gasto-categoria {
+    color: #00cc44;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    animation: skin-hacker-glow 2s ease-in-out infinite;
+}
+
+.gasto-item.skin-hacker .gasto-descripcion { color: rgba(0, 200, 60, 0.55); font-family: 'Courier New', monospace; }
+.gasto-item.skin-hacker .gasto-fecha { color: rgba(0, 200, 60, 0.35); font-family: 'Courier New', monospace; font-size: 0.7rem; }
+
+.gasto-item.skin-hacker .gasto-icono {
+    border: 1px solid rgba(0, 255, 68, 0.2);
+    background: rgba(0, 255, 68, 0.04);
+}
+
+.gasto-item.skin-hacker .monto-gasto { color: #cc0000; font-weight: 700; }
+.gasto-item.skin-hacker .monto-ingreso { color: #00cc44; font-weight: 700; }
+
+body.rpg-theme .gasto-item.skin-hacker {
+    position: relative;
+    border-color: #00ff55;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 255, 85, 0.025) 2px,
+            rgba(0, 255, 85, 0.025) 4px
+        ),
+        linear-gradient(135deg, rgba(0, 255, 85, 0.06), rgba(0, 60, 15, 0.08));
+    box-shadow: 0 0 10px rgba(0, 255, 85, 0.15), inset 0 0 0 1px rgba(0, 255, 85, 0.04);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-hacker::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 8px,
+        rgba(0, 255, 85, 0.03) 8px,
+        rgba(0, 255, 85, 0.03) 9px
+    );
+    pointer-events: none;
+}
+
+body.rpg-theme .gasto-item.skin-hacker::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 85, 0.2), transparent);
+    pointer-events: none;
+    animation: skin-hacker-scan 4s linear infinite;
+    opacity: 0;
+}
+
+body.rpg-theme .gasto-item.skin-hacker:hover {
+    border-color: #33ff77;
+    box-shadow: 0 0 18px rgba(0, 255, 85, 0.3), 0 0 40px rgba(0, 255, 85, 0.1);
+}
+
+body.rpg-theme .gasto-item.skin-hacker:hover::after {
+    opacity: 1;
+}
+
+body.rpg-theme .gasto-item.skin-hacker .gasto-categoria { color: #00ff55; font-family: 'Courier New', monospace; letter-spacing: 2px; animation: skin-hacker-glow 2s ease-in-out infinite; }
+body.rpg-theme .gasto-item.skin-hacker .gasto-descripcion { color: rgba(0, 255, 85, 0.45); font-family: 'Courier New', monospace; }
+body.rpg-theme .gasto-item.skin-hacker .gasto-icono {
+    border: 1px solid rgba(0, 255, 85, 0.15);
+    background: rgba(0, 255, 85, 0.03);
+}
+
+body.rpg-theme .gasto-item.skin-hacker .monto-gasto { color: #ff4466; }
+body.rpg-theme .gasto-item.skin-hacker .monto-ingreso { color: #33ff99; }
+
+/* --- SKIN METAL (Brushed Steel / Mechanical) --- */
+.gasto-item.skin-metal {
+    position: relative;
+    border-color: #a0a8b8;
+    background:
+        repeating-linear-gradient(
+            70deg,
+            transparent,
+            transparent 1px,
+            rgba(160, 170, 190, 0.04) 1px,
+            rgba(160, 170, 190, 0.04) 3px
+        ),
+        linear-gradient(155deg, rgba(200, 210, 230, 0.08) 0%, rgba(160, 168, 184, 0.03) 40%, rgba(140, 150, 170, 0.05) 70%, rgba(180, 190, 210, 0.02) 100%);
+    box-shadow:
+        0 2px 3px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+.gasto-item.skin-metal::before {
+    content: "";
+    position: absolute;
+    top: 0; left: -30%;
+    width: 30%; height: 100%;
+    background: linear-gradient(110deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+    transition: left 0.6s ease;
+}
+
+.gasto-item.skin-metal::after {
+    content: "";
+    position: absolute;
+    width: 4px; height: 4px;
+    bottom: 6px; right: 6px;
+    box-shadow:
+        -4px -4px 0 0 rgba(100, 100, 120, 0.3),
+        0 -4px 0 0 rgba(100, 100, 120, 0.3),
+        -4px 0 0 0 rgba(100, 100, 120, 0.3);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.gasto-item.skin-metal:hover {
+    border-color: #c0c8d8;
+    box-shadow:
+        0 4px 12px rgba(160, 168, 184, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.04);
+    transform: translateY(-1px);
+}
+
+.gasto-item.skin-metal:hover::before {
+    left: 100%;
+}
+
+.gasto-item.skin-metal .gasto-categoria { color: #7a8290; font-weight: 500; letter-spacing: 1px; }
+.gasto-item.skin-metal .gasto-descripcion { color: rgba(138, 146, 160, 0.55); }
+.gasto-item.skin-metal .gasto-fecha { color: rgba(138, 146, 160, 0.35); }
+
+.gasto-item.skin-metal .gasto-icono {
+    border: 1px solid rgba(160, 168, 184, 0.2);
+    background: linear-gradient(135deg, rgba(200, 210, 230, 0.1), rgba(160, 168, 184, 0.04));
+}
+
+.gasto-item.skin-metal .monto-gasto { color: #c0392b; font-weight: 700; }
+.gasto-item.skin-metal .monto-ingreso { color: #27ae60; font-weight: 700; }
+
+body.rpg-theme .gasto-item.skin-metal {
+    position: relative;
+    border-color: #606878;
+    background:
+        repeating-linear-gradient(
+            70deg,
+            transparent,
+            transparent 1px,
+            rgba(100, 120, 150, 0.06) 1px,
+            rgba(100, 120, 150, 0.06) 3px
+        ),
+        linear-gradient(155deg, rgba(140, 160, 190, 0.1) 0%, rgba(100, 120, 150, 0.05) 40%, rgba(80, 100, 130, 0.06) 70%, rgba(120, 140, 170, 0.04) 100%);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 0 6px rgba(100, 120, 150, 0.06);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-metal::before {
+    content: "";
+    position: absolute;
+    top: 0; left: -30%;
+    width: 30%; height: 100%;
+    background: linear-gradient(110deg, transparent, rgba(180, 200, 230, 0.08), transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+    transition: left 0.6s ease;
+}
+
+body.rpg-theme .gasto-item.skin-metal::after {
+    content: "";
+    position: absolute;
+    width: 4px; height: 4px;
+    bottom: 6px; right: 6px;
+    box-shadow:
+        -4px -4px 0 0 rgba(100, 120, 160, 0.4),
+        0 -4px 0 0 rgba(100, 120, 160, 0.4),
+        -4px 0 0 0 rgba(100, 120, 160, 0.4);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+body.rpg-theme .gasto-item.skin-metal:hover {
+    border-color: #8890a0;
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 0 12px rgba(100, 120, 150, 0.15);
+    transform: translateY(-1px);
+}
+
+body.rpg-theme .gasto-item.skin-metal:hover::before {
+    left: 100%;
+}
+
+body.rpg-theme .gasto-item.skin-metal .gasto-categoria { color: #8890a8; letter-spacing: 1px; }
+body.rpg-theme .gasto-item.skin-metal .gasto-descripcion { color: rgba(120, 140, 170, 0.4); }
+body.rpg-theme .gasto-item.skin-metal .gasto-icono {
+    border: 1px solid rgba(100, 120, 150, 0.15);
+    background: linear-gradient(135deg, rgba(100, 120, 150, 0.08), rgba(80, 100, 130, 0.04));
+}
+
+body.rpg-theme .gasto-item.skin-metal .monto-gasto { color: #ff4466; }
+body.rpg-theme .gasto-item.skin-metal .monto-ingreso { color: #33ff99; }
+
+/* --- SKIN HIELO (Ice Crystal / Frosted Glass) --- */
+@keyframes skin-hielo-glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(136, 204, 255, 0.2), 0 0 16px rgba(136, 204, 255, 0.05); }
+    50% { box-shadow: 0 0 16px rgba(136, 204, 255, 0.4), 0 0 32px rgba(136, 204, 255, 0.12), 0 0 48px rgba(136, 204, 255, 0.04); }
+}
+
+.gasto-item.skin-hielo {
+    position: relative;
+    border-color: rgba(136, 204, 255, 0.5);
+    background:
+        linear-gradient(135deg, rgba(136, 204, 255, 0.06) 0%, transparent 30%),
+        linear-gradient(225deg, rgba(100, 200, 255, 0.04) 0%, transparent 30%),
+        linear-gradient(45deg, rgba(180, 220, 255, 0.03) 0%, transparent 30%),
+        linear-gradient(315deg, rgba(136, 204, 255, 0.05) 0%, transparent 30%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(240, 248, 255, 0.3) 100%);
+    backdrop-filter: blur(1px);
+    box-shadow: 0 0 8px rgba(136, 204, 255, 0.08), inset 0 0 0 1px rgba(136, 204, 255, 0.08);
+    overflow: hidden;
+}
+
+.gasto-item.skin-hielo::before {
+    content: "\2726";
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 0.7rem;
+    color: rgba(136, 204, 255, 0.2);
+    pointer-events: none;
+}
+
+.gasto-item.skin-hielo:hover {
+    border-color: #aaddff;
+    animation: skin-hielo-glow 2.5s ease-in-out infinite;
+}
+
+.gasto-item.skin-hielo:hover::before {
+    color: rgba(136, 204, 255, 0.5);
+}
+
+.gasto-item.skin-hielo .gasto-categoria { color: #66aadd; font-weight: 500; }
+.gasto-item.skin-hielo .gasto-descripcion { color: rgba(100, 180, 230, 0.5); }
+.gasto-item.skin-hielo .gasto-fecha { color: rgba(100, 180, 230, 0.35); }
+
+.gasto-item.skin-hielo .gasto-icono {
+    border: 1px solid rgba(136, 204, 255, 0.2);
+    background: rgba(136, 204, 255, 0.06);
+}
+
+.gasto-item.skin-hielo .monto-gasto { color: #c0392b; }
+.gasto-item.skin-hielo .monto-ingreso { color: #27ae60; }
+
+body.rpg-theme .gasto-item.skin-hielo {
+    position: relative;
+    border-color: rgba(80, 180, 255, 0.4);
+    background:
+        linear-gradient(135deg, rgba(60, 180, 255, 0.08) 0%, transparent 30%),
+        linear-gradient(225deg, rgba(40, 160, 255, 0.06) 0%, transparent 30%),
+        linear-gradient(45deg, rgba(100, 200, 255, 0.04) 0%, transparent 30%),
+        linear-gradient(315deg, rgba(60, 180, 255, 0.07) 0%, transparent 30%),
+        linear-gradient(180deg, rgba(10, 30, 60, 0.5) 0%, rgba(5, 15, 40, 0.6) 100%);
+    box-shadow: 0 0 10px rgba(60, 180, 255, 0.1), inset 0 0 0 1px rgba(60, 180, 255, 0.04);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-hielo::before {
+    content: "\2726";
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 0.7rem;
+    color: rgba(80, 200, 255, 0.2);
+    pointer-events: none;
+}
+
+body.rpg-theme .gasto-item.skin-hielo:hover {
+    border-color: #77ccff;
+    animation: skin-hielo-glow 2.5s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-hielo:hover::before {
+    color: rgba(80, 200, 255, 0.5);
+}
+
+body.rpg-theme .gasto-item.skin-hielo .gasto-categoria { color: #55bbff; font-weight: 500; }
+body.rpg-theme .gasto-item.skin-hielo .gasto-descripcion { color: rgba(80, 180, 255, 0.4); }
+body.rpg-theme .gasto-item.skin-hielo .gasto-icono {
+    border: 1px solid rgba(60, 180, 255, 0.15);
+    background: rgba(60, 180, 255, 0.04);
+}
+
+body.rpg-theme .gasto-item.skin-hielo .monto-gasto { color: #ff4466; }
+body.rpg-theme .gasto-item.skin-hielo .monto-ingreso { color: #33ff99; }
+
+/* --- SKIN FANTASMA (Ghostly / Ethereal Mist) --- */
+@keyframes skin-fantasma-mist {
+    0%   { background-position: 0% 50%; opacity: 0.55; }
+    50%  { background-position: 100% 50%; opacity: 0.8; }
+    100% { background-position: 0% 50%; opacity: 0.55; }
+}
+
+@keyframes skin-fantasma-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+.gasto-item.skin-fantasma {
+    position: relative;
+    border-color: rgba(180, 180, 200, 0.25);
+    background:
+        linear-gradient(135deg, rgba(200, 200, 230, 0.04), rgba(180, 180, 220, 0.02));
+    box-shadow: 0 0 10px rgba(180, 180, 200, 0.04);
+    opacity: 0.7;
+    transition: opacity 0.5s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    overflow: hidden;
+}
+
+.gasto-item.skin-fantasma::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 40% at 50% 20%, rgba(200, 200, 240, 0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 30% at 30% 80%, rgba(180, 180, 230, 0.06) 0%, transparent 70%),
+                radial-gradient(ellipse 70% 35% at 70% 60%, rgba(190, 190, 240, 0.05) 0%, transparent 70%);
+    background-size: 200% 200%;
+    animation: skin-fantasma-mist 8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.gasto-item.skin-fantasma::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(200, 200, 240, 0.04), transparent);
+    background-size: 200% 100%;
+    animation: skin-fantasma-mist 6s ease-in-out infinite reverse;
+    pointer-events: none;
+}
+
+.gasto-item.skin-fantasma:hover {
+    border-color: rgba(200, 200, 230, 0.5);
+    box-shadow: 0 0 20px rgba(180, 180, 200, 0.15), 0 0 40px rgba(180, 180, 200, 0.05);
+    opacity: 0.9;
+}
+
+.gasto-item.skin-fantasma .gasto-categoria { color: rgba(140, 140, 170, 0.7); font-weight: 300; letter-spacing: 1px; }
+.gasto-item.skin-fantasma .gasto-descripcion { color: rgba(140, 140, 170, 0.4); }
+.gasto-item.skin-fantasma .gasto-fecha { color: rgba(140, 140, 170, 0.3); }
+
+.gasto-item.skin-fantasma .gasto-icono {
+    border: 1px solid rgba(180, 180, 200, 0.1);
+    background: rgba(200, 200, 220, 0.03);
+}
+
+.gasto-item.skin-fantasma .monto-gasto { color: rgba(192, 57, 43, 0.5); }
+.gasto-item.skin-fantasma .monto-ingreso { color: rgba(39, 174, 96, 0.5); }
+
+body.rpg-theme .gasto-item.skin-fantasma {
+    position: relative;
+    border-color: rgba(150, 150, 200, 0.15);
+    background:
+        linear-gradient(135deg, rgba(120, 120, 180, 0.05), rgba(100, 100, 160, 0.03));
+    box-shadow: 0 0 12px rgba(150, 150, 200, 0.05);
+    opacity: 0.65;
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-fantasma::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 40% at 50% 20%, rgba(160, 140, 220, 0.1) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 30% at 30% 80%, rgba(140, 120, 200, 0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 70% 35% at 70% 60%, rgba(150, 130, 210, 0.06) 0%, transparent 70%);
+    background-size: 200% 200%;
+    animation: skin-fantasma-mist 8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+body.rpg-theme .gasto-item.skin-fantasma::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(160, 140, 220, 0.06), transparent);
+    background-size: 200% 100%;
+    animation: skin-fantasma-mist 6s ease-in-out infinite reverse;
+    pointer-events: none;
+}
+
+body.rpg-theme .gasto-item.skin-fantasma:hover {
+    border-color: rgba(180, 180, 220, 0.4);
+    box-shadow: 0 0 25px rgba(150, 150, 200, 0.2), 0 0 50px rgba(150, 150, 200, 0.06);
+    opacity: 0.85;
+}
+
+body.rpg-theme .gasto-item.skin-fantasma .gasto-categoria { color: rgba(160, 160, 210, 0.6); font-weight: 300; letter-spacing: 1px; }
+body.rpg-theme .gasto-item.skin-fantasma .gasto-descripcion { color: rgba(160, 160, 210, 0.35); }
+body.rpg-theme .gasto-item.skin-fantasma .gasto-icono {
+    border: 1px solid rgba(150, 150, 200, 0.08);
+    background: rgba(120, 120, 160, 0.03);
+}
+
+body.rpg-theme .gasto-item.skin-fantasma .monto-gasto { color: rgba(255, 68, 102, 0.45); font-weight: 300; }
+body.rpg-theme .gasto-item.skin-fantasma .monto-ingreso { color: rgba(51, 255, 153, 0.45); font-weight: 300; }
+
+/* --- SKIN TIERRA (Earthy / Foliage) --- */
+@keyframes skin-tierra-rustle {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(1px); }
+}
+
+.gasto-item.skin-tierra {
+    position: relative;
+    border-color: #7a9a4a;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 6px,
+            rgba(122, 154, 74, 0.02) 6px,
+            rgba(122, 154, 74, 0.02) 8px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 8px,
+            rgba(90, 120, 50, 0.015) 8px,
+            rgba(90, 120, 50, 0.015) 10px
+        ),
+        linear-gradient(135deg, rgba(122, 154, 74, 0.04), rgba(160, 130, 80, 0.03));
+    box-shadow:
+        0 1px 3px rgba(122, 154, 74, 0.06),
+        inset 0 0 0 1px rgba(122, 154, 74, 0.04);
+    overflow: hidden;
+}
+
+.gasto-item.skin-tierra::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: repeating-linear-gradient(
+        180deg,
+        #7a9a4a,
+        #7a9a4a 3px,
+        transparent 3px,
+        transparent 6px,
+        #6a8a3a 6px,
+        #6a8a3a 9px,
+        transparent 9px,
+        transparent 12px
+    );
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.gasto-item.skin-tierra:hover {
+    border-color: #8aaa5a;
+    box-shadow: 0 0 12px rgba(122, 154, 74, 0.2), inset 0 0 0 1px rgba(122, 154, 74, 0.06);
+    animation: skin-tierra-rustle 3s ease-in-out infinite;
+}
+
+.gasto-item.skin-tierra .gasto-categoria { color: #6a8a3a; font-weight: 600; }
+.gasto-item.skin-tierra .gasto-descripcion { color: rgba(106, 138, 58, 0.55); }
+.gasto-item.skin-tierra .gasto-fecha { color: rgba(106, 138, 58, 0.35); }
+
+.gasto-item.skin-tierra .gasto-icono {
+    border: 1px solid rgba(122, 154, 74, 0.2);
+    background: rgba(122, 154, 74, 0.05);
+}
+
+.gasto-item.skin-tierra .monto-gasto { color: #c0392b; }
+.gasto-item.skin-tierra .monto-ingreso { color: #27ae60; }
+
+body.rpg-theme .gasto-item.skin-tierra {
+    position: relative;
+    border-color: #4a7a2a;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 6px,
+            rgba(80, 140, 40, 0.03) 6px,
+            rgba(80, 140, 40, 0.03) 8px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 8px,
+            rgba(60, 100, 30, 0.025) 8px,
+            rgba(60, 100, 30, 0.025) 10px
+        ),
+        linear-gradient(135deg, rgba(60, 120, 30, 0.08), rgba(100, 80, 40, 0.06));
+    box-shadow: 0 0 8px rgba(60, 120, 30, 0.1), inset 0 0 0 1px rgba(60, 120, 30, 0.04);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-tierra::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: repeating-linear-gradient(
+        180deg,
+        #4a7a2a,
+        #4a7a2a 3px,
+        transparent 3px,
+        transparent 6px,
+        #3a6a1a 6px,
+        #3a6a1a 9px,
+        transparent 9px,
+        transparent 12px
+    );
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+body.rpg-theme .gasto-item.skin-tierra:hover {
+    border-color: #6aaa3a;
+    box-shadow: 0 0 16px rgba(60, 120, 30, 0.25), inset 0 0 0 1px rgba(60, 120, 30, 0.06);
+}
+
+body.rpg-theme .gasto-item.skin-tierra .gasto-categoria { color: #5a9a2a; font-weight: 600; }
+body.rpg-theme .gasto-item.skin-tierra .gasto-descripcion { color: rgba(80, 140, 40, 0.4); }
+body.rpg-theme .gasto-item.skin-tierra .gasto-icono {
+    border: 1px solid rgba(60, 120, 30, 0.15);
+    background: rgba(60, 120, 30, 0.04);
+}
+
+body.rpg-theme .gasto-item.skin-tierra .monto-gasto { color: #ff4466; }
+body.rpg-theme .gasto-item.skin-tierra .monto-ingreso { color: #33ff99; }
+
+/* --- SKIN RGB (Animated Rainbow / Ultimate) --- */
+@keyframes skin-rgb-cycle {
+    0%   { border-color: #ff0044; box-shadow: 0 0 8px rgba(255, 0, 68, 0.2); color: #ff0044; }
+    25%  { border-color: #ff8800; box-shadow: 0 0 8px rgba(255, 136, 0, 0.2); color: #ff8800; }
+    50%  { border-color: #00ff44; box-shadow: 0 0 8px rgba(0, 255, 68, 0.2); color: #00ff44; }
+    75%  { border-color: #0066ff; box-shadow: 0 0 8px rgba(0, 102, 255, 0.2); color: #0066ff; }
+    100% { border-color: #ff0044; box-shadow: 0 0 8px rgba(255, 0, 68, 0.2); color: #ff0044; }
+}
+
+@keyframes skin-rgb-glow {
+    0%   { border-color: #ff0044; box-shadow: 0 0 18px rgba(255, 0, 68, 0.4), 0 0 36px rgba(255, 0, 68, 0.12); }
+    25%  { border-color: #ff8800; box-shadow: 0 0 18px rgba(255, 136, 0, 0.4), 0 0 36px rgba(255, 136, 0, 0.12); }
+    50%  { border-color: #00ff44; box-shadow: 0 0 18px rgba(0, 255, 68, 0.4), 0 0 36px rgba(0, 255, 68, 0.12); }
+    75%  { border-color: #0066ff; box-shadow: 0 0 18px rgba(0, 102, 255, 0.4), 0 0 36px rgba(0, 102, 255, 0.12); }
+    100% { border-color: #ff0044; box-shadow: 0 0 18px rgba(255, 0, 68, 0.4), 0 0 36px rgba(255, 0, 68, 0.12); }
+}
+
+@keyframes skin-rgb-star {
+    0%   { color: #ff0044; }
+    25%  { color: #ff8800; }
+    50%  { color: #00ff44; }
+    75%  { color: #0066ff; }
+    100% { color: #ff0044; }
+}
+
+@keyframes skin-rgb-shimmer {
+    0%   { left: -60%; opacity: 0; }
+    20%  { opacity: 0.8; }
+    80%  { opacity: 0.8; }
+    100% { left: 160%; opacity: 0; }
+}
+
+.gasto-item.skin-rgb {
+    position: relative;
+    background: linear-gradient(135deg, rgba(255, 0, 68, 0.03), rgba(255, 136, 0, 0.02), rgba(0, 255, 68, 0.03), rgba(0, 102, 255, 0.02));
+    animation: skin-rgb-cycle 5s linear infinite;
+    overflow: hidden;
+}
+
+.gasto-item.skin-rgb::before {
+    content: "\2726";
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 0.8rem;
+    animation: skin-rgb-star 5s linear infinite;
+    pointer-events: none;
+}
+
+.gasto-item.skin-rgb::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.25) 50%, transparent 70%);
+    transform: skewX(-25deg);
+    pointer-events: none;
+    animation: skin-rgb-shimmer 3s ease-in-out infinite;
+    animation-delay: 1s;
+}
+
+.gasto-item.skin-rgb:hover {
+    animation: skin-rgb-glow 5s linear infinite;
+    transform: scale(1.008);
+}
+
+.gasto-item.skin-rgb:hover::after {
+    animation: skin-rgb-shimmer 2s ease-in-out infinite;
+    animation-delay: 0s;
+}
+
+.gasto-item.skin-rgb .gasto-categoria {
+    font-weight: 700;
+    letter-spacing: 1px;
+    animation: skin-rgb-star 5s linear infinite;
+}
+
+.gasto-item.skin-rgb .gasto-descripcion { color: rgba(100, 100, 120, 0.55); }
+.gasto-item.skin-rgb .gasto-fecha { color: rgba(100, 100, 120, 0.35); }
+
+.gasto-item.skin-rgb .gasto-icono {
+    border: 1px solid rgba(100, 100, 120, 0.15);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.gasto-item.skin-rgb .monto-gasto { color: #c0392b; font-weight: 700; }
+.gasto-item.skin-rgb .monto-ingreso { color: #27ae60; font-weight: 700; }
+
+body.rpg-theme .gasto-item.skin-rgb {
+    position: relative;
+    background: linear-gradient(135deg, rgba(255, 0, 68, 0.06), rgba(255, 136, 0, 0.04), rgba(0, 255, 68, 0.06), rgba(0, 102, 255, 0.04));
+    animation: skin-rgb-cycle 5s linear infinite;
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-rgb::before {
+    content: "\2726";
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 0.8rem;
+    animation: skin-rgb-star 5s linear infinite;
+    pointer-events: none;
+}
+
+body.rpg-theme .gasto-item.skin-rgb::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.08) 50%, transparent 70%);
+    transform: skewX(-25deg);
+    pointer-events: none;
+    animation: skin-rgb-shimmer 3s ease-in-out infinite;
+    animation-delay: 1s;
+}
+
+body.rpg-theme .gasto-item.skin-rgb:hover {
+    animation: skin-rgb-glow 5s linear infinite;
+}
+
+body.rpg-theme .gasto-item.skin-rgb:hover::after {
+    animation: skin-rgb-shimmer 2s ease-in-out infinite;
+    animation-delay: 0s;
+}
+
+body.rpg-theme .gasto-item.skin-rgb .gasto-categoria {
+    font-weight: 700;
+    letter-spacing: 1px;
+    animation: skin-rgb-star 5s linear infinite;
+}
+
+body.rpg-theme .gasto-item.skin-rgb .gasto-descripcion { color: rgba(150, 150, 180, 0.4); }
+body.rpg-theme .gasto-item.skin-rgb .gasto-icono {
+    border: 1px solid rgba(150, 150, 180, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+body.rpg-theme .gasto-item.skin-rgb .monto-gasto { color: #ff4466; }
+body.rpg-theme .gasto-item.skin-rgb .monto-ingreso { color: #33ff99; }

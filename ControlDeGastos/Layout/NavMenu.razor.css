@@ -1,0 +1,141 @@
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    height: 5rem;
+    padding: 0 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.3px;
+}
+
+.sidebar-brand:hover {
+    color: #fff;
+    text-decoration: none;
+}
+
+.sidebar-toggle {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.3rem;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-toggle:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.sidebar-toggle-desktop {
+    display: none;
+    font-size: 0.8rem;
+}
+
+.sidebar-toggle-mobile {
+    display: inline-flex;
+    font-size: 1.1rem;
+}
+
+.sidebar-nav {
+    overflow-y: auto;
+    height: calc(100vh - 4.5rem);
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.nav-item {
+    padding: 0;
+}
+
+.nav-link {
+    border-radius: 16px;
+    height: 4.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 0 1.25rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.15s ease, transform 0.15s ease;
+    color: rgba(255, 255, 255, 0.65);
+    position: relative;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    text-decoration: none;
+    transform: translateX(4px);
+}
+
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-weight: 700;
+}
+
+.nav-link.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 20%;
+    height: 60%;
+    width: 4px;
+    border-radius: 3px;
+    background: #60a5fa;
+}
+
+.nav-icon {
+    font-size: 2rem;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 2.5rem;
+    text-align: center;
+}
+
+.nav-texto {
+    font-size: 1.35rem;
+    line-height: 1;
+    font-weight: 500;
+}
+
+@media (max-width: 640.98px) {
+    .sidebar-toggle-desktop {
+        display: none !important;
+    }
+    .sidebar-toggle-mobile {
+        display: inline-flex;
+        font-size: 1.1rem;
+    }
+}
+
+@media (min-width: 641px) {
+    .sidebar-toggle-desktop {
+        display: inline-flex;
+    }
+    .sidebar-toggle-mobile {
+        display: none;
+    }
+}

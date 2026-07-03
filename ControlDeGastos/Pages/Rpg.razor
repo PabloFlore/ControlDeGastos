@@ -1,0 +1,467 @@
+@page "/game"
+@inject IGamificacionService GamificacionService
+@inject IUsuarioService UsuarioService
+@inject ILicenciaService LicenciaService
+@inject ILogger<Rpg> Logger
+@inject NavigationManager NavigationManager
+@inject ITiendaService TiendaService
+@inject IToastService ToastService
+
+<PageTitle>RPG - Control de Gastos</PageTitle>
+
+<div class="rpg-page">
+    @if (cargando)
+    {
+        <LoadingSpinner Message="Cargando estadísticas..." />
+    }
+    else if (_modoNoActivado)
+    {
+        <div class="rpg-hero">
+            <div class="hero-text" style="text-align:center; width:100%;">
+                <h1 class="rpg-title">🎮 Modo gamificación</h1>
+                <p class="rpg-sub" style="margin-bottom:1.5rem;">
+                    El modo gamificación no está activado. Actívalo para ver tu progreso RPG,
+                    experiencia, logros y más.
+                </p>
+                @if (!string.IsNullOrEmpty(_errorActivacion))
+                {
+                    <p class="error-message" style="color:#ff3355; margin-bottom:1rem;">@_errorActivacion</p>
+                }
+                <button class="btn btn-primary" @onclick="ActivarModoAsync" disabled="@_activando">
+                    @(_activando ? "Activando..." : "Activar modo gamificación")
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="rpg-hero">
+            <div class="level-badge">
+                <span class="level-number">@(progreso?.Nivel ?? 1)</span>
+                <span class="level-label">NIVEL</span>
+            </div>
+            <div class="hero-text">
+                <h1 class="rpg-title">Estadísticas RPG</h1>
+                <p class="rpg-sub">@ObtenerTituloNivel()</p>
+                @if (tituloActivo is not null)
+                {
+                    <p class="rpg-sub-titulo
+                        @(tituloActivo.Id == "shop_son_of_god" ? "rpg-sub-titulo-solar"
+                            : tituloActivo.Id == "shop_aura_negativa" || tituloActivo.Id == "shop_deudor_aura" ? "rpg-sub-titulo-rojo"
+                            : "rpg-sub-titulo-blanco")">@tituloActivo.Icono @tituloActivo.Nombre</p>
+                }
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-icon">🔥</span>
+                <span class="stat-value">@(progreso?.GastosConsecutivos ?? 0)</span>
+                <span class="stat-label">Racha</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">💀</span>
+                <span class="stat-value">@(progreso?.HpActual ?? 0) / @(progreso?.HpMaximo ?? 100)</span>
+                <span class="stat-label">HP</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">✨</span>
+                <span class="stat-value">@(progreso?.ExpActual ?? 0) / @(progreso?.ExpRequerida ?? 100)</span>
+                <span class="stat-label">EXP</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">🏅</span>
+                <span class="stat-value">@desbloqueados.Count / @logros.Count</span>
+                <span class="stat-label">Logros</span>
+            </div>
+        </div>
+
+        <div class="coins-section">
+            <div class="coin-card">
+                <span class="coin-icon">🪙</span>
+                <span class="coin-value">@(progreso?.Monedas ?? 0)</span>
+                <span class="coin-label">Monedas</span>
+            </div>
+        </div>
+
+        <div class="shop-access">
+            <button class="shop-btn" @onclick="IrATienda">
+                🏪 Abrir Tienda
+            </button>
+        </div>
+
+        <div class="gauge-card">
+            <h2 class="card-title">Progreso al siguiente nivel</h2>
+            <div class="gauge-container">
+                <svg class="exp-gauge" viewBox="0 0 140 140">
+                    <circle class="gauge-bg" cx="70" cy="70" r="58" />
+                    <circle class="gauge-fill" cx="70" cy="70" r="58"
+                            stroke-dasharray="@Circunferencia"
+                            stroke-dashoffset="@dashOffset"
+                            stroke="@colorGauge" />
+                    <text x="70" y="58" class="gauge-pct">@porcentajeExp%</text>
+                    <text x="70" y="80" class="gauge-label">EXP</text>
+                </svg>
+                <p class="gauge-sub">@(progreso?.ExpActual ?? 0) / @(progreso?.ExpRequerida ?? 100) XP para nivel @((progreso?.Nivel ?? 0) + 1)</p>
+            </div>
+        </div>
+
+        @if (proximoHito is not null)
+        {
+            <div class="next-milestone-card">
+                <h2 class="card-title">🎯 Próximo logro</h2>
+                <div class="next-milestone-content">
+                    <span class="next-milestone-icon">@proximoHito.Icono</span>
+                    <div class="next-milestone-info">
+                        <span class="next-milestone-name">@proximoHito.Nombre</span>
+                        <span class="next-milestone-desc">@proximoHito.Descripcion</span>
+                        @{
+                            var progHito = progresoLogros.GetValueOrDefault(proximoHito.Id);
+                            var pctHito = progHito.requerido > 0 ? Math.Min(100, (int)(progHito.actual * 100.0 / progHito.requerido)) : 0;
+                        }
+                        <div class="next-milestone-bar">
+                            <div class="next-milestone-bar-fill" style="width: @pctHito%"></div>
+                        </div>
+                        <span class="next-milestone-progress">@progHito.actual / @progHito.requerido</span>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="filter-tabs">
+            <button class="filter-tab @ObtenerClaseFiltro(null)" @onclick="FiltrarTodos">Todos</button>
+            <button class="filter-tab @ObtenerClaseFiltro("Gastos")" @onclick="FiltrarGastos">💰 Gastos</button>
+            <button class="filter-tab @ObtenerClaseFiltro("Rachas")" @onclick="FiltrarRachas">🔥 Rachas</button>
+            <button class="filter-tab @ObtenerClaseFiltro("Nivel")" @onclick="FiltrarNivel">⭐ Nivel</button>
+            <button class="filter-tab @ObtenerClaseFiltro("Ingresos")" @onclick="FiltrarIngresos">📈 Ingresos</button>
+            <button class="filter-tab @ObtenerClaseFiltro("Especiales")" @onclick="FiltrarEspeciales">🎨 Especiales</button>
+            <button class="filter-tab @ObtenerClaseFiltro("Presupuesto")" @onclick="FiltrarPresupuesto">📋 Presupuesto</button>
+        </div>
+
+        <div class="achievements-card">
+            <div class="card-title-row">
+                <h2 class="card-title">Logros (@desbloqueados.Count / @logros.Count)</h2>
+                <button class="btn-verify" @onclick="VerificarLogrosManualAsync" title="Verificar logros pendientes">🔄</button>
+            </div>
+            @if (!logrosFiltrados.Any())
+            {
+                <p class="ach-empty">No hay logros en esta categoría</p>
+            }
+            @foreach (var grupo in logrosAgrupados)
+            {
+                <div class="ach-group">
+                    <h3 class="ach-group-title">@ObtenerIconoCategoria(grupo.Key) @grupo.Key</h3>
+                    @foreach (var logro in grupo)
+                    {
+                        var unlocked = desbloqueados.Any(l => l.Id == logro.Id);
+                        var prog = progresoLogros.GetValueOrDefault(logro.Id);
+
+                        <div @key="logro.Id" class="achievement-item @(unlocked ? "ach-unlocked" : "ach-locked")">
+                            <span class="ach-icon">@logro.Icono</span>
+                            <div class="ach-info">
+                                <div class="ach-header">
+                                    <span class="ach-name">@logro.Nombre</span>
+                                    <span class="ach-status">@(unlocked ? "✅" : "🔒")</span>
+                                </div>
+                                <p class="ach-desc">@logro.Descripcion</p>
+                                @if (!unlocked)
+                                {
+                                    var pctBar = prog.requerido > 0 ? Math.Min(100, (int)(prog.actual * 100.0 / prog.requerido)) : 0;
+                                    <div class="ach-bar">
+                                        <div class="ach-bar-fill" style="width: @pctBar%"></div>
+                                    </div>
+                                    <span class="ach-progress">@prog.actual / @prog.requerido</span>
+                                }
+                                @if (logro.RecompensaExp > 0)
+                                {
+                                    <span class="ach-exp">+@logro.RecompensaExp EXP @(unlocked ? "obtenidos" : "al desbloquear")</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="titulos-card">
+            <h2 class="card-title">🎖️ Títulos (@titulosDesbloqueados.Count / @titulos.Count)</h2>
+            <div class="titulos-grid">
+                @foreach (var titulo in titulosOrdenados)
+                {
+                    var unlocked = titulosDesbloqueados.Any(t => t.Id == titulo.Id);
+                    var isActive = tituloActivo?.Id == titulo.Id;
+                    <div @key="titulo.Id" class="titulo-item @(unlocked ? "titulo-desbloqueado" : "titulo-bloqueado") @(isActive ? "titulo-equipado" : "") @(titulo.Id == "shop_son_of_god" ? "titulo-solar" : "")"
+                         @onclick="() => EquiparTituloAsync(titulo.Id)" title="@titulo.Descripcion">
+                        <span class="titulo-icono">@titulo.Icono</span>
+                        <span class="titulo-nombre">@titulo.Nombre</span>
+                        @if (isActive)
+                        {
+                            <span class="titulo-check">✅</span>
+                        }
+                        @if (!unlocked)
+                        {
+                            <span class="titulo-candado">🔒</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private ProgresoRPG? progreso;
+    private List<Logro> logros = new();
+    private List<Logro> desbloqueados = new();
+    private Dictionary<Guid, (int actual, int requerido)> progresoLogros = new();
+    private List<TituloCosmetico> titulos = new();
+    private List<TituloCosmetico> titulosDesbloqueados = new();
+    private TituloCosmetico? tituloActivo;
+    private string? filtroCategoria;
+    private bool cargando = true;
+    private bool _modoNoActivado;
+    private bool _activando;
+    private string? _errorActivacion;
+
+    private static readonly double Circunferencia = 2 * Math.PI * 58;
+    private double dashOffset => Circunferencia * (1 - porcentajeExp / 100.0);
+    private int porcentajeExp => progreso?.ExpRequerida > 0
+        ? Math.Min(100, (int)(progreso.ExpActual * 100.0 / progreso.ExpRequerida))
+        : 0;
+
+    private string colorGauge => porcentajeExp switch
+    {
+        < 30 => "#ff3355",
+        < 70 => "#ff8c00",
+        < 100 => "#0071c1",
+        _ => "#00b894"
+    };
+
+    private List<Logro> logrosOrdenados => logros
+        .OrderBy(l => desbloqueados.Any(d => d.Id == l.Id) ? 0 : 1)
+        .ThenBy(l => l.Orden)
+        .ToList();
+
+    private List<TituloCosmetico> titulosOrdenados => titulos
+        .OrderBy(t => titulosDesbloqueados.Any(d => d.Id == t.Id) ? 0 : 1)
+        .ThenBy(t => t.Orden)
+        .ToList();
+
+    private IEnumerable<Logro> logrosFiltrados => filtroCategoria is null
+        ? logrosOrdenados
+        : logrosOrdenados.Where(l => ObtenerCategoriaLogro(l) == filtroCategoria);
+
+    private IEnumerable<IGrouping<string, Logro>> logrosAgrupados => logrosFiltrados
+        .GroupBy(l => ObtenerCategoriaLogro(l))
+        .OrderBy(g => g.Key);
+
+    private Logro? proximoHito => logros
+        .Where(l => !desbloqueados.Any(d => d.Id == l.Id))
+        .Select(l => new { Logro = l, Prog = progresoLogros.GetValueOrDefault(l.Id) })
+        .Where(x => x.Prog.requerido > 0)
+        .OrderByDescending(x => x.Prog.requerido > 0 ? (double)x.Prog.actual / x.Prog.requerido : 0)
+        .FirstOrDefault()?.Logro;
+
+    private string ObtenerClaseFiltro(string? cat)
+    {
+        var activo = cat == filtroCategoria || (cat is null && filtroCategoria is null);
+        return activo ? "filter-tab filter-active" : "filter-tab";
+    }
+
+    private void FiltrarTodos() => filtrarCategoria(null);
+    private void FiltrarGastos() => filtrarCategoria("Gastos");
+    private void FiltrarRachas() => filtrarCategoria("Rachas");
+    private void FiltrarNivel() => filtrarCategoria("Nivel");
+    private void FiltrarIngresos() => filtrarCategoria("Ingresos");
+    private void FiltrarEspeciales() => filtrarCategoria("Especiales");
+    private void FiltrarPresupuesto() => filtrarCategoria("Presupuesto");
+
+    private void filtrarCategoria(string? cat)
+    {
+        filtroCategoria = cat;
+        StateHasChanged();
+    }
+
+    private static string ObtenerCategoriaLogro(Logro logro) => logro.TipoCondicion switch
+    {
+        TipoCondicionLogro.GastosTotales => "Gastos",
+        TipoCondicionLogro.MontoTotalGastado => "Gastos",
+        TipoCondicionLogro.GastosConsecutivos => "Rachas",
+        TipoCondicionLogro.NivelAlcanzado => "Nivel",
+        TipoCondicionLogro.IngresosRegistrados => "Ingresos",
+        TipoCondicionLogro.CategoriasUsadas => "Especiales",
+        TipoCondicionLogro.PresupuestosCreados => "Presupuesto",
+        TipoCondicionLogro.PresupuestosCumplidos => "Presupuesto",
+        _ => "Otros"
+    };
+
+    private static string ObtenerIconoCategoria(string cat) => cat switch
+    {
+        "Gastos" => "💰",
+        "Rachas" => "🔥",
+        "Nivel" => "⭐",
+        "Ingresos" => "📈",
+        "Especiales" => "🎨",
+        "Presupuesto" => "📋",
+        _ => "📌"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var usuario = await UsuarioService.ObtenerUsuarioAsync();
+        if (usuario?.ModoGamificadoActivo == true)
+        {
+            _modoNoActivado = false;
+            await CargarDatosAsync();
+        }
+        else
+        {
+            _modoNoActivado = true;
+            cargando = false;
+        }
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            progreso = await GamificacionService.RecuperarHpDiarioAsync();
+            logros = await GamificacionService.ObtenerLogrosAsync();
+
+            var nivelAntes = progreso?.Nivel ?? 1;
+            var nuevosLogros = await GamificacionService.VerificarYDesbloquearLogrosAsync();
+            foreach (var logro in nuevosLogros)
+                ToastService.ShowSuccess($"🏅 ¡Logro desbloqueado: {logro.Nombre}!");
+
+            progreso = await GamificacionService.RecuperarHpDiarioAsync();
+            if (progreso!.Nivel > nivelAntes)
+                ToastService.ShowSuccess($"🎉 ¡Subiste al nivel {progreso.Nivel}!");
+
+            desbloqueados = await GamificacionService.ObtenerLogrosDesbloqueadosAsync();
+
+            var resultados = await Task.WhenAll(logros.Select(async logro =>
+            {
+                var prog = await GamificacionService.CalcularProgresoLogroAsync(logro);
+                return (logro.Id, prog);
+            }));
+            foreach (var (id, prog) in resultados)
+                progresoLogros[id] = prog;
+
+            var catalogo = await TiendaService.ObtenerCatalogoAsync();
+            var titulosTienda = catalogo
+                .Where(a => a.Categoria == CategoriaArticulo.TituloTienda)
+                .Select(a => new TituloCosmetico
+                {
+                    Id = a.TituloId!,
+                    Nombre = a.Nombre,
+                    Descripcion = a.Descripcion,
+                    Icono = a.Icono,
+                    Orden = a.Orden + 100
+                })
+                .ToList();
+
+            titulos = (await GamificacionService.ObtenerTitulosAsync())
+                .Concat(titulosTienda)
+                .ToList();
+
+            var achTitulos = await GamificacionService.ObtenerTitulosDesbloqueadosAsync();
+            var shopTitulos = titulosTienda
+                .Where(t => progreso!.IdsTitulosTienda.Contains(t.Id))
+                .ToList();
+            titulosDesbloqueados = achTitulos.Concat(shopTitulos).ToList();
+
+            tituloActivo = !string.IsNullOrEmpty(progreso?.TituloActivoId)
+                ? titulos.FirstOrDefault(t => t.Id == progreso.TituloActivoId)
+                : null;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al cargar datos RPG");
+        }
+
+        cargando = false;
+        StateHasChanged();
+    }
+
+    private string ObtenerTituloNivel()
+    {
+        if (progreso is null) return "";
+        return progreso.Nivel switch
+        {
+            1 => "Novato financiero",
+            2 => "Aprendiz del ahorro",
+            3 => "Administrador principiante",
+            4 => "Organizador de finanzas",
+            5 => "Estratega del presupuesto",
+            6 => "Inversor en formación",
+            7 => "Maestro de las finanzas",
+            8 => "Guardian del ahorro",
+            9 => "Economista en ascenso",
+            >= 10 and < 15 => "Experto financiero",
+            >= 15 and < 20 => "Leyenda del presupuesto",
+            >= 20 and < 25 => "Titán de las finanzas",
+            >= 25 => "Jefe de las finanzas 💎",
+            _ => ""
+        };
+    }
+
+    private async Task EquiparTituloAsync(string tituloId)
+    {
+        var titulo = titulos.FirstOrDefault(t => t.Id == tituloId);
+        if (titulo is null) return;
+
+        var unlocked = titulosDesbloqueados.Any(t => t.Id == tituloId);
+        if (!unlocked) return;
+
+        var mismoId = tituloActivo?.Id == tituloId;
+        var esShop = tituloId.StartsWith("shop_");
+
+        bool exito;
+        if (esShop && mismoId)
+            exito = await GamificacionService.EstablecerTituloActivoAsync(null);
+        else if (esShop)
+            exito = await TiendaService.EquiparTituloTiendaAsync(tituloId);
+        else
+            exito = await GamificacionService.EstablecerTituloActivoAsync(mismoId ? null : tituloId);
+
+        if (exito)
+        {
+            tituloActivo = mismoId ? null : titulo;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ActivarModoAsync()
+    {
+        _activando = true;
+        _errorActivacion = null;
+        StateHasChanged();
+
+        var licencia = await LicenciaService.ObtenerEstadoLicenciaAsync();
+        if (!licencia.Valida || !licencia.ModoGamificadoIncluido)
+        {
+            _errorActivacion = "Tu licencia no incluye el modo RPG. Activa una licencia compatible en la sección Licencia.";
+            _activando = false;
+            return;
+        }
+
+        await UsuarioService.CambiarModoGamificadoAsync(true);
+        _modoNoActivado = false;
+        cargando = true;
+        StateHasChanged();
+        await CargarDatosAsync();
+    }
+
+    private async Task VerificarLogrosManualAsync()
+    {
+        var nuevos = await GamificacionService.VerificarYDesbloquearLogrosAsync();
+        foreach (var logro in nuevos)
+            ToastService.ShowSuccess($"🏅 ¡Logro desbloqueado: {logro.Nombre}!");
+        await CargarDatosAsync();
+    }
+
+    private void IrATienda()
+    {
+        NavigationManager.NavigateTo("/shop");
+    }
+}

@@ -1,0 +1,16 @@
+<div class="empty-state">
+    <div class="empty-icon">@Icon</div>
+    <p class="empty-title">@Title</p>
+    @if (!string.IsNullOrEmpty(Subtitle))
+    {
+        <p class="empty-sub">@Subtitle</p>
+    }
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public string Icon { get; set; } = "📁";
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

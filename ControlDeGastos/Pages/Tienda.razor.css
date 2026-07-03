@@ -1,0 +1,586 @@
+.tienda-page {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 1rem 0;
+}
+
+.tienda-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.tienda-back {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.tienda-back:hover {
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+}
+
+.tienda-filtros {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+
+.filtro-btn {
+    padding: 0.35rem 0.7rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.filtro-btn:hover {
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+}
+
+.filtro-activo {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: #fff;
+}
+
+body.rpg-theme .filtro-btn {
+    border-color: var(--rpg-border);
+    background: var(--rpg-bg-secondary);
+    color: var(--rpg-text-secondary);
+}
+
+body.rpg-theme .filtro-btn:hover {
+    border-color: var(--rpg-accent-cyan);
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .filtro-activo {
+    background: var(--rpg-accent-cyan);
+    border-color: var(--rpg-accent-cyan);
+    color: #000;
+}
+
+.tienda-title {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.tienda-monedas {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.4rem 0.75rem;
+    flex-shrink: 0;
+}
+
+.monedas-icono {
+    font-size: 1.1rem;
+}
+
+.monedas-cantidad {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-gold, #f0b400);
+}
+
+.tienda-boost-activo {
+    margin-bottom: 0.75rem;
+}
+
+.boost-badge {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(0, 113, 193, 0.1));
+    border: 1px solid var(--accent-purple);
+    border-radius: var(--radius-md);
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent-purple);
+}
+
+.boost-timer {
+    font-family: monospace;
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.tienda-seccion {
+    margin-bottom: 1.5rem;
+}
+
+.seccion-titulo {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem;
+}
+
+.seccion-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.item-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.item-card:hover {
+    border-color: var(--accent-blue);
+}
+
+.item-activo {
+    border-color: var(--accent-green);
+    background: linear-gradient(135deg, rgba(0, 200, 83, 0.05), rgba(0, 200, 83, 0.01));
+}
+
+.item-poseido-card {
+    opacity: 0.65;
+}
+
+.item-solar {
+    border-color: #f5c842 !important;
+    background: linear-gradient(135deg, rgba(255, 220, 50, 0.12), rgba(255, 180, 30, 0.04)) !important;
+    box-shadow: 0 0 25px rgba(255, 200, 50, 0.35), 0 0 50px rgba(255, 200, 50, 0.1), inset 0 0 10px rgba(255, 200, 50, 0.05) !important;
+    animation: item-solar-glow 2s ease-in-out infinite;
+}
+
+.item-solar .item-icono {
+    filter: drop-shadow(0 0 8px #ffd700);
+}
+
+.item-solar .item-nombre {
+    color: #fff8e0 !important;
+    text-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+}
+
+@keyframes item-solar-glow {
+    0%, 100% { box-shadow: 0 0 25px rgba(255, 200, 50, 0.35), 0 0 50px rgba(255, 200, 50, 0.1), inset 0 0 10px rgba(255, 200, 50, 0.05); }
+    50% { box-shadow: 0 0 40px rgba(255, 200, 50, 0.55), 0 0 80px rgba(255, 200, 50, 0.2), inset 0 0 15px rgba(255, 200, 50, 0.1); }
+}
+
+body.rpg-theme .item-solar {
+    border-color: #ff9500 !important;
+    background: linear-gradient(135deg, rgba(255, 180, 0, 0.15), rgba(255, 120, 0, 0.05)) !important;
+    box-shadow: 0 0 30px rgba(255, 160, 0, 0.4), 0 0 60px rgba(255, 160, 0, 0.12), inset 0 0 12px rgba(255, 160, 0, 0.08) !important;
+}
+
+body.rpg-theme .item-solar .item-icono {
+    filter: drop-shadow(0 0 10px #ff8c00);
+}
+
+body.rpg-theme .item-solar .item-nombre {
+    color: #fff5d0 !important;
+    text-shadow: 0 0 8px rgba(255, 180, 0, 0.6);
+}
+
+.item-icono {
+    font-size: 1.8rem;
+    width: 44px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.item-nombre {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.item-desc {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-top: 0.05rem;
+}
+
+.item-precio {
+    margin-top: 0.3rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent-gold, #f0b400);
+}
+
+.item-accion {
+    flex-shrink: 0;
+}
+
+.btn-comprar {
+    background: linear-gradient(135deg, var(--accent-gold, #f0b400), var(--accent-orange, #ff8c00));
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.45rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #000;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn-comprar:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(240, 180, 0, 0.3);
+}
+
+.btn-comprar:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.btn-equipar {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.45rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn-equipar:hover:not(:disabled) {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.btn-equipar:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.btn-equipado {
+    background: rgba(0, 200, 83, 0.1);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+}
+
+.btn-equipado:hover:not(:disabled) {
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+}
+
+.item-poseido {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.item-otro-boost {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    white-space: nowrap;
+    background: rgba(128, 128, 128, 0.08);
+    border-radius: var(--radius-sm);
+    padding: 0.45rem 0.75rem;
+}
+
+body.rpg-theme .tienda-title {
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .item-card {
+    background: var(--rpg-bg-card);
+    border-color: var(--rpg-border);
+}
+
+body.rpg-theme .item-card:hover {
+    border-color: var(--rpg-accent-cyan);
+}
+
+body.rpg-theme .item-activo {
+    border-color: var(--rpg-accent-green);
+    background: linear-gradient(135deg, rgba(34, 255, 136, 0.08), rgba(34, 255, 136, 0.02));
+}
+
+body.rpg-theme .item-nombre {
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .item-desc {
+    color: var(--rpg-text-secondary);
+}
+
+body.rpg-theme .tienda-monedas {
+    background: var(--rpg-bg-card);
+    border-color: var(--rpg-border);
+}
+
+body.rpg-theme .monedas-cantidad {
+    color: var(--rpg-accent-gold, #ffd700);
+}
+
+body.rpg-theme .tienda-back {
+    border-color: var(--rpg-border);
+    color: var(--rpg-text-secondary);
+}
+
+body.rpg-theme .tienda-back:hover {
+    border-color: var(--rpg-accent-cyan);
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .seccion-titulo {
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .boost-badge {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(0, 240, 255, 0.08));
+    border-color: var(--rpg-accent-purple);
+    color: var(--rpg-accent-cyan);
+}
+
+body.rpg-theme .btn-comprar {
+    background: linear-gradient(135deg, var(--rpg-accent-gold, #ffd700), var(--rpg-accent-orange, #ff8c00));
+}
+
+body.rpg-theme .btn-equipar {
+    background: var(--rpg-bg-secondary);
+    border-color: var(--rpg-border);
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .btn-equipar:hover:not(:disabled) {
+    border-color: var(--rpg-accent-cyan);
+    color: var(--rpg-accent-cyan);
+}
+
+body.rpg-theme .btn-equipado {
+    background: rgba(34, 255, 136, 0.1);
+    border-color: var(--rpg-accent-green);
+    color: var(--rpg-accent-green);
+}
+
+body.rpg-theme .item-otro-boost {
+    color: var(--rpg-text-secondary);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--rpg-border);
+}
+
+/* Caja Sorpresa Modal */
+.caja-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.caja-modal {
+    background: var(--bg-card);
+    border: 2px solid var(--accent-gold, #f0b400);
+    border-radius: var(--radius-lg, 12px);
+    padding: 1.5rem;
+    min-width: 300px;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(240, 180, 0, 0.3);
+    animation: caja-modal-in 0.3s ease-out;
+}
+
+@keyframes caja-modal-in {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.reel-viewport {
+    position: relative;
+    width: 100%;
+    height: 50px;
+    overflow: hidden;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    margin-bottom: 1rem;
+}
+
+.reel-strip {
+    display: flex;
+    flex-direction: column;
+    will-change: transform;
+}
+
+.reel-item {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding: 0 1rem;
+    white-space: nowrap;
+}
+
+.reel-item-nombre {
+    font-size: 0.85rem;
+}
+
+.reel-marker {
+    position: absolute;
+    right: -2px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    color: var(--accent-gold, #f0b400);
+    text-shadow: 0 0 8px rgba(240, 180, 0, 0.6);
+    z-index: 2;
+    line-height: 1;
+}
+
+.caja-status {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    animation: caja-pulse 1s ease-in-out infinite;
+    margin: 0;
+}
+
+@keyframes caja-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.caja-resultado {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.caja-ganador-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--accent-gold, #f0b400);
+    background: linear-gradient(135deg, rgba(240, 180, 0, 0.1), rgba(255, 140, 0, 0.05));
+    animation: caja-ganador-glow 1.5s ease-in-out infinite;
+    width: 100%;
+}
+
+@keyframes caja-ganador-glow {
+    0%, 100% { box-shadow: 0 0 15px rgba(240, 180, 0, 0.2); }
+    50% { box-shadow: 0 0 30px rgba(240, 180, 0, 0.5); }
+}
+
+.caja-ganador-icono {
+    font-size: 3rem;
+    filter: drop-shadow(0 0 10px rgba(240, 180, 0, 0.5));
+}
+
+.caja-ganador-nombre {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.caja-mensaje {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.caja-cerrar {
+    background: linear-gradient(135deg, var(--accent-gold, #f0b400), var(--accent-orange, #ff8c00));
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 2rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #000;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.caja-cerrar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(240, 180, 0, 0.4);
+}
+
+/* RPG Theme overrides */
+body.rpg-theme .caja-modal {
+    background: var(--rpg-bg-card);
+    border-color: var(--rpg-accent-gold, #ffd700);
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.25);
+}
+
+body.rpg-theme .reel-viewport {
+    border-color: var(--rpg-border);
+    background: var(--rpg-bg-secondary);
+}
+
+body.rpg-theme .reel-item {
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .reel-marker {
+    color: var(--rpg-accent-gold, #ffd700);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+body.rpg-theme .caja-status {
+    color: var(--rpg-text-secondary);
+}
+
+body.rpg-theme .caja-ganador-display {
+    border-color: var(--rpg-accent-gold, #ffd700);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 160, 0, 0.06));
+}
+
+body.rpg-theme .caja-ganador-icono {
+    filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.5));
+}
+
+body.rpg-theme .caja-ganador-nombre {
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .caja-mensaje {
+    color: var(--rpg-text-secondary);
+}
+
+body.rpg-theme .caja-cerrar {
+    background: linear-gradient(135deg, var(--rpg-accent-gold, #ffd700), var(--rpg-accent-orange, #ff8c00));
+}

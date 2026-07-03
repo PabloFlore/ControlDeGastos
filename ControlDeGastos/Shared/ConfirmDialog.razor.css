@@ -1,0 +1,99 @@
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+.confirm-dialog {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    max-width: 340px;
+    width: 90%;
+    text-align: center;
+    animation: dialogIn 0.25s ease;
+}
+
+body.rpg-theme .confirm-dialog {
+    background: var(--rpg-bg-card);
+    border-color: var(--rpg-border);
+}
+
+@keyframes dialogIn {
+    from { transform: translateY(20px) scale(0.95); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.confirm-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.confirm-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem;
+}
+
+.confirm-msg {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0 0 1.25rem;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-confirm-cancel,
+.btn-confirm-ok {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-confirm-cancel {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-confirm-cancel:hover {
+    background: var(--border-color);
+}
+
+body.rpg-theme .btn-confirm-cancel {
+    background: var(--rpg-bg-secondary);
+    border-color: var(--rpg-border);
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .btn-confirm-cancel:hover {
+    background: var(--rpg-border);
+}
+
+.btn-confirm-ok {
+    background: var(--accent-red);
+    color: #fff;
+}
+
+.btn-confirm-ok:hover {
+    opacity: 0.9;
+}
+
+body.rpg-theme .btn-confirm-ok {
+    background: var(--rpg-accent-red);
+}

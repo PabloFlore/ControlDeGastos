@@ -1,0 +1,32 @@
+{
+  "name": "ControlDeGastos - Finanzas Personales",
+  "short_name": "CtrlGastos",
+  "id": "./",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "orientation": "portrait",
+  "prefer_related_applications": false,
+  "scope": "./",
+  "categories": ["finance", "productivity"],
+  "description": "Control de gastos personales con modo RPG",
+  "lang": "es",
+  "dir": "ltr",
+  "display_override": ["standalone", "minimal-ui"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": []
+}

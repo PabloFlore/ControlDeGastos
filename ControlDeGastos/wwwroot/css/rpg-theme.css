@@ -1,0 +1,212 @@
+/* ==========================================
+   RPG THEME - Cyberpunk / Fantasía Oscura
+   Se activa cuando ModoGamificadoActivo = true
+   Ignora prefers-color-scheme del sistema
+   ========================================== */
+
+body.rpg-theme {
+    --rpg-bg-primary: #0a0a0f;
+    --rpg-bg-secondary: #12121a;
+    --rpg-bg-card: #1a1a2e;
+    --rpg-bg-input: #16213e;
+    --rpg-text-primary: #e0e0ff;
+    --rpg-text-secondary: #8888aa;
+    --rpg-text-muted: #555577;
+    --rpg-accent-cyan: #00f0ff;
+    --rpg-accent-purple: #a855f7;
+    --rpg-accent-pink: #ff2d78;
+    --rpg-accent-green: #22ff88;
+    --rpg-accent-orange: #ff8c00;
+    --rpg-accent-red: #ff3355;
+    --rpg-border: #2a2a4a;
+    --rpg-glow-cyan: 0 0 10px rgba(0, 240, 255, 0.3);
+    --rpg-glow-purple: 0 0 10px rgba(168, 85, 247, 0.3);
+    --rpg-hp-bar-bg: #1a0a0a;
+    --rpg-hp-bar-fill: #ff3355;
+    --rpg-hp-bar-high: #22ff88;
+    --rpg-exp-bar-bg: #0f0a1a;
+    --rpg-exp-bar-fill: #a855f7;
+
+    background-color: var(--rpg-bg-primary);
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .page {
+    background-color: var(--rpg-bg-primary);
+}
+
+body.rpg-theme .sidebar {
+    background-image: linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 100%);
+    border-right: 1px solid var(--rpg-border);
+}
+
+body.rpg-theme .top-row {
+    background-color: var(--rpg-bg-secondary);
+    border-bottom: 1px solid var(--rpg-border);
+}
+
+body.rpg-theme .content {
+    background-color: var(--rpg-bg-primary);
+}
+
+body.rpg-theme .nav-item ::deep a {
+    color: var(--rpg-text-secondary);
+    border: 1px solid transparent;
+}
+
+body.rpg-theme .nav-item ::deep a.active {
+    background-color: rgba(0, 240, 255, 0.1);
+    color: var(--rpg-accent-cyan);
+    border-color: var(--rpg-accent-cyan);
+    box-shadow: var(--rpg-glow-cyan);
+}
+
+body.rpg-theme .nav-item ::deep a:hover {
+    background-color: rgba(168, 85, 247, 0.1);
+    color: var(--rpg-accent-purple);
+}
+
+body.rpg-theme h1, body.rpg-theme h2, body.rpg-theme h3 {
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .card {
+    background-color: var(--rpg-bg-card);
+    border: 1px solid var(--rpg-border);
+    border-radius: 12px;
+}
+
+body.rpg-theme .btn-primary {
+    background: linear-gradient(135deg, var(--rpg-accent-purple), var(--rpg-accent-cyan));
+    border: none;
+    color: #fff;
+    box-shadow: var(--rpg-glow-purple);
+}
+
+body.rpg-theme .btn-primary:hover {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+    transform: translateY(-1px);
+}
+
+body.rpg-theme .btn-danger {
+    background: var(--rpg-accent-red);
+    border: none;
+}
+
+body.rpg-theme .btn-success {
+    background: var(--rpg-accent-green);
+    border: none;
+    color: #000;
+}
+
+body.rpg-theme input, body.rpg-theme select, body.rpg-theme textarea {
+    background-color: var(--rpg-bg-input);
+    border: 1px solid var(--rpg-border);
+    color: var(--rpg-text-primary);
+    border-radius: 8px;
+}
+
+body.rpg-theme input:focus, body.rpg-theme select:focus, body.rpg-theme textarea:focus {
+    border-color: var(--rpg-accent-cyan);
+    box-shadow: var(--rpg-glow-cyan);
+    outline: none;
+}
+
+body.rpg-theme .hp-bar {
+    background: var(--rpg-hp-bar-bg);
+    border: 1px solid var(--rpg-accent-red);
+    border-radius: 8px;
+    overflow: hidden;
+    height: 20px;
+}
+
+body.rpg-theme .hp-bar-fill {
+    background: linear-gradient(90deg, var(--rpg-accent-red), var(--rpg-accent-pink));
+    height: 100%;
+    transition: width 0.5s ease;
+    border-radius: 8px;
+}
+
+body.rpg-theme .hp-bar-fill.high {
+    background: linear-gradient(90deg, var(--rpg-accent-green), #66ffbb);
+}
+
+body.rpg-theme .exp-bar {
+    background: var(--rpg-exp-bar-bg);
+    border: 1px solid var(--rpg-accent-purple);
+    border-radius: 8px;
+    overflow: hidden;
+    height: 16px;
+}
+
+body.rpg-theme .exp-bar-fill {
+    background: linear-gradient(90deg, var(--rpg-accent-purple), var(--rpg-accent-pink));
+    height: 100%;
+    transition: width 0.5s ease;
+    border-radius: 8px;
+}
+
+body.rpg-theme .level-badge {
+    background: linear-gradient(135deg, var(--rpg-accent-purple), var(--rpg-accent-cyan));
+    color: #fff;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    box-shadow: var(--rpg-glow-purple);
+}
+
+body.rpg-theme ::-webkit-scrollbar {
+    width: 8px;
+}
+
+body.rpg-theme ::-webkit-scrollbar-track {
+    background: var(--rpg-bg-secondary);
+}
+
+body.rpg-theme ::-webkit-scrollbar-thumb {
+    background: var(--rpg-border);
+    border-radius: 4px;
+}
+
+body.rpg-theme ::-webkit-scrollbar-thumb:hover {
+    background: var(--rpg-accent-purple);
+}
+
+body.rpg-theme .blazor-loading-progress {
+    background-color: var(--rpg-bg-primary);
+}
+
+body.rpg-theme .navbar-brand {
+    background: linear-gradient(90deg, var(--rpg-accent-cyan), var(--rpg-accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+}
+
+.rpg-damage-flash {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 0, 0, 0.12);
+    pointer-events: none;
+    z-index: 9999;
+    animation: rpgFadeOut 0.6s ease-out;
+}
+
+.rpg-levelup-flash {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(168, 85, 247, 0.15), transparent 70%);
+    pointer-events: none;
+    z-index: 9999;
+    animation: rpgFadeOut 0.8s ease-out;
+}
+
+@keyframes rpgFadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}

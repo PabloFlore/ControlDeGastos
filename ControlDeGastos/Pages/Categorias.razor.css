@@ -1,0 +1,320 @@
+.categorias-page {
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: 6rem;
+}
+
+.page-header {
+    margin-bottom: 1.25rem;
+}
+
+.page-titulo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.page-sub {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0.1rem 0 0;
+}
+
+/* Sections */
+.secciones {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.seccion-titulo {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.6rem;
+    color: var(--text-primary);
+}
+
+/* Category grid */
+.categorias-grid {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.categoria-card {
+    display: grid;
+    grid-template-columns: 4px auto 1fr auto;
+    gap: 0.7rem;
+    align-items: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.65rem 0.65rem 0.65rem 0;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+
+.categoria-card:hover {
+    box-shadow: var(--shadow-sm);
+}
+
+.card-swatch {
+    width: 4px;
+    height: 100%;
+    border-radius: 0 2px 2px 0;
+    align-self: stretch;
+}
+
+.card-icono {
+    font-size: 1.3rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border-radius: 50%;
+}
+
+.card-body {
+    min-width: 0;
+}
+
+.card-nombre {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.card-orden {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.1rem;
+}
+
+.card-orden span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 1.2rem;
+    text-align: center;
+}
+
+.btn-orden {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.6rem;
+    padding: 0.1rem;
+    line-height: 1;
+    color: var(--text-muted);
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-orden:hover:not(:disabled) {
+    color: var(--accent-blue);
+    background: rgba(0, 113, 193, 0.08);
+}
+
+.btn-orden:disabled {
+    opacity: 0.25;
+    cursor: default;
+}
+
+.card-acciones {
+    display: flex;
+    gap: 0.15rem;
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+}
+
+.categoria-card:hover .card-acciones {
+    opacity: 1;
+}
+
+.btn-card {
+    background: none;
+    border: none;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: 4px;
+    line-height: 1;
+    transition: all 0.15s ease;
+}
+
+.btn-editar:hover {
+    background: rgba(0, 113, 193, 0.1);
+}
+
+.btn-eliminar:hover {
+    background: rgba(255, 51, 85, 0.1);
+}
+
+/* FAB */
+.fab-button {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-blue), #6366f1);
+    color: #fff;
+    border: none;
+    font-size: 1.8rem;
+    font-weight: 300;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 113, 193, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 100;
+    line-height: 1;
+}
+
+.fab-button:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 24px rgba(0, 113, 193, 0.45);
+}
+
+.fab-button:active {
+    transform: scale(0.95);
+}
+
+body.rpg-theme .fab-button {
+    background: linear-gradient(135deg, var(--rpg-accent-purple), var(--rpg-accent-cyan));
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+}
+
+body.rpg-theme .fab-button:hover {
+    box-shadow: 0 6px 28px rgba(168, 85, 247, 0.6);
+}
+
+/* Form fields inside modal body */
+.campo {
+    margin-bottom: 1rem;
+    flex: 1;
+}
+
+.campo-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: var(--text-primary);
+}
+
+.campo-input {
+    width: 100%;
+    padding: 0.7rem 0.75rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.campo-input:focus {
+    border-color: var(--accent-blue);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 113, 193, 0.15);
+}
+
+body.rpg-theme .campo-input:focus {
+    border-color: var(--rpg-accent-cyan);
+    box-shadow: var(--rpg-glow-cyan);
+}
+
+
+.campo-row {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.campo-icono {
+    flex: 0 0 100px;
+}
+
+.campo-color {
+    flex: 1;
+}
+
+.color-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.color-picker {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 2px;
+    cursor: pointer;
+    background: none;
+}
+
+.color-picker::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.color-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: 3px;
+}
+
+.color-hex {
+    font-size: 0.85rem;
+    font-family: monospace;
+    color: var(--text-secondary);
+}
+
+/* Checkbox */
+.campo-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+.campo-checkbox input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-blue);
+    cursor: pointer;
+}
+
+body.rpg-theme .campo-checkbox input {
+    accent-color: var(--rpg-accent-cyan);
+}
+
+/* Footer buttons */
+/* RPG overrides */
+body.rpg-theme .categoria-card {
+    background: var(--rpg-bg-card);
+    border-color: var(--rpg-border);
+}
+
+body.rpg-theme .card-icono {
+    background: var(--rpg-bg-secondary);
+}
+
+body.rpg-theme .campo-input {
+    background: var(--rpg-bg-input);
+    border-color: var(--rpg-border);
+    color: var(--rpg-text-primary);
+}

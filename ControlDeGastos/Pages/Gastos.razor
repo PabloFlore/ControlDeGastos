@@ -1,0 +1,1385 @@
+@page "/gastos"
+@implements IAsyncDisposable
+@inject IGastoService GastoService
+@inject ICategoriaService CategoriaService
+@inject IUsuarioService UsuarioService
+@inject ILicenciaService LicenciaService
+@inject IToastService ToastService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject IGamificacionService GamificacionService
+@inject ITiendaService TiendaService
+@inject IRecurrenciaService RecurrenciaService
+@* @inject IHogarService HogarService *@
+@inject ILogger<Gastos> Logger
+ 
+<PageTitle>Gastos - Control de Gastos</PageTitle>
+
+<div class="gastos-page">
+    <div class="mes-selector">
+        <button class="mes-btn" @onclick="MesAnterior" title="Mes anterior">‹</button>
+        <span class="mes-titulo">@NombresMes[mesSeleccionado - 1] @añoSeleccionado</span>
+        <button class="mes-btn @(EsMesActual ? "btn-deshabilitado" : "")" @onclick="MesSiguiente" title="Mes siguiente">›</button>
+        @if (mesSeleccionado != DateTime.Now.Month || añoSeleccionado != DateTime.Now.Year)
+        {
+            <button class="mes-btn hoy-btn" @onclick="IrAlMesActual" title="Volver al mes actual">●</button>
+        }
+    </div>
+
+    <div class="acciones-barra">
+        <button class="accion-boton recurrencia-btn" @onclick="AbrirModalRecurrencias" title="Transacciones recurrentes">
+            🔄 Recurrentes <span class="recurrencia-badge">@recurrenciasActivas</span>
+        </button>
+        <div class="export-wrapper">
+            <button class="accion-boton export-btn" @onclick="ToggleExportMenu" title="Exportar datos">
+                📥 Exportar
+            </button>
+            @if (exportMenuAbierto)
+            {
+                <div class="export-menu">
+                    <button class="export-opcion export-opcion-formato" @onclick='() => ExportarAsync("Este mes")'>📊 Excel — Este mes</button>
+                    <button class="export-opcion export-opcion-formato" @onclick='() => ExportarAsync("Últimos 3 meses")'>📊 Excel — Últimos 3 meses</button>
+                    <button class="export-opcion export-opcion-formato" @onclick='() => ExportarAsync("Este año")'>📊 Excel — Este año</button>
+                    <button class="export-opcion export-opcion-formato" @onclick='() => ExportarAsync("Todo")'>📊 Excel — Todo</button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="resumen-grid">
+        <div class="resumen-card resumen-gastos">
+            <div class="resumen-label">Gastos</div>
+            <div class="resumen-valor">@FormatearMonto(totalGastos)</div>
+        </div>
+        <div class="resumen-card resumen-ingresos">
+            <div class="resumen-label">Ingresos</div>
+            <div class="resumen-valor">@FormatearMonto(totalIngresos)</div>
+        </div>
+        <div class="resumen-card resumen-balance-mes">
+            <div class="resumen-label">Balance del mes</div>
+            <div class="resumen-valor @(balanceMes >= 0 ? "texto-positivo" : "texto-negativo")">@(balanceMes < 0 ? "-" : "")@FormatearMonto(balanceMes)</div>
+        </div>
+        <div class="resumen-card resumen-balance-total">
+            <div class="resumen-label">Balance total</div>
+            <div class="resumen-valor @(balanceAcumulado >= 0 ? "texto-positivo" : "texto-negativo")">@(balanceAcumulado < 0 ? "-" : "")@FormatearMonto(balanceAcumulado)</div>
+        </div>
+    </div>
+
+    @if (gastosAgrupados is not null && gastosAgrupados.Any())
+    {
+        <div class="filtros-bar">
+            <div class="filtro-busqueda-wrapper">
+                <span class="filtro-search-icon">🔍</span>
+                <input type="text" class="filtro-busqueda" placeholder="Buscar en descripción..."
+                       @bind="filtroBusqueda" @bind:event="oninput" @bind:after="() => OnBusquedaChanged(filtroBusqueda)" />
+                @if (!string.IsNullOrEmpty(filtroBusqueda))
+                {
+                    <button class="filtro-clear" @onclick="LimpiarBusqueda">✕</button>
+                }
+            </div>
+            <button class="filtro-toggle" @onclick="ToggleFiltros">
+                <span class="filtro-toggle-icon">@(filtrosVisibles ? "▲" : "▼")</span>
+            </button>
+        </div>
+
+        @if (filtrosVisibles)
+        {
+            <div class="filtro-panel">
+                <div class="filtro-tipos">
+                    @foreach (var tipo in new[] { "Todos", "Gasto", "Ingreso" })
+                    {
+                        <button class="filtro-pill @(filtroTipo == tipo ? "pill-activa" : "")"
+                                @onclick="() => CambiarFiltroTipo(tipo)">
+                            @tipo
+                        </button>
+                    }
+                </div>
+                @* Comentado: filtro compartido (hogar) — proximamente
+                @if (usuario?.HogarId is not null)
+                {
+                    <div class="filtro-tipos" style="margin-top:0.4rem">
+                        @foreach (var opt in new[] { "Todos", "Personales", "Compartidos" })
+                        {
+                            <button class="filtro-pill @(filtroCompartido == opt ? "pill-activa" : "")"
+                                    @onclick="() => CambiarFiltroCompartido(opt)">
+                                @(opt == "Personales" ? "👤" : opt == "Compartidos" ? "👥" : "") @opt
+                            </button>
+                        }
+                    </div>
+                }
+                *@
+                <div class="filtro-categorias">
+                    <button class="filtro-chip @(filtroCategoriaId is null ? "chip-activa" : "")"
+                            @onclick="LimpiarFiltroCategoria">
+                        Todas
+                    </button>
+                    @foreach (var cat in categoriasFiltro)
+                    {
+                        <button class="filtro-chip @(filtroCategoriaId == cat.Id ? "chip-activa" : "")"
+                                style="--chip-color: @cat.Color"
+                                @onclick="() => CambiarFiltroCategoria(cat.Id)">
+                            @cat.Icono @cat.Nombre
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+    }
+
+    @if (filtrosVisibles || modoRango)
+    {
+        <div class="filtro-rango">
+            <div class="rango-campo">
+                <label class="rango-label">Desde</label>
+                <input type="date" class="rango-input" value="@filtroFechaDesde?.ToString("yyyy-MM-dd")" @onchange="OnFechaDesdeChanged" />
+            </div>
+            <div class="rango-campo">
+                <label class="rango-label">Hasta</label>
+                <input type="date" class="rango-input" value="@filtroFechaHasta?.ToString("yyyy-MM-dd")" @onchange="OnFechaHastaChanged" />
+            </div>
+            @if (modoRango)
+            {
+                <button class="rango-clear" @onclick="LimpiarRango" title="Limpiar rango">✕</button>
+            }
+        </div>
+    }
+
+    <div class="gastos-lista">
+        @if (gastosAgrupados is null)
+        {
+            <LoadingSpinner Message="Cargando gastos..." />
+        }
+        else if (!gastosAgrupados.Any())
+        {
+            <EmptyState Icon="📭" Title="No hay gastos este mes" Subtitle="Presiona + para registrar tu primer gasto" />
+        }
+        else if (!gastosFiltrados.Any())
+        {
+            <EmptyState Icon="🔍" Title="Sin resultados" Subtitle="Prueba con otros filtros" />
+        }
+        else
+        {
+            @foreach (var grupo in gastosFiltrados)
+            {
+                <div class="grupo-fecha">
+                    <div class="grupo-header">@FormatearFechaGrupo(grupo.Fecha)</div>
+                    @foreach (var gasto in grupo.Gastos)
+                    {
+                        <div @key="gasto.Id" class="gasto-item @(gasto.RecurrenciaId is not null ? "gasto-recurrencia" : gasto.FinanciamientoId is not null ? "gasto-financiamiento" : "") @ObtenerClaseSkin()" data-categoria-color="@ObtenerColorCategoria(gasto.CategoriaId)">
+                            @if (gasto.RecurrenciaId is not null)
+                            {
+                                <span class="gasto-corner corner-recurrencia"></span>
+                            }
+                            else if (gasto.FinanciamientoId is not null)
+                            {
+                                <span class="gasto-corner corner-financiamiento"></span>
+                            }
+                            <div class="gasto-icono" style="background-color: @(ObtenerColorCategoria(gasto.CategoriaId) + "22")">
+                                <span>@ObtenerIconoCategoria(gasto.CategoriaId)</span>
+                            </div>
+                            <div class="gasto-info">
+                                <div class="gasto-categoria">@ObtenerNombreCategoria(gasto.CategoriaId)</div>
+                                @if (!string.IsNullOrEmpty(gasto.Descripcion))
+                                {
+                                    <div class="gasto-descripcion">@gasto.Descripcion</div>
+                                }
+                                <div class="gasto-meta">
+                                    <span class="gasto-fecha">@gasto.Fecha.ToLocalTime().ToString(mostrarMinutos ? "dd MMM HH:mm" : "dd MMM")</span>
+                                    @if (gasto.RecurrenciaId is not null)
+                                    {
+                                        <span class="gasto-recurrencia-badge" title="Generado por recurrencia">🔄</span>
+                                    }
+                                    @* Comentado: badge compartido (hogar)
+                                    @if (gasto.EsGastoCompartido)
+                                    {
+                                        ...
+                                    }
+                                    *@
+                                </div>
+                            </div>
+                            <div class="gasto-monto @(gasto.Monto >= 0 ? "monto-gasto" : "monto-ingreso")">@FormatearMonto(gasto.Monto)</div>
+                            <div class="gasto-acciones">
+                                <button class="accion-btn" @onclick="() => EditarGasto(gasto)" title="Editar">✏️</button>
+                                <button class="accion-btn accion-eliminar" @onclick="() => ConfirmarEliminar(gasto.Id)" title="Eliminar">🗑️</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+
+    @if (totalPaginas > 1)
+    {
+        <div class="paginacion">
+            <button class="pag-btn" disabled="@(paginaActual <= 1)" @onclick="() => CambiarPagina(1)" title="Primera">«</button>
+            <button class="pag-btn" disabled="@(paginaActual <= 1)" @onclick="() => CambiarPagina(paginaActual - 1)" title="Anterior">‹</button>
+            @{
+                var inicio = Math.Max(1, paginaActual - 2);
+                var fin = Math.Min(totalPaginas, inicio + 4);
+                if (fin - inicio < 4) inicio = Math.Max(1, fin - 4);
+                for (var p = inicio; p <= fin; p++)
+                {
+                    <button class="pag-btn @(p == paginaActual ? "pag-actual" : "")" @onclick="() => CambiarPagina(p)">@p</button>
+                }
+            }
+            <button class="pag-btn" disabled="@(paginaActual >= totalPaginas)" @onclick="() => CambiarPagina(paginaActual + 1)" title="Siguiente">›</button>
+            <button class="pag-btn" disabled="@(paginaActual >= totalPaginas)" @onclick="() => CambiarPagina(totalPaginas)" title="Última">»</button>
+            <span class="pag-info">@paginaActual / @totalPaginas</span>
+        </div>
+    }
+    <button class="fab-button" @onclick="AbrirModalNuevo" title="Nuevo registro">+</button>
+</div>
+
+<Modal Title="@((editando ? "Editar" : "Nuevo") + " registro")" Visible="@modalAbierto" OnClose="CerrarModal">
+    <Body>
+        <div class="tipo-toggle">
+            <button class="tipo-btn @(tipoForm == "Gasto" ? "tipo-activo tipo-gasto" : "")"
+                    @onclick="SeleccionarTipoGasto">
+                💸 Gasto
+            </button>
+            <button class="tipo-btn @(tipoForm == "Ingreso" ? "tipo-activo tipo-ingreso" : "")"
+                    @onclick="SeleccionarTipoIngreso">
+                💰 Ingreso
+            </button>
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Categoría</label>
+            <div class="categoria-grid">
+                @foreach (var cat in categoriasFiltradas)
+                {
+                    <div class="categoria-item @(gastoForm.CategoriaId == cat.Id ? "cat-seleccionada" : "")"
+                         style="--cat-color: @cat.Color"
+                         @onclick="() => gastoForm.CategoriaId = cat.Id">
+                        <span class="cat-icono">@cat.Icono</span>
+                        <span class="cat-nombre">@cat.Nombre</span>
+                    </div>
+                }
+                @if (!categoriasFiltradas.Any())
+                {
+                    <p class="campo-error">No hay categorías disponibles</p>
+                }
+            </div>
+            @if (!categoriasFiltradas.Any(c => c.Id == gastoForm.CategoriaId))
+            {
+                <span class="campo-error">Selecciona una categoría</span>
+            }
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Monto</label>
+            <div class="monto-input-wrapper">
+                <span class="monto-simbolo">$</span>
+                <input type="number"
+                       class="monto-input"
+                       @bind="gastoForm.Monto"
+                       @bind:event="oninput"
+                       @onfocus="() => montoTocado = true"
+                       step="0.01"
+                       placeholder="0.00" />
+            </div>
+            @if (montoTocado && gastoForm.Monto <= 0)
+            {
+                <span class="campo-error">El monto debe ser mayor a 0</span>
+            }
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Descripción <span class="campo-opcional">(opcional)</span></label>
+            <input type="text" class="campo-input" @bind="gastoForm.Descripcion" placeholder="@(tipoForm == "Gasto" ? "¿En qué gastaste?" : "Descripción del ingreso")" />
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Fecha</label>
+            <input type="date" class="campo-input" @bind="fechaForm" />
+        </div>
+
+        @* Comentado: checkbox compartir (hogar) — proximamente
+        @if (usuario?.HogarId is not null)
+        {
+            <div class="campo-checkbox">
+                <input type="checkbox" id="chkCompartido" @bind="gastoForm.EsGastoCompartido" />
+                <label for="chkCompartido">👥 Compartir con mi pareja</label>
+            </div>
+        }
+        *@
+
+    </Body>
+    <Footer>
+        <button class="btn-footer btn-cancelar" @onclick="CerrarModal">Cancelar</button>
+        <button class="btn-footer btn-guardar" @onclick="GuardarGastoAsync" disabled="@(!FormularioValido || guardando)">
+            @(guardando ? "Guardando..." : "Guardar")
+        </button>
+    </Footer>
+</Modal>
+
+<Modal Title="Transacciones recurrentes" Visible="@modalRecurrenciasAbierto" OnClose="CerrarModalRecurrencias">
+    <Body>
+        @if (recurrencias is null)
+        {
+            <LoadingSpinner Message="Cargando..." />
+        }
+        else if (!recurrencias.Any())
+        {
+            <EmptyState Icon="🔄" Title="Sin recurrentes" Subtitle="Crea una para automatizar gastos o ingresos periódicos" />
+        }
+        else
+        {
+            <div class="recurrencias-lista">
+                @foreach (var rec in recurrencias.OrderBy(r => r.ProximaFecha))
+                {
+                    <div @key="rec.Id" class="recurrencia-item @(!rec.Activa ? "recurrencia-inactiva" : "")">
+                        <div class="recurrencia-icono" style="background: @(ObtenerColorCategoria(rec.CategoriaId ?? Guid.Empty) + "22")">
+                            @ObtenerIconoCategoria(rec.CategoriaId ?? Guid.Empty)
+                        </div>
+                        <div class="recurrencia-info">
+                            <div class="recurrencia-categoria">@ObtenerNombreCategoria(rec.CategoriaId ?? Guid.Empty)</div>
+                            <div class="recurrencia-desc">@(rec.Descripcion ?? LabelRecurrencia(rec))</div>
+                            <div class="recurrencia-prox">Próxima: @SafeLocalTime(rec.ProximaFecha).ToString(mostrarMinutos ? "dd MMM yyyy HH:mm" : "dd MMM yyyy")</div>
+                        </div>
+                        <div class="recurrencia-monto @(rec.Monto >= 0 ? "monto-gasto" : "monto-ingreso")">@FormatearMonto(rec.Monto)</div>
+                        <div class="gasto-acciones">
+                            <button class="accion-btn" @onclick="() => EditarRecurrencia(rec)" title="Editar">✏️</button>
+                            <button class="accion-btn accion-eliminar" @onclick="() => ConfirmarEliminarRecurrencia(rec.Id)" title="Eliminar">🗑️</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </Body>
+    <Footer>
+        <button class="btn-footer btn-guardar" @onclick="AbrirModalNuevaRecurrencia">➕ Nueva recurrencia</button>
+        <button class="btn-footer btn-cancelar" @onclick="CerrarModalRecurrencias">Cerrar</button>
+    </Footer>
+</Modal>
+
+<Modal Title="@(editandoRecurrencia ? "Editar recurrencia" : "Nueva recurrencia")" Visible="@modalRecurrenciaFormAbierto" OnClose="CerrarModalRecurrenciaForm">
+    <Body>
+        <div class="tipo-toggle">
+            <button class="tipo-btn @(recurrenciaFormMonto >= 0 ? "tipo-activo tipo-gasto" : "")"
+                    @onclick="() => { recurrenciaFormMonto = Math.Abs(recurrenciaFormMonto); }">
+                💸 Gasto
+            </button>
+            <button class="tipo-btn @(recurrenciaFormMonto < 0 ? "tipo-activo tipo-ingreso" : "")"
+                    @onclick="() => { recurrenciaFormMonto = -Math.Abs(recurrenciaFormMonto); }">
+                💰 Ingreso
+            </button>
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Categoría</label>
+            <div class="categoria-grid">
+                @foreach (var cat in categorias)
+                {
+                    <div class="categoria-item @(recurrenciaFormCategoriaId == cat.Id ? "cat-seleccionada" : "")"
+                         style="--cat-color: @cat.Color"
+                         @onclick="() => recurrenciaFormCategoriaId = cat.Id">
+                        <span class="cat-icono">@cat.Icono</span>
+                        <span class="cat-nombre">@cat.Nombre</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Monto</label>
+            <div class="monto-input-wrapper">
+                <span class="monto-simbolo">$</span>
+                <input type="number" class="monto-input" @bind="recurrenciaFormMontoAbs" step="0.01" min="0.01" placeholder="0.00" />
+            </div>
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Descripción <span class="campo-opcional">(opcional)</span></label>
+            <input type="text" class="campo-input" @bind="recurrenciaFormDesc" placeholder="Ej: Renta, Netflix, Salario" />
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Periodo</label>
+            <div class="periodo-toggle" style="display:flex;gap:0.5rem;">
+                @foreach (var (val, lbl) in new[] { ("Diario", "Cada día"), ("Semanal", "Cada semana"), ("Mensual", "Cada mes"), ("Anual", "Cada año") })
+                {
+                    <button class="periodo-btn @(recurrenciaFormPeriodo == val ? "periodo-activo" : "")"
+                            @onclick="() => recurrenciaFormPeriodo = val">
+                        @lbl
+                    </button>
+                }
+            </div>
+        </div>
+
+        <div class="campo">
+            <label class="campo-checkbox">
+                <input type="checkbox" @bind="recurrenciaFormActiva" />
+                <span>Activa</span>
+            </label>
+        </div>
+    </Body>
+    <Footer>
+        <button class="btn-footer btn-cancelar" @onclick="CerrarModalRecurrenciaForm">Cancelar</button>
+        <button class="btn-footer btn-guardar" @onclick="GuardarRecurrenciaAsync" disabled="@(!RecurrenciaFormValida || guardandoRecurrencia)">
+            @(guardandoRecurrencia ? "Guardando..." : "Guardar")
+        </button>
+    </Footer>
+</Modal>
+
+<ConfirmDialog Visible="@(gastoEliminando is not null)"
+               Icon="⚠️"
+               Title="¿Eliminar este gasto?"
+               Message="Esta acción no se puede deshacer"
+               CancelText="Cancelar"
+               ConfirmText="Eliminar"
+               OnCancel="CancelarEliminar"
+               OnConfirm="EliminarGastoAsync" />
+
+@if (recurrenciaEliminandoId is not null)
+{
+    <div class="confirm-overlay" @onclick="CancelarEliminarRecurrencia">
+        <div class="recurrencia-confirm" @onclick:stopPropagation>
+            <div class="recurrencia-confirm-icon">⚠️</div>
+            <div class="recurrencia-confirm-title">¿Eliminar esta recurrencia?</div>
+            <div class="recurrencia-confirm-msg">¿Qué hacer con los gastos que generó?</div>
+            <div class="recurrencia-confirm-btns">
+                <button class="btn-confirm btn-keep" @onclick="EliminarRecurrenciaAsync">
+                    Conservar gastos anteriores
+                </button>
+                <button class="btn-confirm btn-delete-all" @onclick="EliminarRecurrenciaConGastosAsync">
+                    Eliminar también los gastos
+                </button>
+                <button class="btn-confirm btn-cancel" @onclick="CancelarEliminarRecurrencia">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Gasto> gastos = new();
+    private List<Categoria> categorias = new();
+    private Usuario? usuario;
+    private bool mostrarMinutos;
+    // Comentado: hogar fields — proximamente
+    // private List<HogarMiembro> miembrosHogar = new();
+    // private Dictionary<Guid, HogarMiembro> miembrosPorUsuarioId = new();
+    // private Dictionary<string, HogarMiembro> miembrosPorEmail = new();
+
+    private bool EsMesActual => mesSeleccionado == DateTime.Now.Month && añoSeleccionado == DateTime.Now.Year;
+    private int añoSeleccionado = DateTime.Now.Year;
+    private int mesSeleccionado = DateTime.Now.Month;
+
+    private decimal totalGastos;
+    private decimal totalIngresos;
+    private decimal balanceAcumulado;
+    private decimal balanceMes => totalIngresos - totalGastos;
+
+    private bool modalAbierto;
+    private bool editando;
+    private Gasto gastoForm = new();
+    private string tipoForm = "Gasto";
+    private bool guardando;
+    private bool montoTocado;
+    private DateTime fechaForm = DateTime.Now;
+
+    private Guid? gastoEliminando;
+
+    private string filtroBusqueda = "";
+    private string filtroTipo = "Todos";
+    // private string filtroCompartido = "Todos"; // Comentado — hogar
+    private Guid? filtroCategoriaId;
+    private bool filtrosVisibles;
+    private DateTime? filtroFechaDesde;
+    private DateTime? filtroFechaHasta;
+    private bool modoRango;
+    private List<(DateTime Fecha, List<Gasto> Gastos)> gastosFiltrados = new();
+    private CancellationTokenSource? ctsCarga;
+    private bool exportMenuAbierto;
+    private bool exportando;
+
+    private List<Categoria> categoriasFiltro => filtroTipo switch
+    {
+        "Gasto" => categorias.Where(c => c.Tipo == TipoGasto.Gasto).OrderBy(c => c.Orden).ToList(),
+        "Ingreso" => categorias.Where(c => c.Tipo == TipoGasto.Ingreso).OrderBy(c => c.Orden).ToList(),
+        _ => categorias.OrderBy(c => c.Orden).ToList(),
+    };
+
+    private void AplicarFiltros()
+    {
+        if (gastosAgrupados is null || !gastosAgrupados.Any())
+        {
+            gastosFiltrados = new();
+            return;
+        }
+
+        var enumerable = gastosAgrupados.SelectMany(g => g.Gastos).AsEnumerable();
+
+        if (filtroTipo != "Todos")
+        {
+            var buscarGasto = filtroTipo == "Gasto";
+            enumerable = enumerable.Where(g => buscarGasto ? g.Monto > 0 : g.Monto < 0);
+        }
+
+        if (filtroCategoriaId.HasValue)
+        {
+            enumerable = enumerable.Where(g => g.CategoriaId == filtroCategoriaId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filtroBusqueda))
+        {
+            var termino = filtroBusqueda.Trim().ToLowerInvariant();
+            enumerable = enumerable.Where(g =>
+                g.Descripcion?.ToLowerInvariant().Contains(termino) == true);
+        }
+
+        // Comentado: filtro compartido — proximamente
+        // if (filtroCompartido != "Todos")
+        // {
+        //     var buscarCompartido = filtroCompartido == "Compartidos";
+        //     enumerable = enumerable.Where(g => g.EsGastoCompartido == buscarCompartido);
+        // }
+
+        if (filtroFechaDesde.HasValue)
+            enumerable = enumerable.Where(g => g.Fecha.ToLocalTime().Date >= filtroFechaDesde.Value.Date);
+        if (filtroFechaHasta.HasValue)
+            enumerable = enumerable.Where(g => g.Fecha.ToLocalTime().Date <= filtroFechaHasta.Value.Date);
+
+        gastosFiltrados = enumerable
+            .GroupBy(g => g.Fecha.ToLocalTime().Date)
+            .OrderByDescending(g => g.Key)
+            .Select(g => (Fecha: g.Key, Gastos: g.OrderByDescending(x => x.Fecha).ToList()))
+            .ToList();
+    }
+
+    private async Task OnFechaDesdeChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(val))
+            filtroFechaDesde = null;
+        else if (DateTime.TryParse(val, out var parsed))
+            filtroFechaDesde = parsed;
+        await AplicarRangoAsync();
+    }
+
+    private async Task OnFechaHastaChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(val))
+            filtroFechaHasta = null;
+        else if (DateTime.TryParse(val, out var parsed))
+            filtroFechaHasta = parsed;
+        await AplicarRangoAsync();
+    }
+
+    private async Task AplicarRangoAsync()
+    {
+        if (filtroFechaDesde.HasValue && filtroFechaHasta.HasValue && filtroFechaDesde <= filtroFechaHasta)
+        {
+            modoRango = true;
+            var oldCts = ctsCarga;
+            ctsCarga?.Cancel();
+            ctsCarga = new CancellationTokenSource();
+            oldCts?.Dispose();
+            await CargarGastosAsync(ctsCarga.Token);
+        }
+        else
+        {
+            modoRango = false;
+            AplicarFiltros();
+        }
+        StateHasChanged();
+    }
+
+    private async Task LimpiarRango()
+    {
+        filtroFechaDesde = null;
+        filtroFechaHasta = null;
+        modoRango = false;
+        var oldCts = ctsCarga;
+        ctsCarga?.Cancel();
+        ctsCarga = new CancellationTokenSource();
+        oldCts?.Dispose();
+        await CargarGastosAsync(ctsCarga.Token);
+    }
+
+    private void OnBusquedaChanged(string value)
+    {
+        filtroBusqueda = value;
+        AplicarFiltros();
+    }
+
+    private void LimpiarBusqueda()
+    {
+        filtroBusqueda = "";
+        AplicarFiltros();
+    }
+
+    private void ToggleFiltros()
+    {
+        filtrosVisibles = !filtrosVisibles;
+    }
+
+    private void ToggleExportMenu()
+    {
+        exportMenuAbierto = !exportMenuAbierto;
+    }
+
+    private async Task ExportarAsync(string alcance)
+    {
+        exportMenuAbierto = false;
+        if (exportando) return;
+        exportando = true;
+        StateHasChanged();
+
+        try
+        {
+            var gastosExportar = await ObtenerGastosPorAlcanceAsync(alcance);
+            var usuario = await UsuarioService.ObtenerUsuarioAsync();
+            var moneda = usuario?.Moneda ?? "MXN";
+            var simbolo = moneda switch { "USD" => "$", "EUR" => "€", _ => "$" };
+            var nomMes = NombresMes[mesSeleccionado - 1];
+
+            var registros = gastosExportar
+                .OrderBy(g => g.Fecha)
+                .Select(g => new
+                {
+                    fecha = g.Fecha.ToLocalTime().ToString("yyyy-MM-dd"),
+                    monto = g.Monto,
+                    categoria = categorias.FirstOrDefault(c => c.Id == g.CategoriaId)?.Nombre ?? "Sin categoría",
+                    descripcion = g.Descripcion ?? ""
+                })
+                .ToList();
+
+            var totalGastos = gastosExportar.Where(g => g.Monto >= 0).Sum(g => g.Monto);
+            var totalIngresos = gastosExportar.Where(g => g.Monto < 0).Sum(g => Math.Abs(g.Monto));
+
+            await JSRuntime.InvokeVoidAsync("generarExcel",
+                registros, nomMes, añoSeleccionado, simbolo, totalGastos, totalIngresos);
+
+            ToastService.ShowSuccess($"Exportados {gastosExportar.Count} registros en Excel");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al exportar: {ex.Message}");
+        }
+
+        exportando = false;
+    }
+
+    private async Task<List<Gasto>> ObtenerGastosPorAlcanceAsync(string alcance)
+    {
+        switch (alcance)
+        {
+            case "Este mes":
+                return await GastoService.ObtenerGastosPorMesAsync(añoSeleccionado, mesSeleccionado);
+            case "Últimos 3 meses":
+                var todos = await GastoService.ObtenerGastosAsync();
+                return todos.Where(g => g.Fecha >= DateTime.UtcNow.AddMonths(-3)).ToList();
+            case "Este año":
+                var totales = await GastoService.ObtenerGastosAsync();
+                return totales.Where(g => g.Fecha.Year == DateTime.UtcNow.Year).ToList();
+            default:
+                return await GastoService.ObtenerGastosAsync();
+        }
+    }
+
+    private void CambiarFiltroTipo(string tipo)
+    {
+        filtroTipo = tipo;
+        if (filtroCategoriaId.HasValue && !categoriasFiltro.Any(c => c.Id == filtroCategoriaId.Value))
+        {
+            filtroCategoriaId = null;
+        }
+        AplicarFiltros();
+    }
+
+    private void CambiarFiltroCategoria(Guid id)
+    {
+        filtroCategoriaId = id;
+        AplicarFiltros();
+    }
+
+    private void LimpiarFiltroCategoria()
+    {
+        filtroCategoriaId = null;
+        AplicarFiltros();
+    }
+
+    // Comentado: CambiarFiltroCompartido — proximamente
+    // private void CambiarFiltroCompartido(string opt)
+    // {
+    //     filtroCompartido = opt;
+    //     AplicarFiltros();
+    // }
+
+    private bool FormularioValido =>
+        gastoForm.Monto > 0 &&
+        gastoForm.CategoriaId != Guid.Empty &&
+        categoriasFiltradas.Any(c => c.Id == gastoForm.CategoriaId);
+
+    private static readonly string[] NombresMes =
+        ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+    private List<(DateTime Fecha, List<Gasto> Gastos)>? gastosAgrupados;
+    private int paginaActual = 1;
+    private int totalPaginas = 1;
+    private string? _skinActiva;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await Task.WhenAll(
+                CargarGastosAsync(),
+                CargarCategoriasAsync(),
+                CargarUsuarioAsync(),
+                CargarRecurrenciasAsync(),
+                CargarSkinAsync()
+            );
+
+            if (Navigation.Uri.Contains("?nuevo=true", StringComparison.OrdinalIgnoreCase))
+            {
+                AbrirModalNuevo();
+                Navigation.NavigateTo("/gastos", replace: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al cargar la página: {ex.Message}");
+        }
+    }
+
+    // Comentado: CargarMiembrosHogarAsync — proximamente
+    // private async Task CargarMiembrosHogarAsync()
+    // {
+    //     try
+    //     {
+    //         if (usuario?.HogarId is not null)
+    //         {
+    //             miembrosHogar = await HogarService.ObtenerMiembrosAsync(usuario.HogarId);
+    //             miembrosPorUsuarioId.Clear();
+    //             miembrosPorEmail.Clear();
+    //             foreach (var m in miembrosHogar)
+    //             {
+    //                 if (m.UsuarioId.HasValue)
+    //                     miembrosPorUsuarioId[m.UsuarioId.Value] = m;
+    //                 if (!string.IsNullOrEmpty(m.Email))
+    //                     miembrosPorEmail[m.Email.ToLowerInvariant()] = m;
+    //             }
+    //         }
+    //         else
+    //         {
+    //             miembrosHogar = new();
+    //             miembrosPorUsuarioId.Clear();
+    //             miembrosPorEmail.Clear();
+    //         }
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Logger.LogWarning(ex, "Error al cargar miembros del hogar");
+    //         miembrosHogar = new();
+    //         miembrosPorUsuarioId.Clear();
+    //         miembrosPorEmail.Clear();
+    //     }
+    // }
+
+    private async Task CargarGastosAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var paginacion = new Paginacion { Pagina = paginaActual, TamanoPagina = 50 };
+            var filtro = new FiltroGasto
+            {
+                Year = añoSeleccionado,
+                Month = mesSeleccionado,
+                Desde = filtroFechaDesde,
+                Hasta = filtroFechaHasta
+            };
+
+            var resultado = await GastoService.ObtenerGastosPaginadoAsync(paginacion, filtro);
+            ct.ThrowIfCancellationRequested();
+
+            gastos = resultado.Items;
+            totalPaginas = resultado.TotalPaginas;
+            totalGastos = gastos.Where(g => g.Monto > 0).Sum(g => g.Monto);
+            totalIngresos = gastos.Where(g => g.Monto < 0).Sum(g => Math.Abs(g.Monto));
+
+            var todosGastos = await GastoService.ObtenerGastosAsync();
+            var finDelMes = new DateTime(añoSeleccionado, mesSeleccionado, 1).AddMonths(1).AddTicks(-1);
+            var gastosAcum = todosGastos.Where(g =>
+            {
+                var f = g.Fecha.Kind == DateTimeKind.Utc ? g.Fecha.ToLocalTime() : g.Fecha;
+                return f <= finDelMes && g.Monto > 0;
+            }).Sum(g => g.Monto);
+            var ingresosAcum = todosGastos.Where(g =>
+            {
+                var f = g.Fecha.Kind == DateTimeKind.Utc ? g.Fecha.ToLocalTime() : g.Fecha;
+                return f <= finDelMes && g.Monto < 0;
+            }).Sum(g => Math.Abs(g.Monto));
+            balanceAcumulado = ingresosAcum - gastosAcum;
+
+            var agrupados = gastos
+                .OrderByDescending(g => g.Fecha)
+                .GroupBy(g => g.Fecha.ToLocalTime().Date)
+                .Select(g => (Fecha: g.Key, Gastos: g.ToList()))
+                .ToList();
+
+            gastosAgrupados = agrupados;
+            AplicarFiltros();
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al cargar los gastos: {ex.Message}");
+            gastosAgrupados = new();
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task CargarCategoriasAsync()
+    {
+        categorias = await CategoriaService.ObtenerCategoriasAsync();
+    }
+
+    private async Task CargarUsuarioAsync()
+    {
+        usuario = await UsuarioService.ObtenerUsuarioAsync();
+        mostrarMinutos = usuario.MostrarMinutos;
+    }
+
+    private async Task CargarSkinAsync()
+    {
+        try
+        {
+            _skinActiva = await TiendaService.ObtenerSkinActivaAsync();
+        }
+        catch
+        {
+            _skinActiva = null;
+        }
+    }
+
+    private string ObtenerClaseSkin()
+    {
+        return _skinActiva ?? "";
+    }
+
+    private List<Categoria> categoriasFiltradas =>
+        categorias
+            .Where(c => c.Tipo == (tipoForm == "Gasto" ? TipoGasto.Gasto : TipoGasto.Ingreso))
+            .OrderBy(c => c.Orden)
+            .ToList();
+
+    private string ObtenerNombreCategoria(Guid categoriaId)
+    {
+        var cat = categorias.FirstOrDefault(c => c.Id == categoriaId);
+        return cat?.Nombre ?? "Sin categoría";
+    }
+
+    private string ObtenerIconoCategoria(Guid categoriaId)
+    {
+        var cat = categorias.FirstOrDefault(c => c.Id == categoriaId);
+        return cat?.Icono ?? "📁";
+    }
+
+    private string ObtenerColorCategoria(Guid categoriaId)
+    {
+        var cat = categorias.FirstOrDefault(c => c.Id == categoriaId);
+        return cat?.Color ?? "#6c757d";
+    }
+
+    private string FormatearMonto(decimal monto)
+    {
+        var simbolo = usuario?.Moneda switch
+        {
+            "USD" => "$",
+            "EUR" => "€",
+            _ => "$"
+        };
+        return $"{simbolo}{Math.Abs(monto):N2}";
+    }
+
+    private string FormatearFechaGrupo(DateTime fecha)
+    {
+        var local = fecha.ToLocalTime().Date;
+        var hoy = DateTime.Now.Date;
+
+        if (local == hoy) return "Hoy";
+        if (local == hoy.AddDays(-1)) return "Ayer";
+
+        return local.ToString("dd MMMM yyyy");
+    }
+
+    // Comentado: metodos de hogar — proximamente
+    // private HogarMiembro? ObtenerMiembro(Gasto gasto) { ... }
+    // private string ObtenerNombreMiembro(Gasto gasto) { ... }
+    // private string ObtenerAvatarMiembro(Gasto gasto) { ... }
+    // private string ObtenerColorMiembro(Gasto gasto) { ... }
+
+    private void CambiarTipoForm(string tipo)
+    {
+        tipoForm = tipo;
+        gastoForm.CategoriaId = Guid.Empty;
+    }
+
+    private void SeleccionarTipoGasto() => CambiarTipoForm("Gasto");
+    private void SeleccionarTipoIngreso() => CambiarTipoForm("Ingreso");
+
+    private async Task CambiarPagina(int pagina)
+    {
+        if (pagina < 1 || pagina > totalPaginas || pagina == paginaActual) return;
+        paginaActual = pagina;
+        ctsCarga?.Cancel();
+        ctsCarga = new CancellationTokenSource();
+        await CargarGastosAsync(ctsCarga.Token);
+    }
+
+    private async Task MesAnterior()
+    {
+        paginaActual = 1;
+        mesSeleccionado--;
+        if (mesSeleccionado < 1)
+        {
+            mesSeleccionado = 12;
+            añoSeleccionado--;
+        }
+        var oldCts = ctsCarga;
+        ctsCarga?.Cancel();
+        ctsCarga = new CancellationTokenSource();
+        oldCts?.Dispose();
+        await CargarGastosAsync(ctsCarga.Token);
+    }
+
+    private async Task MesSiguiente()
+    {
+        var proxMes = mesSeleccionado + 1;
+        var proxAño = añoSeleccionado;
+        if (proxMes > 12) { proxMes = 1; proxAño++; }
+        if (EsMesActual) return;
+        paginaActual = 1;
+        mesSeleccionado = proxMes;
+        añoSeleccionado = proxAño;
+        var oldCts = ctsCarga;
+        ctsCarga?.Cancel();
+        ctsCarga = new CancellationTokenSource();
+        oldCts?.Dispose();
+        await CargarGastosAsync(ctsCarga.Token);
+    }
+
+    private async Task IrAlMesActual()
+    {
+        paginaActual = 1;
+        mesSeleccionado = DateTime.Now.Month;
+        añoSeleccionado = DateTime.Now.Year;
+        var oldCts = ctsCarga;
+        ctsCarga?.Cancel();
+        ctsCarga = new CancellationTokenSource();
+        oldCts?.Dispose();
+        await CargarGastosAsync(ctsCarga.Token);
+    }
+
+    private void AbrirModalNuevo()
+    {
+        editando = false;
+        tipoForm = "Gasto";
+        montoTocado = false;
+        gastoForm = new Gasto { CategoriaId = Guid.Empty, EsGastoCompartido = usuario?.HogarId is not null };
+        fechaForm = DateTime.Now;
+        modalAbierto = true;
+    }
+
+    private void EditarGasto(Gasto gasto)
+    {
+        if (gasto.RecurrenciaId is not null)
+        {
+            ToastService.ShowWarning("🔄 Este gasto solo puede editarse desde la sección de Recurrencias");
+            return;
+        }
+        if (gasto.FinanciamientoId is not null)
+        {
+            ToastService.ShowWarning("💳 Este gasto solo puede editarse desde la sección de Financiamiento");
+            return;
+        }
+        editando = true;
+        gastoForm = new Gasto
+        {
+            Id = gasto.Id,
+            CategoriaId = gasto.CategoriaId,
+            Monto = Math.Abs(gasto.Monto),
+            Descripcion = gasto.Descripcion,
+            EsGastoCompartido = gasto.EsGastoCompartido,
+            UsuarioId = gasto.UsuarioId,
+            HogarId = gasto.HogarId,
+            CreadoEn = gasto.CreadoEn,
+            Sincronizado = gasto.Sincronizado,
+            ActualizadoEn = gasto.ActualizadoEn,
+            Fecha = gasto.Fecha
+        };
+        fechaForm = gasto.Fecha.ToLocalTime();
+        tipoForm = gasto.Monto >= 0 ? "Gasto" : "Ingreso";
+        montoTocado = false;
+        modalAbierto = true;
+    }
+
+    private void CerrarModal()
+    {
+        modalAbierto = false;
+        guardando = false;
+        montoTocado = false;
+    }
+
+    private async Task GuardarGastoAsync()
+    {
+        if (!FormularioValido) return;
+
+        guardando = true;
+        StateHasChanged();
+
+        var montoOriginal = gastoForm.Monto;
+
+        try
+        {
+            gastoForm.Monto = tipoForm == "Gasto"
+                ? Math.Abs(gastoForm.Monto)
+                : -Math.Abs(gastoForm.Monto);
+            gastoForm.Fecha = fechaForm.ToUniversalTime();
+
+            if (editando)
+            {
+                await GastoService.ActualizarGastoAsync(gastoForm);
+                ToastService.ShowSuccess("Gasto actualizado");
+            }
+            else
+            {
+                var nivelAntes = 1;
+                var hpAntes = 100;
+                var monedasAntes = 0;
+                usuario = await UsuarioService.ObtenerUsuarioAsync();
+                if (usuario?.ModoGamificadoActivo == true)
+                {
+                    var p = await GamificacionService.ObtenerProgresoAsync();
+                    nivelAntes = p.Nivel;
+                    hpAntes = p.HpActual;
+                    monedasAntes = p.Monedas;
+                }
+
+                await GastoService.CrearGastoAsync(gastoForm);
+                ToastService.ShowSuccess(tipoForm == "Gasto" ? "Gasto registrado" : "Salario ingresado");
+
+                usuario = await UsuarioService.ObtenerUsuarioAsync();
+                if (usuario?.ModoGamificadoActivo == true)
+                {
+                    var nuevosLogros = await GamificacionService.VerificarYDesbloquearLogrosAsync();
+                    foreach (var logro in nuevosLogros)
+                    {
+                        ToastService.ShowSuccess($"🏅 ¡Logro desbloqueado: {logro.Nombre}!");
+                    }
+
+                    var p = await GamificacionService.ObtenerProgresoAsync();
+                    if (p.Nivel > nivelAntes)
+                    {
+                        await JSRuntime.InvokeVoidAsync("rpgEffects.levelUpFlash");
+                        ToastService.ShowSuccess($"🎉 ¡Subiste al nivel {p.Nivel}!");
+                    }
+                    if (p.HpActual < hpAntes)
+                    {
+                        await JSRuntime.InvokeVoidAsync("rpgEffects.damageFlash");
+                        ToastService.ShowWarning($"💔 Perdiste {hpAntes - p.HpActual} HP");
+                    }
+                    if (p.Monedas > monedasAntes)
+                    {
+                        ToastService.ShowSuccess($"🪙 ¡Ganaste {p.Monedas - monedasAntes} monedas!");
+                    }
+                }
+            }
+
+            gastoForm.Monto = montoOriginal;
+            CerrarModal();
+            await CargarGastosAsync();
+        }
+        catch (InvalidOperationException ex)
+        {
+            gastoForm.Monto = montoOriginal;
+            ToastService.ShowError(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            gastoForm.Monto = montoOriginal;
+            ToastService.ShowError($"Error al guardar: {ex.Message}");
+        }
+
+        guardando = false;
+    }
+
+    private void ConfirmarEliminar(Guid id)
+    {
+        gastoEliminando = id;
+    }
+
+    private void CancelarEliminar()
+    {
+        gastoEliminando = null;
+    }
+
+    private async Task EliminarGastoAsync()
+    {
+        if (gastoEliminando is null) return;
+
+        try
+        {
+            await GastoService.EliminarGastoAsync(gastoEliminando.Value);
+            var eliminado = gastos.FirstOrDefault(g => g.Id == gastoEliminando.Value);
+            ToastService.ShowSuccess(eliminado?.Monto < 0 ? "Ingreso eliminado" : "Gasto eliminado");
+            CancelarEliminar();
+
+            usuario = await UsuarioService.ObtenerUsuarioAsync();
+            if (usuario?.ModoGamificadoActivo == true)
+            {
+                await GamificacionService.RecalcularDesdeCeroAsync();
+            }
+
+            await CargarGastosAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al eliminar: {ex.Message}");
+        }
+    }
+
+    private List<Recurrencia>? recurrencias;
+    private int recurrenciasActivas;
+    private bool modalRecurrenciasAbierto;
+    private bool modalRecurrenciaFormAbierto;
+    private bool editandoRecurrencia;
+    private Guid? editandoRecurrenciaId;
+    private Guid? recurrenciaEliminandoId;
+
+    private Guid recurrenciaFormCategoriaId = Guid.Empty;
+    private decimal recurrenciaFormMonto = 0;
+    private decimal recurrenciaFormMontoAbs
+    {
+        get => Math.Abs(recurrenciaFormMonto);
+        set => recurrenciaFormMonto = recurrenciaFormMonto >= 0 ? value : -value;
+    }
+    private string recurrenciaFormDesc = "";
+    private string recurrenciaFormPeriodo = "Mensual";
+    private bool recurrenciaFormActiva = true;
+    private bool guardandoRecurrencia;
+
+    private bool RecurrenciaFormValida =>
+        recurrenciaFormCategoriaId != Guid.Empty &&
+        recurrenciaFormMonto != 0 &&
+        categorias.Any(c => c.Id == recurrenciaFormCategoriaId);
+
+    private string LabelRecurrencia(Recurrencia r)
+    {
+        return r.TipoRecurrencia switch
+        {
+            Models.TipoRecurrencia.Diario => "Cada día",
+            Models.TipoRecurrencia.Semanal => "Cada semana",
+            Models.TipoRecurrencia.Mensual => "Cada mes",
+            Models.TipoRecurrencia.Anual => "Cada año",
+            _ => ""
+        };
+    }
+
+    private async Task CargarRecurrenciasAsync()
+    {
+        try
+        {
+            recurrencias = await RecurrenciaService.ObtenerRecurrenciasAsync();
+            recurrenciasActivas = recurrencias.Count(r => r.Activa);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al cargar recurrencias");
+            recurrencias = new();
+            recurrenciasActivas = 0;
+        }
+    }
+
+    private async Task AbrirModalRecurrencias()
+    {
+        await CargarRecurrenciasAsync();
+        modalRecurrenciasAbierto = true;
+    }
+
+    private void CerrarModalRecurrencias()
+    {
+        modalRecurrenciasAbierto = false;
+        StateHasChanged();
+    }
+
+    private void AbrirModalNuevaRecurrencia()
+    {
+        editandoRecurrencia = false;
+        editandoRecurrenciaId = null;
+        recurrenciaFormCategoriaId = Guid.Empty;
+        recurrenciaFormMonto = 0;
+        recurrenciaFormDesc = "";
+        recurrenciaFormPeriodo = "Mensual";
+        recurrenciaFormActiva = true;
+        modalRecurrenciaFormAbierto = true;
+    }
+
+    private void EditarRecurrencia(Recurrencia rec)
+    {
+        editandoRecurrencia = true;
+        editandoRecurrenciaId = rec.Id;
+        recurrenciaFormCategoriaId = rec.CategoriaId ?? Guid.Empty;
+        recurrenciaFormMonto = rec.Monto;
+        recurrenciaFormDesc = rec.Descripcion ?? "";
+        recurrenciaFormPeriodo = rec.TipoRecurrencia switch
+        {
+            Models.TipoRecurrencia.Diario => "Diario",
+            Models.TipoRecurrencia.Semanal => "Semanal",
+            Models.TipoRecurrencia.Mensual => "Mensual",
+            Models.TipoRecurrencia.Anual => "Anual",
+            _ => "Mensual"
+        };
+        recurrenciaFormActiva = rec.Activa;
+        modalRecurrenciaFormAbierto = true;
+    }
+
+    private void CerrarModalRecurrenciaForm()
+    {
+        modalRecurrenciaFormAbierto = false;
+        guardandoRecurrencia = false;
+        editandoRecurrenciaId = null;
+    }
+
+    private async Task GuardarRecurrenciaAsync()
+    {
+        if (!RecurrenciaFormValida) return;
+
+        guardandoRecurrencia = true;
+        StateHasChanged();
+
+        try
+        {
+            var tipo = recurrenciaFormPeriodo switch
+            {
+                "Diario" => Models.TipoRecurrencia.Diario,
+                "Semanal" => Models.TipoRecurrencia.Semanal,
+                "Mensual" => Models.TipoRecurrencia.Mensual,
+                "Anual" => Models.TipoRecurrencia.Anual,
+                _ => Models.TipoRecurrencia.Mensual
+            };
+
+            if (editandoRecurrenciaId.HasValue)
+            {
+                var recurrenciasList = await RecurrenciaService.ObtenerRecurrenciasAsync();
+                var existente = recurrenciasList.FirstOrDefault(r => r.Id == editandoRecurrenciaId);
+                if (existente != null)
+                {
+                    existente.CategoriaId = recurrenciaFormCategoriaId;
+                    existente.Monto = recurrenciaFormMonto;
+                    existente.Descripcion = string.IsNullOrWhiteSpace(recurrenciaFormDesc) ? null : recurrenciaFormDesc.Trim();
+                    existente.TipoRecurrencia = tipo;
+                    existente.Activa = recurrenciaFormActiva;
+                    await RecurrenciaService.ActualizarRecurrenciaAsync(existente);
+                    ToastService.ShowSuccess("Recurrencia actualizada");
+                }
+            }
+            else
+            {
+                var rec = new Recurrencia
+                {
+                    CategoriaId = recurrenciaFormCategoriaId,
+                    Monto = recurrenciaFormMonto,
+                    Descripcion = string.IsNullOrWhiteSpace(recurrenciaFormDesc) ? null : recurrenciaFormDesc.Trim(),
+                    TipoRecurrencia = tipo,
+                    FechaInicio = DateTime.UtcNow,
+                    ProximaFecha = DateTime.UtcNow,
+                    Activa = recurrenciaFormActiva,
+                };
+                await RecurrenciaService.CrearRecurrenciaAsync(rec);
+                ToastService.ShowSuccess("Recurrencia creada");
+            }
+
+            var generados = await RecurrenciaService.GenerarPendientesAsync();
+            if (generados.Count > 0)
+            {
+                ToastService.ShowSuccess($"💸 Gasto generado: {generados[0].Descripcion ?? "recurrencia"}");
+            }
+
+            await CargarRecurrenciasAsync();
+            await CargarGastosAsync();
+            CerrarModalRecurrenciaForm();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+
+        guardandoRecurrencia = false;
+    }
+
+    private void ConfirmarEliminarRecurrencia(Guid id)
+    {
+        recurrenciaEliminandoId = id;
+    }
+
+    private void CancelarEliminarRecurrencia()
+    {
+        recurrenciaEliminandoId = null;
+    }
+
+    private async Task EliminarRecurrenciaAsync()
+    {
+        if (recurrenciaEliminandoId is null) return;
+
+        try
+        {
+            await RecurrenciaService.EliminarRecurrenciaAsync(recurrenciaEliminandoId.Value);
+            ToastService.ShowSuccess("Recurrencia eliminada. Los gastos anteriores se conservan.");
+            CancelarEliminarRecurrencia();
+            await CargarRecurrenciasAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task EliminarRecurrenciaConGastosAsync()
+    {
+        if (recurrenciaEliminandoId is null) return;
+
+        try
+        {
+            var id = recurrenciaEliminandoId.Value;
+            await RecurrenciaService.EliminarRecurrenciaConGastosAsync(id);
+            ToastService.ShowSuccess("Recurrencia y sus gastos eliminados");
+            CancelarEliminarRecurrencia();
+            await CargarRecurrenciasAsync();
+            await CargarGastosAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        ctsCarga?.Cancel();
+        if (ctsCarga != null)
+        {
+            ctsCarga.Dispose();
+            ctsCarga = null;
+        }
+        await Task.CompletedTask;
+    }
+
+    private static DateTime SafeLocalTime(DateTime dt)
+    {
+        if (dt.Kind == DateTimeKind.Unspecified)
+            return DateTime.SpecifyKind(dt, DateTimeKind.Utc).ToLocalTime();
+        return dt.ToLocalTime();
+    }
+}

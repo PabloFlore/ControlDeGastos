@@ -1,0 +1,690 @@
+﻿@page "/"
+@using SkiaSharp
+@inject IGastoService GastoService
+@inject ICategoriaService CategoriaService
+@inject IUsuarioService UsuarioService
+@inject IGamificacionService GamificacionService
+@inject IPresupuestoService PresupuestoService
+@inject IThemeService ThemeService
+@inject IToastService ToastService
+@inject ILicenciaService LicenciaService
+@inject ITiendaService TiendaService
+@inject IStorageService StorageService
+@inject IRecurrenciaService RecurrenciaService
+@inject IOnboardingService OnboardingService
+@inject IPrivacyService PrivacyService
+@inject ILogger<Home> Logger
+@inject NavigationManager Navigation
+
+<PageTitle>Dashboard - Control de Gastos</PageTitle>
+
+<div class="dashboard">
+    <div class="encabezado">
+        <div class="encabezado-izq">
+            <p class="encabezado-saludo">@ObtenerSaludo()@usuario?.Nombre</p>
+            <div class="encabezado-navegacion">
+                <button class="mes-btn" @onclick="MesAnterior" title="Mes anterior">‹</button>
+                <p class="encabezado-fecha">@NombresMes[mesSeleccionado - 1] @añoSeleccionado</p>
+                <button class="mes-btn @(EsMesActual ? "btn-deshabilitado" : "")" @onclick="MesSiguiente" title="Mes siguiente">›</button>
+                @if (mesSeleccionado != DateTime.Now.Month || añoSeleccionado != DateTime.Now.Year)
+                {
+                    <button class="mes-btn hoy-btn" @onclick="IrAlMesActual" title="Volver al mes actual">●</button>
+                }
+            </div>
+        </div>
+        <a href="/configuracion" class="avatar" title="Configuración">@InicialNombre</a>
+    </div>
+
+    <div class="balance-card">
+        <div class="balance-label">Balance total</div>
+        <div class="balance-monto @(balanceAcumulado >= 0 ? "texto-verde" : "texto-rojo")">@(balanceAcumulado < 0 ? "-" : "")@FormatearMonto(balanceAcumulado)</div>
+        <div class="balance-detalle">
+            <span class="detalle-item detalle-gasto">↓ @FormatearMonto(totalGastos)</span>
+            <span class="detalle-item detalle-ingreso">↑ @FormatearMonto(totalIngresos)</span>
+        </div>
+    </div>
+
+    @switch (_estadoLicencia)
+    {
+        case EstadoLicenciaUI.Expired:
+            <div class="licencia-banner banner-rojo">
+                <span>⛔ Tu licencia ha expirado. <a href="/configuracion" class="banner-link">Actívala aquí</a></span>
+            </div>
+            break;
+        case EstadoLicenciaUI.ExpiringSoon:
+            @if (!_bannerMostradoHoy)
+            {
+                <div class="licencia-banner banner-amarillo">
+                    <span>⚠️ Tu licencia vence @(_diasLicenciaRestantes > 0 ? $"en {_diasLicenciaRestantes} días" : $"en {_horasLicenciaRestantes} horas"). <a href="/configuracion" class="banner-link">Renueva ahora</a></span>
+                    <button class="banner-cerrar" @onclick="CerrarBannerAsync">✕</button>
+                </div>
+            }
+            break;
+    }
+
+    @if (cargando)
+    {
+        <LoadingSpinner Message="Cargando dashboard..." />
+    }
+    else if (huboError)
+    {
+        <ErrorState Message="No se pudieron cargar los datos" OnRetry="RecargarAsync" />
+    }
+    else
+    {
+        @if (modoGamificado && progreso is not null)
+        {
+            <div class="rpg-compacto @(rpgExpandido ? "rpg-compacto-expanded" : "")">
+                <div class="rpg-compacto-header" @onclick="ToggleRpgExpandido">
+                    <div class="level-dot">@progreso.Nivel</div>
+                    <div class="rpg-compacto-titles">
+                        <span class="rpg-compacto-titulo">Nv. @progreso.Nivel</span>
+                        @if (!string.IsNullOrEmpty(tituloActivo))
+                        {
+                            <span class="rpg-compacto-titulo-secundario
+                                @(tituloActivoId == "shop_son_of_god" ? "rpg-compacto-titulo-solar"
+                                    : tituloActivoId == "shop_aura_negativa" || tituloActivoId == "shop_deudor_aura" ? "rpg-compacto-titulo-rojo"
+                                    : !string.IsNullOrEmpty(tituloActivoId) ? "rpg-compacto-titulo-blanco"
+                                    : "")">@tituloActivo</span>
+                        }
+                    </div>
+                    <div class="rpg-compacto-right">
+                        @if (progreso.GastosConsecutivos > 0)
+                        {
+                            <span class="rpg-compacto-racha">🔥 @progreso.GastosConsecutivos</span>
+                        }
+                        <span class="rpg-compacto-toggle">@(rpgExpandido ? "▲" : "▼")</span>
+                    </div>
+                </div>
+                <div class="rpg-compacto-barras">
+                    <div class="rpg-barra-chica">
+                        <div class="barra-chica-fill" style="width: @PorcentajeHP%; background: @ColorHP"></div>
+                    </div>
+                    <div class="rpg-barra-chica">
+                        <div class="barra-chica-fill exp-fill @(PorcentajeEXP >= 90 ? "exp-almost-full" : "")" style="width: @PorcentajeEXP%"></div>
+                    </div>
+                </div>
+                <div class="rpg-expandible @(rpgExpandido ? "rpg-expandido" : "")">
+                    <div class="rpg-expandido-content">
+                        <div class="rpg-expandido-barras-detalle">
+                            <div class="rpg-exp-detalle-item">
+                                <span class="rpg-exp-label">💀 HP</span>
+                                <span class="rpg-exp-valor">@(progreso.HpActual) / @(progreso.HpMaximo)</span>
+                            </div>
+                            <div class="rpg-exp-detalle-item">
+                                <span class="rpg-exp-label">✨ EXP</span>
+                                <span class="rpg-exp-valor">@(progreso.ExpActual) / @(progreso.ExpRequerida)</span>
+                            </div>
+                            @if (progreso.GastosConsecutivos > 0)
+                            {
+                                <div class="rpg-exp-detalle-item">
+                                    <span class="rpg-exp-label">🔥 Racha</span>
+                                    <span class="rpg-exp-valor">@progreso.GastosConsecutivos días</span>
+                                </div>
+                            }
+                            <div class="rpg-exp-detalle-item">
+                                <span class="rpg-exp-label">🏅 Logros</span>
+                                <span class="rpg-exp-valor">@logrosDesbloqueados.Count / @logros.Count</span>
+                            </div>
+                            <div class="rpg-exp-detalle-item">
+                                <span class="rpg-exp-label">🎖️ Títulos</span>
+                                <span class="rpg-exp-valor">@(titulosDesbloqueadosCount) / @(titulosCount)</span>
+                            </div>
+                            <div class="rpg-exp-detalle-item">
+                                <span class="rpg-exp-label">🪙 Monedas</span>
+                                <span class="rpg-exp-valor">@progreso.Monedas</span>
+                            </div>
+                        </div>
+                        <a href="game" class="rpg-exp-link">📊 Ver estadísticas completas →</a>
+                    </div>
+                </div>
+            </div>
+
+            @if (!rpgExpandido && logros.Any())
+            {
+                <div class="logros-card">
+                    <div class="logros-card-header">
+                        <h2 class="logros-titulo">🏅 Logros</h2>
+                        <label class="logros-toggle" title="Mostrar/Ocultar logros">
+                            <span class="logros-toggle-label">@(mostrarLogros ? "Ocultar" : "Mostrar")</span>
+                            <span class="toggle-switch">
+                                <input type="checkbox" checked="@mostrarLogros" @onchange="ToggleLogros" />
+                                <span class="toggle-slider"></span>
+                            </span>
+                        </label>
+                    </div>
+                    @if (mostrarLogros)
+                    {
+                        <div class="logros-grid">
+                            @foreach (var logro in logros)
+                            {
+                                var desbloqueado = logrosDesbloqueados.Any(l => l.Id == logro.Id);
+                                <div @key="logro.Id" class="logro-item @(desbloqueado ? "logro-desbloqueado" : "logro-bloqueado")"
+                                     title="@logro.Descripcion">
+                                    <span class="logro-icono">@logro.Icono</span>
+                                    <span class="logro-nombre">@logro.Nombre</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        }
+
+        <div class="chart-card" @key="@("home-pie-chart")">
+            @if (gastosPorCategoria.Any())
+            {
+                <label class="chart-toggle" title="Mostrar/Ocultar gráfico">
+                    <span>📊</span>
+                    <span class="toggle-switch">
+                        <input type="checkbox" checked="@mostrarGrafico" @onchange="ToggleGrafico" />
+                        <span class="toggle-slider"></span>
+                    </span>
+                </label>
+                <h2 class="chart-titulo">Gastos por categoría</h2>
+                @if (mostrarGrafico)
+                {
+                    <div class="chart-container">
+                        <PieChart Series="seriesGastos"
+                                  InitialRotation="45"
+                                  MaxAngle="360"
+                                  TooltipPosition="LiveChartsCore.Measure.TooltipPosition.Top" />
+                    </div>
+                    <div class="chart-leyenda">
+                        @foreach (var item in gastosPorCategoria.Take(5))
+                        {
+                            <div @key="item.CategoriaId" class="leyenda-item">
+                                <span class="leyenda-color" style="background: @item.Color"></span>
+                                <span class="leyenda-nombre">@item.Nombre</span>
+                                <span class="leyenda-monto">@FormatearMonto(item.Total)</span>
+                            </div>
+                        }
+                        @if (gastosPorCategoria.Count > 5)
+                        {
+                            <div class="leyenda-item leyenda-mas">+@(gastosPorCategoria.Count - 5) más</div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="acciones-rapidas">
+            <a class="accion-btn accion-gasto" href="/gastos?nuevo=true">
+                <span class="accion-icono">＋</span>
+                <span class="accion-texto">Nuevo gasto</span>
+            </a>
+            <a class="accion-btn accion-presupuesto" href="/presupuestos">
+                <span class="accion-icono">📋</span>
+                <span class="accion-texto">Añadir presupuesto</span>
+            </a>
+        </div>
+
+        <div class="card-seccion">
+            <div class="card-seccion-header">
+                <h2 class="seccion-titulo">Últimos movimientos</h2>
+                <a class="seccion-link" href="gastos">Ver todo</a>
+            </div>
+            @if (!gastosRecientes.Any())
+            {
+                <EmptyState Icon="📭" Title="No hay movimientos este mes" Subtitle="Presiona + para registrar tu primer gasto" />
+            }
+            else
+            {
+                @foreach (var gasto in gastosRecientes)
+                {
+                    <div @key="gasto.Id" class="movimiento-item">
+                        <div class="movimiento-icono" style="background: @(ObtenerColorCategoria(gasto.CategoriaId) + "22")">
+                            @ObtenerIconoCategoria(gasto.CategoriaId)
+                        </div>
+                        <div class="movimiento-info">
+                            <div class="movimiento-nombre">
+                                @ObtenerNombreCategoria(gasto.CategoriaId)
+                                @if (gasto.RecurrenciaId is not null)
+                                {
+                                    <span class="movimiento-recurrencia-badge" title="Generado por recurrencia">🔄</span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(gasto.Descripcion))
+                            {
+                                <div class="movimiento-desc">@gasto.Descripcion</div>
+                            }
+                        </div>
+                        <div class="movimiento-monto @(gasto.Monto >= 0 ? "monto-gasto" : "monto-ingreso")">
+                            @FormatearMonto(gasto.Monto)
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        @if (presupuestosActivos.Any())
+        {
+            <div class="card-seccion">
+                <div class="card-seccion-header">
+                    <h2 class="seccion-titulo">Presupuestos</h2>
+                    <a class="seccion-link" href="presupuestos">Ver todo</a>
+                </div>
+                @foreach (var pres in presupuestosActivos)
+                {
+                    var gastado = gastadoPorPresupuesto.GetValueOrDefault(pres.Id);
+                    var pct = pres.MontoLimite > 0 ? Math.Min(100, (int)(gastado * 100 / pres.MontoLimite)) : 0;
+                    <div @key="pres.Id" class="presupuesto-item">
+                        <div class="presupuesto-header">
+                            <span>@ObtenerNombreCategoria(pres.CategoriaId ?? Guid.Empty)</span>
+                            <span>@FormatearMonto(gastado) / @FormatearMonto(pres.MontoLimite)</span>
+                        </div>
+                        <div class="presupuesto-bar">
+                            <div class="presupuesto-fill @(pct >= 90 ? "fill-peligro" : pct >= 70 ? "fill-atencion" : "fill-bien")"
+                                 style="width: @pct%"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (recurrencias.Any())
+        {
+            <div class="card-seccion">
+                <div class="card-seccion-header">
+                    <h2 class="seccion-titulo">🔄 Próximas recurrencias</h2>
+                    <a class="seccion-link" href="gastos">Gestionar</a>
+                </div>
+                @foreach (var rec in recurrencias.OrderBy(r => r.ProximaFecha).Take(5))
+                {
+                    <div @key="rec.Id" class="movimiento-item">
+                        <div class="movimiento-icono" style="background: @(ObtenerColorCategoria(rec.CategoriaId ?? Guid.Empty) + "22")">
+                            @ObtenerIconoCategoria(rec.CategoriaId ?? Guid.Empty)
+                        </div>
+                        <div class="movimiento-info">
+                            <div class="movimiento-nombre">@ObtenerNombreCategoria(rec.CategoriaId ?? Guid.Empty)</div>
+                            <div class="movimiento-desc">@(rec.Descripcion ?? LabelRecurrenciaPeriodo(rec))</div>
+                            <span class="recurrencia-tipo">@LabelRecurrenciaPeriodo(rec)</span>
+                        </div>
+                        <div style="text-align:right">
+                            <div class="@(rec.Monto >= 0 ? "monto-gasto" : "monto-ingreso")" style="font-size:0.85rem;font-weight:700">@FormatearMonto(rec.Monto)</div>
+                            <div style="font-size:0.7rem;color:var(--text-muted)">
+                                @{
+                                    var fmtRec = rec.TipoRecurrencia == Models.TipoRecurrencia.Anual
+                                        ? (mostrarMinutos ? "dd MMM yyyy HH:mm" : "dd MMM yyyy")
+                                        : (mostrarMinutos ? "dd MMM HH:mm" : "dd MMM");
+                                }
+                                @SafeLocalTime(rec.ProximaFecha).ToString(fmtRec)
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+<OnboardingStepper Visible="@mostrarAvisoPrivacidad"
+                   ModoAvisoPrivacidad="true"
+                   OnAceptarPrivacidad="AceptarPrivacidadAsync" />
+
+<OnboardingStepper Visible="@mostrarOnboarding"
+                   OnSaltar="CerrarOnboardingAsync"
+                   OnCompletar="CompletarOnboardingAsync" />
+
+@code {
+    private Usuario? usuario;
+    private ProgresoRPG? progreso;
+    private bool modoGamificado;
+    private bool mostrarMinutos;
+    private bool cargando = true;
+    private bool huboError;
+    private bool mostrarAvisoPrivacidad;
+    private bool mostrarOnboarding;
+    private bool _bannerMostradoHoy;
+    private Dictionary<Guid, Categoria> cacheCategorias = new();
+    private enum EstadoLicenciaUI { None, Valid, ExpiringSoon, Expired }
+    private EstadoLicenciaUI _estadoLicencia = EstadoLicenciaUI.None;
+    private int _diasLicenciaRestantes;
+    private int _horasLicenciaRestantes;
+
+    private decimal totalGastos;
+    private decimal totalIngresos;
+    private decimal balanceAcumulado;
+
+    private List<Gasto> gastosRecientes = new();
+    private List<(Guid CategoriaId, string Nombre, string Color, decimal Total)> gastosPorCategoria = new();
+
+    private List<Presupuesto> presupuestosActivos = new();
+    private Dictionary<Guid, decimal> gastadoPorPresupuesto = new();
+
+    private List<Logro> logros = new();
+    private List<Logro> logrosDesbloqueados = new();
+    private List<Recurrencia> recurrencias = new();
+    private string? tituloActivo;
+    private string? tituloActivoId;
+    private bool rpgExpandido;
+    private bool mostrarLogros;
+    private int titulosDesbloqueadosCount;
+    private int titulosCount;
+
+    private bool EsMesActual => mesSeleccionado == DateTime.Now.Month && añoSeleccionado == DateTime.Now.Year;
+    private bool mostrarGrafico = true;
+    private int añoSeleccionado = DateTime.Now.Year;
+    private int mesSeleccionado = DateTime.Now.Month;
+
+    private ISeries[] seriesGastos = Array.Empty<ISeries>();
+
+    private int PorcentajeHP => progreso?.HpMaximo > 0 ? (int)Math.Round(progreso.HpActual * 100.0 / progreso.HpMaximo) : 100;
+    private int PorcentajeEXP => progreso?.ExpRequerida > 0 ? (int)Math.Round(progreso.ExpActual * 100.0 / progreso.ExpRequerida) : 0;
+    private string ColorHP => PorcentajeHP >= 50 ? "var(--accent-green)" : PorcentajeHP >= 25 ? "#ff8c00" : "var(--accent-red)";
+    private string InicialNombre => usuario?.Nombre?.Length > 0
+        ? usuario.Nombre[..1].ToUpper() : "?";
+
+    private static readonly string[] NombresMes =
+        ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDashboardAsync();
+    }
+
+    private async Task RecargarAsync()
+    {
+        huboError = false;
+        cargando = true;
+        StateHasChanged();
+        await CargarDashboardAsync();
+    }
+
+    private void ToggleGrafico(ChangeEventArgs e)
+    {
+        mostrarGrafico = (bool)(e.Value ?? false);
+    }
+
+    private void ToggleLogros(ChangeEventArgs e)
+    {
+        mostrarLogros = (bool)(e.Value ?? false);
+    }
+
+    private async Task CargarDashboardAsync()
+    {
+        try
+        {
+            usuario = await UsuarioService.ObtenerUsuarioAsync();
+            if (usuario is null)
+            {
+                huboError = true;
+                return;
+            }
+            modoGamificado = usuario.ModoGamificadoActivo;
+            mostrarMinutos = usuario.MostrarMinutos;
+
+            var licencia = await LicenciaService.ObtenerEstadoLicenciaAsync();
+            if (licencia is null || !licencia.Valida)
+            {
+                _estadoLicencia = licencia is null ? EstadoLicenciaUI.None : EstadoLicenciaUI.Expired;
+            }
+            else if (licencia.LicenciaTipo == Models.TipoLicencia.ParaSiempre)
+            {
+                _estadoLicencia = EstadoLicenciaUI.Valid;
+            }
+            else
+            {
+                _diasLicenciaRestantes = licencia.DiasRestantes;
+                _horasLicenciaRestantes = licencia.HorasRestantes;
+                _estadoLicencia = _diasLicenciaRestantes > 0 && _diasLicenciaRestantes <= 3
+                    ? EstadoLicenciaUI.ExpiringSoon
+                    : _diasLicenciaRestantes == 0 && _horasLicenciaRestantes > 0
+                    ? EstadoLicenciaUI.ExpiringSoon
+                    : EstadoLicenciaUI.Valid;
+            }
+
+            var ultimoDescarte = await StorageService.GetAsync<string>("cdg_license_banner");
+            _bannerMostradoHoy = ultimoDescarte == DateTime.UtcNow.Date.ToString("O");
+
+            var categorias = await CategoriaService.ObtenerCategoriasAsync();
+            cacheCategorias = categorias.GroupBy(c => c.Id).ToDictionary(g => g.Key, g => g.First());
+
+            var todosGastos = await GastoService.ObtenerGastosAsync();
+
+            var gastosMes = todosGastos.Where(g =>
+            {
+                var f = g.Fecha.Kind == DateTimeKind.Utc ? g.Fecha.ToLocalTime() : g.Fecha;
+                return f.Year == añoSeleccionado && f.Month == mesSeleccionado;
+            }).ToList();
+
+            totalGastos = gastosMes.Where(g => g.Monto > 0).Sum(g => g.Monto);
+            totalIngresos = gastosMes.Where(g => g.Monto < 0).Sum(g => Math.Abs(g.Monto));
+
+            var finDelMes = new DateTime(añoSeleccionado, mesSeleccionado, 1).AddMonths(1).AddTicks(-1);
+            var gastosAcum = todosGastos.Where(g =>
+            {
+                var f = g.Fecha.Kind == DateTimeKind.Utc ? g.Fecha.ToLocalTime() : g.Fecha;
+                return f <= finDelMes && g.Monto > 0;
+            }).Sum(g => g.Monto);
+            var ingresosAcum = todosGastos.Where(g =>
+            {
+                var f = g.Fecha.Kind == DateTimeKind.Utc ? g.Fecha.ToLocalTime() : g.Fecha;
+                return f <= finDelMes && g.Monto < 0;
+            }).Sum(g => Math.Abs(g.Monto));
+            balanceAcumulado = ingresosAcum - gastosAcum;
+
+            gastosRecientes = gastosMes
+                .OrderByDescending(g => g.Fecha)
+                .Take(3)
+                .ToList();
+
+            var agrupados = gastosMes
+                .Where(g => g.Monto > 0)
+                .GroupBy(g => g.CategoriaId)
+                .Select(g =>
+                {
+                    var cat = cacheCategorias.GetValueOrDefault(g.Key);
+                    return (
+                        CategoriaId: g.Key,
+                        Nombre: cat?.Nombre ?? "Sin categoría",
+                        Color: cat?.Color ?? "#6c757d",
+                        Total: g.Sum(x => x.Monto)
+                    );
+                })
+                .OrderByDescending(g => g.Total)
+                .ToList();
+
+            gastosPorCategoria = agrupados;
+
+            seriesGastos = agrupados.Select(g => new PieSeries<double>
+            {
+                Values = new double[] { Math.Round((double)g.Total, 2) },
+                Name = g.Nombre,
+                Fill = new SolidColorPaint(SafeParseColor(g.Color)),
+                Stroke = null,
+            }).Cast<ISeries>().ToArray();
+
+            if (modoGamificado)
+            {
+                progreso = await GamificacionService.RecuperarHpDiarioAsync();
+                logros = await GamificacionService.ObtenerLogrosAsync();
+                logrosDesbloqueados = await GamificacionService.ObtenerLogrosDesbloqueadosAsync();
+
+                var catalogo = await TiendaService.ObtenerCatalogoAsync();
+                var titulosTienda = catalogo
+                    .Where(a => a.Categoria == CategoriaArticulo.TituloTienda)
+                    .ToList();
+
+                tituloActivoId = progreso?.TituloActivoId;
+                tituloActivo = null;
+                if (!string.IsNullOrEmpty(tituloActivoId))
+                {
+                    var achTitulos = await GamificacionService.ObtenerTitulosAsync();
+                    var achTitulo = achTitulos.FirstOrDefault(t => t.Id == tituloActivoId);
+                    if (achTitulo is not null)
+                        tituloActivo = $"{achTitulo.Icono} {achTitulo.Nombre}";
+                    else
+                    {
+                        var shopTitulo = titulosTienda.FirstOrDefault(a => a.TituloId == tituloActivoId);
+                        if (shopTitulo is not null)
+                            tituloActivo = $"{shopTitulo.TituloIcono} {shopTitulo.Nombre}";
+                    }
+                }
+
+                var achTitulosList = await GamificacionService.ObtenerTitulosAsync();
+                var achDesbloqueados = await GamificacionService.ObtenerTitulosDesbloqueadosAsync();
+                titulosCount = achTitulosList.Count + titulosTienda.Count;
+                titulosDesbloqueadosCount = achDesbloqueados.Count + (progreso?.IdsTitulosTienda?.Count ?? 0);
+            }
+
+            recurrencias = await RecurrenciaService.ObtenerRecurrenciasAsync();
+
+            var todosPresupuestos = await PresupuestoService.ObtenerPresupuestosAsync();
+            var inicioMes = new DateTime(añoSeleccionado, mesSeleccionado, 1, 0, 0, 0, DateTimeKind.Utc);
+            var finMes = inicioMes.AddMonths(1).AddTicks(-1);
+            presupuestosActivos = todosPresupuestos
+                .Where(p => p.FechaInicio <= finMes)
+                .Where(p => p.FechaFin != null
+                    ? p.FechaFin >= inicioMes
+                    : p.Periodo switch
+                    {
+                        PeriodoPresupuesto.Mensual => p.FechaInicio.AddMonths(1) >= inicioMes,
+                        PeriodoPresupuesto.Anual => p.FechaInicio.AddYears(1) >= inicioMes,
+                        _ => true
+                    })
+                .ToList();
+
+            foreach (var pres in presupuestosActivos)
+            {
+                var gastado = await PresupuestoService.ObtenerGastadoEnPeriodoAsync(pres);
+                gastadoPorPresupuesto[pres.Id] = gastado;
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al cargar dashboard: {ex.Message}");
+            huboError = true;
+        }
+
+        mostrarAvisoPrivacidad = !await PrivacyService.HaAceptadoAsync();
+        mostrarOnboarding = !mostrarAvisoPrivacidad && !await OnboardingService.EstaCompletadoAsync();
+
+        cargando = false;
+        StateHasChanged();
+    }
+
+    private async Task MesAnterior()
+    {
+        mesSeleccionado--;
+        if (mesSeleccionado < 1)
+        {
+            mesSeleccionado = 12;
+            añoSeleccionado--;
+        }
+        await CargarDashboardAsync();
+    }
+
+    private async Task MesSiguiente()
+    {
+        var proxMes = mesSeleccionado + 1;
+        var proxAño = añoSeleccionado;
+        if (proxMes > 12) { proxMes = 1; proxAño++; }
+        if (EsMesActual) return;
+        mesSeleccionado = proxMes;
+        añoSeleccionado = proxAño;
+        await CargarDashboardAsync();
+    }
+
+    private async Task IrAlMesActual()
+    {
+        mesSeleccionado = DateTime.Now.Month;
+        añoSeleccionado = DateTime.Now.Year;
+        await CargarDashboardAsync();
+    }
+
+    private void ToggleRpgExpandido()
+    {
+        rpgExpandido = !rpgExpandido;
+        StateHasChanged();
+    }
+
+    private async Task AceptarPrivacidadAsync()
+    {
+        await PrivacyService.AceptarAsync();
+        mostrarAvisoPrivacidad = false;
+        mostrarOnboarding = !await OnboardingService.EstaCompletadoAsync();
+        StateHasChanged();
+    }
+
+    private async Task CerrarOnboardingAsync()
+    {
+        await OnboardingService.SaltarAsync();
+        mostrarOnboarding = false;
+        Navigation.NavigateTo("/");
+    }
+
+    private async Task CompletarOnboardingAsync()
+    {
+        await OnboardingService.CompletarAsync();
+        mostrarOnboarding = false;
+        Navigation.NavigateTo("/");
+    }
+
+    private async Task CerrarBannerAsync()
+    {
+        await StorageService.SetAsync("cdg_license_banner", DateTime.UtcNow.Date.ToString("O"));
+        _bannerMostradoHoy = true;
+    }
+
+    private string ObtenerSaludo()
+    {
+        var hora = DateTime.Now.Hour;
+        if (hora < 12) return "Buenos días, ";
+        if (hora < 18) return "Buenas tardes, ";
+        return "Buenas noches, ";
+    }
+
+    private string ObtenerNombreCategoria(Guid id)
+    {
+        return cacheCategorias.GetValueOrDefault(id)?.Nombre ?? "Sin categoría";
+    }
+
+    private string ObtenerIconoCategoria(Guid id)
+    {
+        return cacheCategorias.GetValueOrDefault(id)?.Icono ?? "📁";
+    }
+
+    private string ObtenerColorCategoria(Guid id)
+    {
+        return cacheCategorias.GetValueOrDefault(id)?.Color ?? "#6c757d";
+    }
+
+    private string LabelRecurrenciaPeriodo(Recurrencia r)
+    {
+        return r.TipoRecurrencia switch
+        {
+            Models.TipoRecurrencia.Diario => "Diario",
+            Models.TipoRecurrencia.Semanal => "Semanal",
+            Models.TipoRecurrencia.Mensual => "Mensual",
+            Models.TipoRecurrencia.Anual => "Anual",
+            _ => ""
+        };
+    }
+
+    private string FormatearMonto(decimal monto)
+    {
+        var simbolo = usuario?.Moneda switch
+        {
+            "USD" => "$",
+            "EUR" => "€",
+            _ => "$"
+        };
+        return $"{simbolo}{Math.Abs(monto):N2}";
+    }
+
+    private SKColor SafeParseColor(string? color)
+    {
+        if (string.IsNullOrWhiteSpace(color)) return SKColor.Parse("#6c757d");
+        try { return SKColor.Parse(color); }
+        catch (Exception ex) { Logger.LogError(ex, "Error al parsear color"); return SKColor.Parse("#6c757d"); }
+    }
+
+    private static DateTime SafeLocalTime(DateTime dt)
+    {
+        if (dt.Kind == DateTimeKind.Unspecified)
+            return DateTime.SpecifyKind(dt, DateTimeKind.Utc).ToLocalTime();
+        return dt.ToLocalTime();
+    }
+}

@@ -1,0 +1,281 @@
+.licencia-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.licencia-card {
+    box-sizing: border-box;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+}
+
+.licencia-header {
+    margin-bottom: 1.5rem;
+}
+
+.licencia-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    line-height: 1;
+}
+
+.icon-success {
+    font-size: 3rem;
+}
+
+.icon-forever {
+    font-size: 3rem;
+}
+
+.licencia-spinner {
+    animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.9); }
+}
+
+.licencia-header h1 {
+    font-size: 1.5rem;
+    margin: 0;
+    font-weight: 700;
+}
+
+.licencia-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.licencia-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.licencia-input {
+    box-sizing: border-box;
+    font-family: 'SF Mono', 'Courier New', monospace;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 12px 16px;
+    letter-spacing: 0.5px;
+    word-break: break-all;
+}
+
+.btn-licencia {
+    background: linear-gradient(135deg, var(--accent-blue), #6366f1);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.btn-licencia:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-licencia:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--border-color);
+}
+
+.licencia-error {
+    color: var(--accent-red);
+    font-size: 0.9rem;
+    padding: 0.75rem;
+    background: rgba(255, 51, 85, 0.1);
+    border-radius: var(--radius-sm);
+    margin-top: 0.5rem;
+}
+
+.licencia-info {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 1rem;
+}
+
+.licencia-success {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.licencia-success p {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.licencia-forever-text {
+    color: var(--accent-green);
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
+}
+
+.licencia-days {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0.5rem 0;
+}
+
+.days-number {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--accent-blue);
+    line-height: 1;
+}
+
+.days-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0.5rem 0 1rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-blue), #6366f1);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.licencia-card .btn-licencia {
+    margin-top: 0.5rem;
+}
+
+.licencia-opciones {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.licencia-opcion {
+    box-sizing: border-box;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    background: var(--bg-secondary);
+}
+
+body.rpg-theme .licencia-opcion {
+    border-color: var(--rpg-border);
+    background: var(--rpg-bg-card);
+}
+
+.licencia-opcion .opcion-titulo {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.licencia-divisor {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.licencia-divisor::before,
+.licencia-divisor::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.btn-hogar {
+    background: linear-gradient(135deg, var(--accent-green), #22c55e) !important;
+}
+
+body.rpg-theme .btn-hogar {
+    background: linear-gradient(135deg, var(--rpg-accent-cyan), #06b6d4) !important;
+    box-shadow: var(--rpg-glow-cyan) !important;
+}
+
+body.rpg-theme .btn-licencia {
+    background: linear-gradient(135deg, var(--rpg-accent-purple), var(--rpg-accent-cyan));
+    box-shadow: var(--rpg-glow-purple);
+}
+
+body.rpg-theme .btn-licencia:hover:not(:disabled) {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+}
+
+body.rpg-theme .btn-secondary {
+    background: var(--rpg-bg-card);
+    border-color: var(--rpg-border);
+    color: var(--rpg-text-primary);
+    box-shadow: none;
+}
+
+body.rpg-theme .icon-forever {
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+}
+
+body.rpg-theme .days-number {
+    color: var(--rpg-accent-cyan);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+body.rpg-theme .progress-fill {
+    background: linear-gradient(90deg, var(--rpg-accent-purple), var(--rpg-accent-cyan));
+    box-shadow: 0 0 6px rgba(168, 85, 247, 0.4);
+}
+
+body.rpg-theme .licencia-error {
+    background: rgba(255, 51, 85, 0.15);
+    border: 1px solid rgba(255, 51, 85, 0.3);
+}
+
+body.rpg-theme .licencia-input {
+    background: var(--rpg-bg-input);
+    border-color: var(--rpg-border);
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .licencia-input:focus {
+    border-color: var(--rpg-accent-cyan);
+    box-shadow: var(--rpg-glow-cyan);
+}

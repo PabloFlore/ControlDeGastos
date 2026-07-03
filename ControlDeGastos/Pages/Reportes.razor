@@ -1,0 +1,503 @@
+@page "/reportes"
+@using SkiaSharp
+@inject IGastoService GastoService
+@inject ICategoriaService CategoriaService
+@inject IUsuarioService UsuarioService
+@inject IToastService ToastService
+@inject IJSRuntime JSRuntime
+@inject ILogger<Reportes> Logger
+@inject IReportCalculationService ReportCalculation
+
+<PageTitle>Reportes - Control de Gastos</PageTitle>
+
+<div class="reportes-page">
+    <div class="reportes-header">
+        <div>
+            <h1 class="page-titulo">Reportes</h1>
+            <p class="page-sub">Analítica de tus finanzas</p>
+        </div>
+        <div class="header-controls">
+            <label class="comparar-toggle" title="Comparar con período anterior">
+                <input type="checkbox" checked="@compararActivo" @onchange="AlternarComparacion" />
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Comparar</span>
+            </label>
+            <div class="rango-reportes">
+                <div class="rango-reporte-campo">
+                    <input type="date" class="rango-reporte-input" value="@filtroFechaDesde?.ToString("yyyy-MM-dd")" @onchange="OnFechaDesdeChanged" placeholder="Desde" />
+                </div>
+                <span class="rango-reporte-sep">→</span>
+                <div class="rango-reporte-campo">
+                    <input type="date" class="rango-reporte-input" value="@filtroFechaHasta?.ToString("yyyy-MM-dd")" @onchange="OnFechaHastaChanged" placeholder="Hasta" />
+                </div>
+                @if (modoRango)
+                {
+                    <button class="rango-reporte-clear" @onclick="LimpiarRango" title="Limpiar rango">✕</button>
+                }
+            </div>
+            <div class="anio-selector">
+                <button class="anio-btn" @onclick="AnioAnterior" title="Año anterior">‹</button>
+                <span class="anio-actual">@anioSeleccionado</span>
+                <button class="anio-btn @(EsAnioActual ? "btn-deshabilitado" : "")" @onclick="AnioSiguiente" title="Año siguiente">›</button>
+                @if (anioSeleccionado != DateTime.Now.Year)
+                {
+                    <button class="anio-btn hoy-btn" @onclick="IrAlAnioActual" title="Volver al año actual">●</button>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (cargando)
+    {
+        <LoadingSpinner Message="Generando reportes..." />
+    }
+    else if (huboError)
+    {
+        <ErrorState Message="No se pudieron cargar los datos" OnRetry="RecargarAsync" />
+    }
+    else
+    {
+        <div class="resumen-grid">
+            <div class="resumen-card resumen-ingresos">
+                <div class="resumen-label">Ingresos @anioSeleccionado</div>
+                <div class="resumen-valor">@FormatearMonto(totalIngresos)</div>
+                @if (compararActivo)
+                {
+                    <div class="resumen-delta @(deltaIngresos >= 0 ? "delta-positivo" : "delta-negativo")">
+                        @FormatearDelta(deltaIngresos, deltaIngresosPct)
+                    </div>
+                }
+            </div>
+            <div class="resumen-card resumen-gastos">
+                <div class="resumen-label">Gastos @anioSeleccionado</div>
+                <div class="resumen-valor">@FormatearMonto(totalGastos)</div>
+                @if (compararActivo)
+                {
+                    <div class="resumen-delta @(deltaGastos <= 0 ? "delta-positivo" : "delta-negativo")">
+                        @FormatearDelta(deltaGastos, deltaGastosPct)
+                    </div>
+                }
+            </div>
+            <div class="resumen-card resumen-balance">
+                <div class="resumen-label">Balance @anioSeleccionado</div>
+                <div class="resumen-valor @(Balance >= 0 ? "texto-positivo" : "texto-negativo")">@FormatearMonto(Balance)</div>
+                @if (compararActivo)
+                {
+                    <div class="resumen-delta @(deltaBalance >= 0 ? "delta-positivo" : "delta-negativo")">
+                        @FormatearDelta(deltaBalance, deltaBalancePct)
+                    </div>
+                }
+            </div>
+            <div class="resumen-card resumen-promedio">
+                <div class="resumen-label">Promedio mensual</div>
+                <div class="resumen-valor">@FormatearMonto(promedioMensual)</div>
+                @if (compararActivo)
+                {
+                    <div class="resumen-delta @(deltaPromedio <= 0 ? "delta-positivo" : "delta-negativo")">
+                        @FormatearDelta(deltaPromedio, deltaPromedioPct)
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="graficos-grid">
+            <div class="chart-card" @key="@("report-pie-chart")">
+                @if (gastosPorCategoria.Any())
+                {
+                    <h2 class="chart-titulo">Gastos por categoría</h2>
+                    <div class="chart-container">
+                        <PieChart Series="seriesGastos"
+                                  InitialRotation="45"
+                                  MaxAngle="360"
+                                  TooltipPosition="LiveChartsCore.Measure.TooltipPosition.Top" />
+                    </div>
+                    <div class="chart-leyenda">
+                        @foreach (var item in gastosPorCategoria.Take(6))
+                        {
+                            <div @key="item.CategoriaId" class="leyenda-item">
+                                <span class="leyenda-color" style="background: @item.Color"></span>
+                                <span class="leyenda-nombre">@item.Nombre</span>
+                                <span class="leyenda-monto">@FormatearMonto(item.Total)</span>
+                            </div>
+                        }
+                        @if (gastosPorCategoria.Count > 6)
+                        {
+                            <div class="leyenda-item leyenda-mas">+@(gastosPorCategoria.Count - 6) más</div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="chart-card" @key="@("report-trend-chart")">
+                @if (tendenciasMensuales.Any())
+                {
+                    <h2 class="chart-titulo">Tendencia mensual</h2>
+                    <div class="chart-container">
+                        <CartesianChart Series="seriesTendencias"
+                                        XAxes="ejesX"
+                                        YAxes="ejesY"
+                                        TooltipPosition="LiveChartsCore.Measure.TooltipPosition.Top" />
+                    </div>
+                    @if (compararActivo && anioAnteriorComp > 0)
+                    {
+                        <div class="chart-legend-comparacion">
+                            <span class="legend-line legend-line-actual"></span> @anioSeleccionado
+                            <span class="legend-line legend-line-prev"></span> @anioAnteriorComp
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        @if (gastosPorCategoria.Any())
+        {
+            <div class="card-seccion">
+                <div class="card-seccion-header">
+                    <h2 class="seccion-titulo">Desglose por categoría</h2>
+                    <span class="seccion-sub">@gastosPorCategoria.Count categorías</span>
+                </div>
+                <div class="tabla-wrapper">
+                    <table class="tabla-reporte">
+                        <thead>
+                            <tr>
+                                <th>Categoría</th>
+                                <th>Tipo</th>
+                                <th>Total @anioSeleccionado</th>
+                                @if (compararActivo)
+                                {
+                                    <th>Total @anioAnteriorComp</th>
+                                    <th>Variación</th>
+                                }
+                                <th>%</th>
+                                <th>Promedio/mes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in gastosPorCategoria.OrderByDescending(g => g.Total))
+                            {
+                                <tr @key="item.CategoriaId">
+                                    <td>
+                                        <span class="cat-badge" style="background: @(item.Color + "22")">
+                                            <span class="cat-dot" style="background: @item.Color"></span>
+                                            @item.Icono @item.Nombre
+                                        </span>
+                                    </td>
+                                    <td>@(item.Total > 0 ? "Gasto" : "Ingreso")</td>
+                                    <td class="td-monto">@FormatearMonto(item.Total)</td>
+                                    @if (compararActivo)
+                                    {
+                                        <td class="td-monto">@FormatearMonto(item.TotalAnterior)</td>
+                                        <td class="td-monto @(item.PorcentajeVariacion >= 0 ? "texto-negativo" : "texto-positivo")">
+                                            @FormatearDelta(item.TotalAnterior > 0 ? item.Total - item.TotalAnterior : 0, item.PorcentajeVariacion)
+                                        </td>
+                                    }
+                                    <td>
+                                        <div class="pct-bar">
+                                            <div class="pct-fill" style="width: @item.Porcentaje%; background: @item.Color"></div>
+                                            <span class="pct-texto">@item.Porcentaje%</span>
+                                        </div>
+                                    </td>
+                                    <td class="td-monto">@FormatearMonto(Math.Round(item.Total / mesesConDatos, 2))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private bool EsAnioActual => anioSeleccionado == DateTime.Now.Year;
+    private int anioSeleccionado = DateTime.Now.Year;
+    private bool cargando = true;
+    private bool huboError;
+    private bool compararActivo;
+
+    private int anioAnteriorComp;
+    private DateTime? filtroFechaDesde;
+    private DateTime? filtroFechaHasta;
+    private bool modoRango;
+
+    private decimal totalGastos;
+    private decimal totalIngresos;
+    private decimal Balance => totalIngresos - totalGastos;
+    private decimal promedioMensual;
+    private int mesesConDatos;
+
+    private decimal deltaGastos;
+    private decimal deltaGastosPct;
+    private decimal deltaIngresos;
+    private decimal deltaIngresosPct;
+    private decimal deltaBalance;
+    private decimal deltaBalancePct;
+    private decimal deltaPromedio;
+    private decimal deltaPromedioPct;
+
+    private List<Categoria> categorias = new();
+    private Dictionary<Guid, Categoria> cacheCategorias = new();
+    private List<CategoryBreakdownItem> gastosPorCategoria = new();
+    private List<MonthlyTrend> tendenciasMensuales = new();
+
+    private ISeries[] seriesGastos = Array.Empty<ISeries>();
+    private ISeries[] seriesTendencias = Array.Empty<ISeries>();
+    private Axis[] ejesX = Array.Empty<Axis>();
+    private Axis[] ejesY = Array.Empty<Axis>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatosAsync();
+    }
+
+    private async Task RecargarAsync()
+    {
+        huboError = false;
+        cargando = true;
+        StateHasChanged();
+        await CargarDatosAsync();
+    }
+
+    private async Task AlternarComparacion(ChangeEventArgs e)
+    {
+        compararActivo = (bool)(e.Value ?? false);
+        await CargarDatosAsync();
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            categorias = await CategoriaService.ObtenerCategoriasAsync();
+            cacheCategorias = categorias.GroupBy(c => c.Id).ToDictionary(g => g.Key, g => g.First());
+
+            List<Gasto> todos;
+            List<Gasto> delAnio;
+            if (modoRango && filtroFechaDesde.HasValue && filtroFechaHasta.HasValue)
+            {
+                delAnio = await GastoService.ObtenerGastosPorRangoAsync(filtroFechaDesde.Value, filtroFechaHasta.Value);
+                todos = delAnio;
+            }
+            else
+            {
+                todos = await GastoService.ObtenerGastosAsync();
+                delAnio = todos.Where(g => g.Fecha.ToLocalTime().Year == anioSeleccionado).ToList();
+            }
+
+            var summary = ReportCalculation.CalculateYearlySummary(delAnio);
+            totalGastos = summary.TotalGastos;
+            totalIngresos = summary.TotalIngresos;
+            mesesConDatos = summary.MesesConDatos;
+            promedioMensual = summary.PromedioMensual;
+
+            tendenciasMensuales = ReportCalculation.CalculateMonthlyTrend(delAnio, anioSeleccionado);
+            gastosPorCategoria = ReportCalculation.CalculateCategoryBreakdown(delAnio, cacheCategorias);
+
+            ConstruirGraficoTendencias(tendenciasMensuales);
+            ConstruirGraficoPastel(gastosPorCategoria);
+
+            if (compararActivo)
+            {
+                anioAnteriorComp = anioSeleccionado - 1;
+                var delAnioAnterior = todos.Where(g => g.Fecha.ToLocalTime().Year == anioAnteriorComp).ToList();
+
+                var comparison = ReportCalculation.CalculateYearComparison(delAnio, delAnioAnterior, gastosPorCategoria);
+                deltaGastos = comparison.DeltaGastos;
+                deltaGastosPct = comparison.DeltaGastosPct;
+                deltaIngresos = comparison.DeltaIngresos;
+                deltaIngresosPct = comparison.DeltaIngresosPct;
+                deltaBalance = comparison.DeltaBalance;
+                deltaBalancePct = comparison.DeltaBalancePct;
+                deltaPromedio = comparison.DeltaPromedio;
+                deltaPromedioPct = comparison.DeltaPromedioPct;
+
+                ConstruirGraficoComparacion(delAnioAnterior);
+            }
+            else
+            {
+                anioAnteriorComp = 0;
+                deltaGastos = deltaGastosPct = deltaIngresos = deltaIngresosPct = 0;
+                deltaBalance = deltaBalancePct = deltaPromedio = deltaPromedioPct = 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al cargar reportes: {ex.Message}");
+            huboError = true;
+        }
+
+        cargando = false;
+        StateHasChanged();
+    }
+
+    private void ConstruirGraficoTendencias(List<MonthlyTrend> tendencias)
+    {
+        seriesTendencias = new ISeries[]
+        {
+            new LineSeries<double>
+            {
+                Values = tendencias.Select(t => (double)t.Gastos).ToArray(),
+                Name = $"Gastos {anioSeleccionado}",
+                Fill = null,
+                Stroke = new SolidColorPaint(SKColor.Parse("#ff3355"), 2),
+                GeometrySize = 6,
+                GeometryStroke = new SolidColorPaint(SKColor.Parse("#ff3355"), 2),
+            },
+            new LineSeries<double>
+            {
+                Values = tendencias.Select(t => (double)t.Ingresos).ToArray(),
+                Name = $"Ingresos {anioSeleccionado}",
+                Fill = null,
+                Stroke = new SolidColorPaint(SKColor.Parse("#00b894"), 2),
+                GeometrySize = 6,
+                GeometryStroke = new SolidColorPaint(SKColor.Parse("#00b894"), 2),
+            },
+        };
+
+        ejesX = new Axis[]
+        {
+            new Axis
+            {
+                Labels = tendencias.Select(t => t.Label).ToArray(),
+                LabelsRotation = 0,
+                TextSize = 10,
+            }
+        };
+
+        ejesY = new Axis[]
+        {
+            new Axis
+            {
+                Labeler = value => $"${value:N0}",
+                TextSize = 10,
+            }
+        };
+    }
+
+    private void ConstruirGraficoComparacion(List<Gasto> delAnioAnterior)
+    {
+        var prevMensual = ReportCalculation.CalculateMonthlyTrend(delAnioAnterior, anioAnteriorComp);
+
+        var list = seriesTendencias.ToList();
+        var dashPaintGastos = new SolidColorPaint(SKColor.Parse("#ff3355"), 2)
+        {
+            PathEffect = new DashEffect(new float[] { 4, 4 })
+        };
+        var dashPaintIngresos = new SolidColorPaint(SKColor.Parse("#00b894"), 2)
+        {
+            PathEffect = new DashEffect(new float[] { 4, 4 })
+        };
+
+        list.Add(new LineSeries<double>
+        {
+            Values = prevMensual.Select(t => (double)t.Gastos).ToArray(),
+            Name = $"Gastos {anioAnteriorComp}",
+            Fill = null,
+            Stroke = dashPaintGastos,
+            GeometrySize = 4,
+            GeometryStroke = dashPaintGastos,
+        });
+        list.Add(new LineSeries<double>
+        {
+            Values = prevMensual.Select(t => (double)t.Ingresos).ToArray(),
+            Name = $"Ingresos {anioAnteriorComp}",
+            Fill = null,
+            Stroke = dashPaintIngresos,
+            GeometrySize = 4,
+            GeometryStroke = dashPaintIngresos,
+        });
+
+        seriesTendencias = list.ToArray();
+    }
+
+    private void ConstruirGraficoPastel(List<CategoryBreakdownItem> items)
+    {
+        seriesGastos = items.Select(g => new PieSeries<double>
+        {
+            Values = new double[] { Math.Round((double)g.Total, 2) },
+            Name = g.Nombre,
+            Fill = new SolidColorPaint(SafeParseColor(g.Color)),
+            Stroke = null,
+        }).Cast<ISeries>().ToArray();
+    }
+
+    private string FormatearMonto(decimal monto)
+    {
+        var prefijo = monto < 0 ? "-" : "";
+        return $"{prefijo}${Math.Abs(monto):N2}";
+    }
+
+    private string FormatearDelta(decimal delta, decimal pct)
+    {
+        var signo = delta >= 0 ? "+" : "";
+        return $"{signo}{FormatearMonto(delta)} ({signo}{pct:N1}%)";
+    }
+
+    private async Task AnioAnterior()
+    {
+        anioSeleccionado--;
+        await CargarDatosAsync();
+    }
+
+    private async Task AnioSiguiente()
+    {
+        if (EsAnioActual) return;
+        anioSeleccionado++;
+        await CargarDatosAsync();
+    }
+
+    private async Task IrAlAnioActual()
+    {
+        anioSeleccionado = DateTime.Now.Year;
+        await CargarDatosAsync();
+    }
+
+    private async Task OnFechaDesdeChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(val))
+            filtroFechaDesde = null;
+        else if (DateTime.TryParse(val, out var parsed))
+            filtroFechaDesde = parsed;
+        await AplicarRangoReportesAsync();
+    }
+
+    private async Task OnFechaHastaChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(val))
+            filtroFechaHasta = null;
+        else if (DateTime.TryParse(val, out var parsed))
+            filtroFechaHasta = parsed;
+        await AplicarRangoReportesAsync();
+    }
+
+    private async Task AplicarRangoReportesAsync()
+    {
+        if (filtroFechaDesde.HasValue && filtroFechaHasta.HasValue && filtroFechaDesde <= filtroFechaHasta)
+        {
+            modoRango = true;
+            await CargarDatosAsync();
+        }
+        else
+        {
+            modoRango = false;
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task LimpiarRango()
+    {
+        filtroFechaDesde = null;
+        filtroFechaHasta = null;
+        modoRango = false;
+        await CargarDatosAsync();
+    }
+
+    private SKColor SafeParseColor(string? color)
+    {
+        if (string.IsNullOrWhiteSpace(color)) return SKColor.Parse("#6c757d");
+        try { return SKColor.Parse(color); }
+        catch (Exception ex) { Logger.LogError(ex, "Error al parsear color"); return SKColor.Parse("#6c757d"); }
+    }
+}

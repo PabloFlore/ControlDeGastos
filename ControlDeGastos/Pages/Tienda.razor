@@ -1,0 +1,434 @@
+@page "/shop"
+@implements IDisposable
+@inject ITiendaService TiendaService
+@inject IGamificacionService GamificacionService
+@inject IToastService ToastService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Tienda - Control de Gastos</PageTitle>
+
+<div class="tienda-page">
+    <div class="tienda-header">
+        <button class="tienda-back" @onclick="VolverAlJuego">← Volver</button>
+        <h1 class="tienda-title">🏪 Tienda</h1>
+        <div class="tienda-monedas">
+            <span class="monedas-icono">🪙</span>
+            <span class="monedas-cantidad">@monedas</span>
+            @if (escudosRacha > 0)
+            {
+                <span class="escudos-badge" title="Escudos de racha">
+                    🛡️ @escudosRacha
+                </span>
+            }
+        </div>
+    </div>
+
+    @if (cargando)
+    {
+        <LoadingSpinner Message="Cargando tienda..." />
+    }
+    else
+    {
+        <div class="tienda-boost-activo">
+            @if (boostActivo)
+            {
+                <div class="boost-badge">
+                    <span>🚀 Boost EXP activo: ×@boostMultiplicador.ToString("F1")</span>
+                    <span class="boost-timer">⏱️ @tiempoRestante</span>
+                </div>
+            }
+        </div>
+
+        <div class="tienda-filtros">
+            <button class="filtro-btn @(filtroCategoria is null ? "filtro-activo" : "")"
+                    @onclick="() => filtroCategoria = null">Todo</button>
+            <button class="filtro-btn @(filtroCategoria == CategoriaArticulo.BoostExp ? "filtro-activo" : "")"
+                    @onclick="() => filtroCategoria = CategoriaArticulo.BoostExp">🚀 Boost</button>
+            <button class="filtro-btn @(filtroCategoria == CategoriaArticulo.CuracionHp ? "filtro-activo" : "")"
+                    @onclick="() => filtroCategoria = CategoriaArticulo.CuracionHp">❤️ Curas</button>
+            <button class="filtro-btn @(filtroCategoria == CategoriaArticulo.ExpansionHpMax ? "filtro-activo" : "")"
+                    @onclick="() => filtroCategoria = CategoriaArticulo.ExpansionHpMax">💪 Mejoras</button>
+            <button class="filtro-btn @(filtroCategoria == CategoriaArticulo.TituloTienda ? "filtro-activo" : "")"
+                    @onclick="() => filtroCategoria = CategoriaArticulo.TituloTienda">👑 Títulos</button>
+            <button class="filtro-btn @(filtroCategoria == CategoriaArticulo.SkinTarjeta ? "filtro-activo" : "")"
+                    @onclick="() => filtroCategoria = CategoriaArticulo.SkinTarjeta">🎨 Skins</button>
+            <button class="filtro-btn @(filtroCategoria == CategoriaArticulo.EscudoRacha ? "filtro-activo" : "")"
+                    @onclick="() => filtroCategoria = CategoriaArticulo.EscudoRacha">🛡️ Escudos</button>
+            <button class="filtro-btn @(filtroCategoria == CategoriaArticulo.CajaSorpresa ? "filtro-activo" : "")"
+                    @onclick="() => filtroCategoria = CategoriaArticulo.CajaSorpresa">🎲 Cajas</button>
+        </div>
+
+        @foreach (var grupo in itemsAgrupados)
+        {
+            <div class="tienda-seccion">
+                <h2 class="seccion-titulo">@ObtenerIconoCategoria(grupo.Key) @ObtenerNombreCategoria(grupo.Key)</h2>
+                <div class="seccion-items">
+                    @foreach (var item in grupo)
+                    {
+                        <div class="item-card @ObtenerClaseItem(item) @(item.Id == "titulo_son_of_god" ? "item-solar" : "")">
+                            <div class="item-icono">@item.Icono</div>
+                            <div class="item-info">
+                                <div class="item-nombre">@item.Nombre</div>
+                                <div class="item-desc">@item.Descripcion</div>
+                                @if (!ItemYaPoseido(item))
+                                {
+                                    <div class="item-precio">
+                                        <span>🪙 @item.Precio</span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="item-accion">
+                                @if (EsItemEquipable(item) && ItemYaPoseido(item))
+                                {
+                                    var esActivo = EsItemActivo(item);
+                                    <button class="btn-equipar @(esActivo ? "btn-equipado" : "")"
+                                            @onclick="() => EquiparItemAsync(item)"
+                                            disabled="@procesando">
+                                        @(esActivo && item.Categoria == CategoriaArticulo.SkinTarjeta ? "Desequipar"
+                                            : esActivo ? "✅ Equipado"
+                                            : "Equipar")
+                                    </button>
+                                }
+                                else if (item.Categoria == CategoriaArticulo.BoostExp && boostActivo && boostItemId != item.Id)
+                                {
+                                    <span class="item-otro-boost">⏳ Actualmente tienes un Boost activo</span>
+                                }
+                                else if (ItemYaPoseido(item))
+                                {
+                                    <span class="item-poseido">
+                                        @(item.Categoria == CategoriaArticulo.BoostExp ? "✅ Activo"
+                                            : item.Categoria == CategoriaArticulo.ExpansionHpMax ? "✅ Obtenido"
+                                            : "✅ Poseído")
+                                    </span>
+                                }
+                                else
+                                {
+                                    <button class="btn-comprar"
+                                            @onclick="() => ComprarAsync(item)"
+                                            disabled="@procesando">
+                                        Comprar
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@if (mostrandoCaja)
+{
+    <div class="caja-overlay" @onclick="() => {}">
+        <div class="caja-modal">
+            @if (!cajaAnimacionCompleta)
+            {
+                <div class="caja-spinning">
+                    <div class="reel-viewport" id="caja-reel-viewport">
+                        <div class="reel-strip" id="caja-reel-strip">
+                            @foreach (var item in itemsCajaReel)
+                            {
+                                <div class="reel-item">@item.Icono <span class="reel-item-nombre">@item.Nombre</span></div>
+                            }
+                        </div>
+                        <div class="reel-marker">▶</div>
+                    </div>
+                    <p class="caja-status">🎰 Abriendo caja...</p>
+                </div>
+            }
+            else
+            {
+                <div class="caja-resultado">
+                    <div class="caja-ganador-display">
+                        <div class="caja-ganador-icono">@cajaGanador?.Icono</div>
+                        <div class="caja-ganador-nombre">@cajaGanador?.Nombre</div>
+                        <div class="caja-mensaje">@cajaMensaje</div>
+                    </div>
+                    <button class="caja-cerrar" @onclick="CerrarCaja">Recibir</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private List<ArticuloTienda> catalogo = new();
+    private List<string> skinsCompradas = new();
+    private List<string> titulosTienda = new();
+    private List<string> expansionesCompradas = new();
+    private string? skinActiva;
+    private string? tituloActivoId;
+    private int monedas;
+    private bool cargando = true;
+    private bool procesando;
+    private bool boostActivo;
+    private double boostMultiplicador;
+    private DateTime? boostExpiracion;
+    private string? boostItemId;
+    private string tiempoRestante = "";
+    private Timer? boostTimer;
+    private CategoriaArticulo? filtroCategoria;
+    private int escudosRacha;
+
+    // Caja sorpresa modal state
+    private bool mostrandoCaja;
+    private ArticuloTienda? cajaGanador;
+    private string cajaMensaje = "";
+    private bool cajaAnimacionCompleta;
+    private List<ArticuloTienda> itemsCajaReel = new();
+    private int cajaGanadorIndex;
+
+    private IEnumerable<ArticuloTienda> itemsFiltrados => filtroCategoria is null
+        ? catalogo
+        : catalogo.Where(a => a.Categoria == filtroCategoria);
+
+    private IEnumerable<IGrouping<CategoriaArticulo, ArticuloTienda>> itemsAgrupados => itemsFiltrados
+        .GroupBy(a => a.Categoria)
+        .OrderBy(g => (int)g.Key);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatosAsync();
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        cargando = true;
+        StateHasChanged();
+
+        try
+        {
+            catalogo = await TiendaService.ObtenerCatalogoAsync();
+            skinsCompradas = await TiendaService.ObtenerSkinsCompradasAsync();
+            titulosTienda = await TiendaService.ObtenerTitulosTiendaCompradosAsync();
+            skinActiva = await TiendaService.ObtenerSkinActivaAsync();
+            var progresoFull = await GamificacionService.ObtenerProgresoAsync();
+            expansionesCompradas = progresoFull.IdsExpansionesCompradas;
+            var progreso = await GamificacionService.ObtenerProgresoAsync();
+            monedas = progreso.Monedas;
+            tituloActivoId = progreso.TituloActivoId;
+
+            var boost = await TiendaService.ObtenerBoostExpActivoAsync();
+            boostActivo = boost.multiplicador > 1.0 && boost.expiracion.HasValue && boost.expiracion.Value > DateTime.UtcNow;
+            boostMultiplicador = boost.multiplicador;
+            boostExpiracion = boost.expiracion;
+            boostItemId = boost.itemId;
+            escudosRacha = await TiendaService.ObtenerEscudosRachaAsync();
+            IniciarTimerBoost();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al cargar la tienda: {ex.Message}");
+        }
+
+        cargando = false;
+        StateHasChanged();
+    }
+
+    private void IniciarTimerBoost()
+    {
+        boostTimer?.Dispose();
+        if (!boostActivo || !boostExpiracion.HasValue) return;
+
+        boostTimer = new Timer(async _ =>
+        {
+            var restante = boostExpiracion.Value - DateTime.UtcNow;
+            if (restante.TotalSeconds <= 0)
+            {
+                boostActivo = false;
+                boostTimer?.Dispose();
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            tiempoRestante = restante.Days > 0
+                ? $"{restante.Days}d {restante.Hours}h"
+                : restante.Hours > 0
+                    ? $"{restante.Hours}h {restante.Minutes}m"
+                    : $"{restante.Minutes}m {restante.Seconds}s";
+            await InvokeAsync(StateHasChanged);
+        }, null, 0, 1000);
+    }
+
+    private bool ItemYaPoseido(ArticuloTienda item) => item.Categoria switch
+    {
+        CategoriaArticulo.SkinTarjeta => skinsCompradas.Contains(item.Id),
+        CategoriaArticulo.TituloTienda => titulosTienda.Contains(item.TituloId!),
+        CategoriaArticulo.BoostExp => boostActivo && boostItemId == item.Id,
+        CategoriaArticulo.ExpansionHpMax => expansionesCompradas.Contains(item.Id),
+        CategoriaArticulo.CuracionHp => false,
+        CategoriaArticulo.EscudoRacha => false,
+        CategoriaArticulo.CajaSorpresa => false,
+        _ => false
+    };
+
+    private bool EsItemEquipable(ArticuloTienda item) => item.Categoria switch
+    {
+        CategoriaArticulo.SkinTarjeta => true,
+        CategoriaArticulo.TituloTienda => true,
+        _ => false
+    };
+
+    private bool EsItemActivo(ArticuloTienda item) => item.Categoria switch
+    {
+        CategoriaArticulo.SkinTarjeta => skinActiva == item.SkinCssClass,
+        CategoriaArticulo.TituloTienda => tituloActivoId == item.TituloId,
+        CategoriaArticulo.BoostExp => boostActivo && boostItemId == item.Id,
+        _ => false
+    };
+
+    private string ObtenerClaseItem(ArticuloTienda item)
+    {
+        if (EsItemActivo(item)) return "item-activo";
+        if (ItemYaPoseido(item)) return "item-poseido-card";
+        return "";
+    }
+
+    private async Task ComprarAsync(ArticuloTienda item)
+    {
+        if (item.Categoria == CategoriaArticulo.CajaSorpresa)
+        {
+            await AbrirCajaSorpresaAsync(item);
+            return;
+        }
+
+        procesando = true;
+        StateHasChanged();
+
+        var (exito, mensaje) = await TiendaService.ComprarItemAsync(item.Id);
+
+        if (exito)
+        {
+            ToastService.ShowSuccess(mensaje);
+            await CargarDatosAsync();
+        }
+        else
+        {
+            ToastService.ShowError(mensaje);
+        }
+
+        procesando = false;
+        StateHasChanged();
+    }
+
+    private async Task AbrirCajaSorpresaAsync(ArticuloTienda item)
+    {
+        procesando = true;
+        StateHasChanged();
+
+        var (exitoCaja, mensajeCaja, ganador, compensacion) = await TiendaService.ProcesarCajaSorpresaAsync(item.Id);
+
+        if (!exitoCaja)
+        {
+            ToastService.ShowError(mensajeCaja);
+            procesando = false;
+            StateHasChanged();
+            return;
+        }
+
+        if (ganador is null)
+        {
+            ToastService.ShowError("Error al abrir la caja");
+            procesando = false;
+            StateHasChanged();
+            return;
+        }
+
+        // Build reel: all eligible items repeated 4x
+        var disponibles = catalogo
+            .Where(c => c.Categoria != CategoriaArticulo.CajaSorpresa && c.Id != item.Id)
+            .ToList();
+        itemsCajaReel = new List<ArticuloTienda>();
+        for (var i = 0; i < 4; i++)
+            itemsCajaReel.AddRange(disponibles);
+
+        cajaGanador = ganador;
+        cajaMensaje = mensajeCaja;
+        cajaAnimacionCompleta = false;
+
+        // Find the winner index in a single cycle, then position it in the 3rd repetition
+        var idxInSingle = disponibles.IndexOf(ganador);
+        cajaGanadorIndex = idxInSingle + disponibles.Count * 2;
+
+        mostrandoCaja = true;
+        procesando = false;
+        StateHasChanged();
+
+        // Wait for DOM render then start reel
+        await Task.Delay(50);
+        await JSRuntime.InvokeAsync<object>("cajaSorpresa.startReel", "caja-reel-strip", 50, cajaGanadorIndex, disponibles.Count);
+
+        cajaAnimacionCompleta = true;
+        StateHasChanged();
+    }
+
+    private async Task CerrarCaja()
+    {
+        mostrandoCaja = false;
+        cajaGanador = null;
+        cajaMensaje = "";
+        cajaAnimacionCompleta = false;
+        itemsCajaReel.Clear();
+        await CargarDatosAsync();
+    }
+
+    private async Task EquiparItemAsync(ArticuloTienda item)
+    {
+        procesando = true;
+        StateHasChanged();
+
+        var exito = item.Categoria switch
+        {
+            CategoriaArticulo.SkinTarjeta => await TiendaService.EquiparSkinAsync(
+                EsItemActivo(item) ? null : item.Id),
+            CategoriaArticulo.TituloTienda => await TiendaService.EquiparTituloTiendaAsync(item.TituloId!),
+            _ => false
+        };
+
+        if (exito)
+        {
+            ToastService.ShowSuccess(EsItemActivo(item)
+                ? "Skin desequipada. Usando la predeterminada."
+                : $"¡Equipado: {item.Nombre}!");
+            await CargarDatosAsync();
+        }
+
+        procesando = false;
+        StateHasChanged();
+    }
+
+    private void VolverAlJuego()
+    {
+        NavigationManager.NavigateTo("/game");
+    }
+
+    private static string ObtenerIconoCategoria(CategoriaArticulo cat) => cat switch
+    {
+        CategoriaArticulo.BoostExp => "🚀",
+        CategoriaArticulo.CuracionHp => "❤️",
+        CategoriaArticulo.ExpansionHpMax => "💪",
+        CategoriaArticulo.TituloTienda => "👑",
+        CategoriaArticulo.SkinTarjeta => "🎨",
+        CategoriaArticulo.EscudoRacha => "🛡️",
+        CategoriaArticulo.CajaSorpresa => "🎲",
+        _ => "📦"
+    };
+
+    private static string ObtenerNombreCategoria(CategoriaArticulo cat) => cat switch
+    {
+        CategoriaArticulo.BoostExp => "Boosts de EXP",
+        CategoriaArticulo.CuracionHp => "Pociones de HP",
+        CategoriaArticulo.ExpansionHpMax => "Mejoras de HP Máximo",
+        CategoriaArticulo.TituloTienda => "Títulos Exclusivos",
+        CategoriaArticulo.SkinTarjeta => "Skins de Tarjetas",
+        CategoriaArticulo.EscudoRacha => "Escudos de Racha",
+        CategoriaArticulo.CajaSorpresa => "Caja Sorpresa",
+        _ => "Otros"
+    };
+
+    public void Dispose()
+    {
+        boostTimer?.Dispose();
+    }
+}

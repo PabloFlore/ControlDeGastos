@@ -1,0 +1,48 @@
+.error-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.error-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.error-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem;
+}
+
+.error-msg {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0 0 1.25rem;
+    word-break: break-word;
+}
+
+.error-retry {
+    padding: 0.6rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: linear-gradient(135deg, var(--accent-blue), #6366f1);
+    color: #fff;
+    transition: all 0.2s ease;
+}
+
+.error-retry:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+body.rpg-theme .error-retry {
+    background: linear-gradient(135deg, var(--rpg-accent-purple), var(--rpg-accent-cyan));
+    box-shadow: var(--rpg-glow-purple);
+}
+
+body.rpg-theme .error-retry:hover {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+}

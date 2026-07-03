@@ -1,0 +1,117 @@
+@page "/pin-unlock"
+@inject IPinLockService PinLockService
+@inject NavigationManager Navigation
+@inject IUsuarioService UsuarioService
+
+<PageTitle>Bloqueo - Control de Gastos</PageTitle>
+
+<div class="pin-unlock-page">
+    <div class="pin-unlock-card">
+        <div class="pin-unlock-logo">🔒</div>
+        <h1 class="pin-unlock-titulo">Ingresa tu PIN</h1>
+        <p class="pin-unlock-sub">@mensaje</p>
+
+        @if (temporalmenteBloqueado)
+        {
+            <p class="pin-unlock-error">Demasiados intentos. Espera @segundosEspera s e intenta de nuevo.</p>
+        }
+        else
+        {
+            <input type="password"
+                   inputmode="numeric"
+                   pattern="[0-9]*"
+                   maxlength="4"
+                   class="pin-unlock-input @(!string.IsNullOrEmpty(error) ? "pin-input-error" : "")"
+                   @bind-value="pinInput"
+                   @bind-value:event="oninput"
+                   autofocus
+                   placeholder="• • • •"
+                   @onkeydown="OnKeyDown" />
+
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <p class="pin-unlock-error">@error</p>
+            }
+
+            <button class="pin-unlock-btn" @onclick="DesbloquearAsync" disabled="@(pinInput.Length != 4)">
+                Desbloquear
+            </button>
+        }
+    </div>
+</div>
+
+@code {
+    private string pinInput = "";
+    private string? error;
+    private string mensaje = "Ingresa tu PIN de 4 dígitos para desbloquear la app.";
+    private bool temporalmenteBloqueado;
+    private int segundosEspera;
+    private Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await VerificarBloqueoAsync();
+    }
+
+    private async Task VerificarBloqueoAsync()
+    {
+        temporalmenteBloqueado = await PinLockService.EstaTemporalmenteBloqueadoAsync();
+        if (temporalmenteBloqueado)
+        {
+            segundosEspera = await PinLockService.ObtenerTiempoEsperaRestanteSegundosAsync();
+            IniciarContadorEspera();
+        }
+    }
+
+    private void IniciarContadorEspera()
+    {
+        _timer?.Dispose();
+        _timer = new Timer(async _ =>
+        {
+            segundosEspera = await PinLockService.ObtenerTiempoEsperaRestanteSegundosAsync();
+            if (segundosEspera <= 0)
+            {
+                _timer?.Dispose();
+                temporalmenteBloqueado = false;
+                pinInput = "";
+                error = null;
+            }
+            await InvokeAsync(StateHasChanged);
+        }, null, 1000, 1000);
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && pinInput.Length == 4)
+        {
+            await DesbloquearAsync();
+        }
+    }
+
+    private async Task DesbloquearAsync()
+    {
+        if (pinInput.Length != 4) return;
+
+        error = null;
+
+        if (await PinLockService.VerificarPinAsync(pinInput))
+        {
+            pinInput = "";
+            PinLockService.EstablecerSesionAutenticada();
+            _timer?.Dispose();
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            error = "PIN incorrecto. Intenta de nuevo.";
+            pinInput = "";
+
+            temporalmenteBloqueado = await PinLockService.EstaTemporalmenteBloqueadoAsync();
+            if (temporalmenteBloqueado)
+            {
+                segundosEspera = await PinLockService.ObtenerTiempoEsperaRestanteSegundosAsync();
+                IniciarContadorEspera();
+            }
+        }
+    }
+}

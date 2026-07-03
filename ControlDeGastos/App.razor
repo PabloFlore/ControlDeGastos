@@ -1,0 +1,149 @@
+﻿@implements IDisposable
+@inject NavigationManager Navigation
+@inject ILogger<App> Logger
+@inject ILicenciaService LicenciaService
+@inject IUsuarioService UsuarioService
+@* @inject IHogarService HogarService *@
+@* @inject ISupabaseService SupabaseService *@
+@inject IPinLockService PinLockService
+@using System.Diagnostics
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+@code {
+    private EventHandler<LocationChangedEventArgs>? _locationChangedHandler;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _locationChangedHandler = async (s, e) =>
+        {
+            try
+            {
+                var enLicencia = e.Location.Contains("/licencia", StringComparison.OrdinalIgnoreCase);
+                var enPinUnlock = e.Location.Contains("/pin-unlock", StringComparison.OrdinalIgnoreCase);
+
+                if (await PinLockService.EstaConfiguradoAsync() && !PinLockService.SesionEstaAutenticada() && !enPinUnlock)
+                {
+                    Navigation.NavigateTo("/pin-unlock");
+                    return;
+                }
+
+                if (!await TieneAccesoAsync() && !enLicencia)
+                {
+                    Navigation.NavigateTo("/licencia");
+                    return;
+                }
+
+                if (!enLicencia)
+                {
+                    await DesactivarFuncionesNoPermitidasAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error en OnLocationChanged");
+            }
+        };
+
+        Navigation.LocationChanged += _locationChangedHandler;
+
+        var enLicencia = Navigation.Uri.Contains("/licencia", StringComparison.OrdinalIgnoreCase);
+        var enPinUnlock = Navigation.Uri.Contains("/pin-unlock", StringComparison.OrdinalIgnoreCase);
+
+        if (await PinLockService.EstaConfiguradoAsync() && !PinLockService.SesionEstaAutenticada() && !enPinUnlock)
+        {
+            Navigation.NavigateTo("/pin-unlock");
+            return;
+        }
+
+        if (!enLicencia)
+        {
+            await ValidarLicenciaAlIniciarAsync();
+        }
+
+        if (!await TieneAccesoAsync() && !enLicencia)
+        {
+            Navigation.NavigateTo("/licencia");
+            return;
+        }
+
+        if (!enLicencia)
+        {
+            await DesactivarFuncionesNoPermitidasAsync();
+        }
+    }
+
+    private async Task ValidarLicenciaAlIniciarAsync()
+    {
+        try
+        {
+            await LicenciaService.VerificarYActualizarVigenciaAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Error al validar licencia al iniciar");
+        }
+    }
+
+    private async Task<bool> TieneAccesoAsync()
+    {
+        var licencia = await LicenciaService.ObtenerEstadoLicenciaAsync();
+        return licencia.Valida;
+    }
+
+    private async Task DesactivarFuncionesNoPermitidasAsync()
+    {
+        var sw = Stopwatch.StartNew();
+        Logger.LogInformation("DesactivarFuncionesNoPermitidasAsync: INICIO");
+        try
+        {
+            var licencia = await LicenciaService.ObtenerEstadoLicenciaAsync();
+            Logger.LogInformation("DesactivarFuncionesNoPermitidasAsync: ObtenerEstadoLicenciaAsync {ms}ms", sw.ElapsedMilliseconds);
+            if (!licencia.Valida) return;
+
+            var usuario = await UsuarioService.ObtenerUsuarioAsync();
+            Logger.LogInformation("DesactivarFuncionesNoPermitidasAsync: ObtenerUsuarioAsync {ms}ms", sw.ElapsedMilliseconds);
+            var modificado = false;
+
+            if (usuario.ModoGamificadoActivo && !licencia.ModoGamificadoIncluido)
+            {
+                usuario.ModoGamificadoActivo = false;
+                modificado = true;
+            }
+
+            if (usuario.PlanActivo == PlanType.Nube && licencia.PlanIncluido == PlanType.Local)
+            {
+                usuario.PlanActivo = PlanType.Local;
+                modificado = true;
+            }
+
+            if (modificado)
+            {
+                await UsuarioService.GuardarUsuarioAsync(usuario);
+                Logger.LogInformation("DesactivarFuncionesNoPermitidasAsync: GuardarUsuarioAsync {ms}ms", sw.ElapsedMilliseconds);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al desactivar funciones no permitidas");
+        }
+        Logger.LogInformation("DesactivarFuncionesNoPermitidasAsync: TOTAL {ms}ms", sw.ElapsedMilliseconds);
+    }
+
+    public void Dispose()
+    {
+        if (_locationChangedHandler != null)
+            Navigation.LocationChanged -= _locationChangedHandler;
+    }
+}

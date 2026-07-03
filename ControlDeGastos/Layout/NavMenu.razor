@@ -1,0 +1,73 @@
+﻿<div class="sidebar-header">
+    <button class="sidebar-toggle sidebar-toggle-desktop" @onclick="InvokeToggle" title="@(SidebarOpen ? "Expandir menú" : "Colapsar menú")">
+        @(SidebarOpen ? "▶" : "◀")
+    </button>
+    <button class="sidebar-toggle sidebar-toggle-mobile" @onclick="InvokeToggle" title="Cerrar menú">
+        ✕
+    </button>
+    <a class="sidebar-brand" href="">ControlDeGastos</a>
+</div>
+
+<nav class="sidebar-nav">
+    <div class="nav-item">
+        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-texto">Dashboard</span>
+        </NavLink>
+    </div>
+    <div class="nav-item">
+        <NavLink class="nav-link" href="gastos">
+            <span class="nav-icon">💸</span>
+            <span class="nav-texto">Gastos</span>
+        </NavLink>
+    </div>
+    <div class="nav-item">
+        <NavLink class="nav-link" href="presupuestos">
+            <span class="nav-icon">📋</span>
+            <span class="nav-texto">Presupuestos</span>
+        </NavLink>
+    </div>
+    <div class="nav-item">
+        <NavLink class="nav-link" href="reportes">
+            <span class="nav-icon">📊</span>
+            <span class="nav-texto">Reportes</span>
+        </NavLink>
+    </div>
+    <div class="nav-item">
+        <NavLink class="nav-link" href="categorias">
+            <span class="nav-icon">🏷️</span>
+            <span class="nav-texto">Categorías</span>
+        </NavLink>
+    </div>
+    <div class="nav-item">
+        <NavLink class="nav-link" href="financiamiento">
+            <span class="nav-icon">🏦</span>
+            <span class="nav-texto">Financiamiento</span>
+        </NavLink>
+    </div>
+    <div class="nav-item">
+        <NavLink class="nav-link" href="game">
+            <span class="nav-icon">🎮</span>
+            <span class="nav-texto">RPG</span>
+        </NavLink>
+    </div>
+    <div class="nav-item">
+        <NavLink class="nav-link" href="configuracion">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-texto">Configuración</span>
+        </NavLink>
+    </div>
+</nav>
+
+@code {
+    [Parameter]
+    public bool SidebarOpen { get; set; }
+
+    [Parameter]
+    public EventCallback OnToggle { get; set; }
+
+    private async Task InvokeToggle()
+    {
+        await OnToggle.InvokeAsync();
+    }
+}

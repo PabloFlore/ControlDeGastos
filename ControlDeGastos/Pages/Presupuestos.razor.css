@@ -1,0 +1,315 @@
+.presupuestos-page {
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: 6rem;
+}
+
+.page-header {
+    margin-bottom: 1.25rem;
+}
+
+.page-titulo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.page-sub {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0.1rem 0 0;
+}
+
+/* Cards */
+.presupuesto-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.presupuesto-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.presupuesto-categoria {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.presupuesto-icono {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.presupuesto-nombre {
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.presupuesto-periodo {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.05rem;
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.btn-editar,
+.btn-eliminar {
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    opacity: 0.4;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.btn-editar:hover {
+    opacity: 1;
+    background: rgba(0, 113, 193, 0.1);
+}
+
+.btn-eliminar:hover {
+    opacity: 1;
+    background: rgba(255, 51, 85, 0.1);
+}
+
+/* Progress bar */
+.presupuesto-bar-wrapper {
+    margin-bottom: 0.6rem;
+}
+
+.presupuesto-bar {
+    height: 10px;
+    background: var(--bg-secondary);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.presupuesto-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease;
+}
+
+.fill-bien {
+    background: var(--accent-green);
+}
+
+.fill-cuidado {
+    background: #ffc107;
+}
+
+.fill-atencion {
+    background: var(--accent-orange);
+}
+
+.fill-peligro {
+    background: var(--accent-red);
+}
+
+/* Data row */
+.presupuesto-datos {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.25rem;
+}
+
+.dato-item {
+    text-align: center;
+}
+
+.dato-label {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 0.1rem;
+}
+
+.dato-valor {
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.texto-verde {
+    color: var(--accent-green);
+}
+
+.texto-rojo {
+    color: var(--accent-red);
+}
+
+/* Alert */
+.presupuesto-alerta {
+    margin-top: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: rgba(255, 51, 85, 0.1);
+    color: var(--accent-red);
+}
+
+.alerta-atencion {
+    background: rgba(255, 140, 0, 0.1);
+    color: var(--accent-orange);
+}
+
+/* Total */
+.total-general {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    margin-top: 0.5rem;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    padding: 0.25rem 0;
+}
+
+.total-final {
+    border-top: 1px solid var(--border-color);
+    margin-top: 0.15rem;
+    padding-top: 0.4rem;
+    font-weight: 700;
+}
+
+/* Form fields inside modal body */
+.campo {
+    margin-bottom: 1rem;
+}
+
+.campo-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: var(--text-primary);
+}
+
+.campo-input {
+    width: 100%;
+    padding: 0.7rem 0.75rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.campo-input:focus {
+    border-color: var(--accent-blue);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 113, 193, 0.15);
+}
+
+body.rpg-theme .campo-input:focus {
+    border-color: var(--rpg-accent-cyan);
+    box-shadow: var(--rpg-glow-cyan);
+}
+
+
+/* Period toggle */
+.periodo-toggle {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.periodo-btn {
+    flex: 1;
+    padding: 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.periodo-btn:hover {
+    border-color: var(--accent-blue);
+}
+
+.periodo-activo {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+    background: rgba(0, 113, 193, 0.08);
+    font-weight: 600;
+}
+
+body.rpg-theme .periodo-activo {
+    border-color: var(--rpg-accent-cyan);
+    color: var(--rpg-accent-cyan);
+    background: rgba(0, 240, 255, 0.1);
+}
+
+
+/* Footer buttons inside modal footer slot */
+
+.presupuesto-vencido {
+    opacity: 0.45;
+}
+
+/* RPG overrides */
+body.rpg-theme .presupuesto-card {
+    background: var(--rpg-bg-card);
+    border-color: var(--rpg-border);
+}
+
+body.rpg-theme .presupuesto-bar {
+    background: var(--rpg-bg-secondary);
+}
+
+body.rpg-theme .total-general {
+    background: var(--rpg-bg-card);
+    border-color: var(--rpg-border);
+}
+
+body.rpg-theme .total-final {
+    border-color: var(--rpg-border);
+}
+
+body.rpg-theme .campo-input {
+    background: var(--rpg-bg-input);
+    border-color: var(--rpg-border);
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .periodo-btn {
+    background: var(--rpg-bg-secondary);
+    border-color: var(--rpg-border);
+    color: var(--rpg-text-secondary);
+}
+
+body.rpg-theme .periodo-btn:hover {
+    border-color: var(--rpg-accent-cyan);
+}

@@ -1,0 +1,550 @@
+@page "/financiamiento"
+@inject IFinanciamientoService FinanciamientoService
+@inject IFinanciamientoCalculationService FinanciamientoCalculation
+@inject ICategoriaService CategoriaService
+@inject IGastoService GastoService
+@inject IToastService ToastService
+@inject IUsuarioService UsuarioService
+
+<PageTitle>Financiamiento - Control de Gastos</PageTitle>
+
+<div class="financiamiento-page">
+    <div class="page-header">
+        <h1 class="page-titulo">Financiamiento</h1>
+        <p class="page-sub">Tarjetas de crédito y préstamos</p>
+    </div>
+
+    @if (items is null)
+    {
+        <LoadingSpinner Message="Cargando financiamientos..." />
+    }
+    else if (items.Any())
+    {
+        <div class="financiamiento-stats">
+            <div class="stat-card">
+                <div class="stat-value">@FormatearMonto(ResumenDeudaTotal)</div>
+                <div class="stat-label">Deuda total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">@FormatearMonto(ResumenPagoMensual)</div>
+                <div class="stat-label">Pago mensual</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">@ResumenActivos</div>
+                <div class="stat-label">Activos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">@itemsFuncion.Count</div>
+                <div class="stat-label">Registros</div>
+            </div>
+        </div>
+
+        <div class="filtro-tabs">
+            <button class="filtro-tab @(filtro == "" ? "activo" : "")" @onclick="@(() => filtro = "")">Todos</button>
+            <button class="filtro-tab @(filtro == "Credito" ? "activo" : "")" @onclick="@(() => filtro = "Credito")">💳 Créditos</button>
+            <button class="filtro-tab @(filtro == "Prestamo" ? "activo" : "")" @onclick="@(() => filtro = "Prestamo")">💰 Préstamos</button>
+        </div>
+
+        <div class="campo" style="margin-bottom:1rem;">
+            <select class="campo-input" @bind="filtroBanco">
+                <option value="">🏦 Todos los bancos</option>
+                @foreach (var banco in bancosDisponibles)
+                {
+                    <option value="@banco">@banco</option>
+                }
+            </select>
+        </div>
+
+        @if (itemsFuncion.Any())
+        {
+            @foreach (var grupo in itemsFuncion.GroupBy(i => i.Banco))
+            {
+                <div class="financiamiento-banco-group">
+                    <div class="banco-header">🏦 @grupo.Key</div>
+                    @foreach (var item in grupo)
+                    {
+                        <div class="financiamiento-card @(!item.Activo ? "financiamiento-inactivo" : "")"
+                              style="@(item.Tipo == "Credito" ? $"box-shadow: {ObtenerBoxShadowBanco(item.Banco)};" : "")">
+                            <div class="financiamiento-top">
+                                <div class="financiamiento-info">
+                                    <div class="financiamiento-alias">
+                                        @(item.Tipo == "Credito" ? "💳" : "💰") @item.Alias
+                                    </div>
+                                    <div class="financiamiento-meta">
+                                        <span class="badge-@(item.Tipo == "Credito" ? "credito" : "prestamo")">@item.Tipo</span>
+                                        @if (item.TasaInteresAnual.HasValue)
+                                        {
+                                            <span>📈 @item.TasaInteresAnual.Value.ToString("0.##")% APR</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="financiamiento-acciones">
+                                    <button class="btn-icono" @onclick="() => AbrirModalEditar(item)" title="Editar">✏️</button>
+                                    <button class="btn-icono" @onclick="() => ConfirmarEliminar(item.Id)" title="Eliminar">🗑️</button>
+                                </div>
+                            </div>
+
+                            <div class="financiamiento-monto-pago">
+                                <span class="monto-mensual">@FormatearMonto(FinanciamientoCalculation.CalculateMonthlyPayment(item))</span> / <span class="monto-total">@FormatearMonto(item.MontoTotal)</span>
+                            </div>
+
+                            @{
+                                var progreso = FinanciamientoCalculation.CalculateProgress(item, mostrarMinutos);
+                                var pct = progreso.Porcentaje;
+                            }
+                            <div class="financiamiento-progress">
+                                <div class="financiamiento-progress-fill @(pct >= 100 ? "completo" : "")"
+                                     style="width: @Math.Min(100, pct)%; @(item.Tipo == "Credito" && pct < 100 ? $"background:{ObtenerBarraBanco(item.Banco)};" : "")"></div>
+                            </div>
+
+                            <div class="financiamiento-datos">
+                                <span>
+                                    <span class="dato-label">Pagados</span>
+                                    <span class="dato-valor">@progreso.Completados / @item.PlazoMeses</span>
+                                </span>
+                                <span>
+                                    <span class="dato-label">Próximo pago</span>
+                                    <span class="dato-valor">@progreso.ProximoPago</span>
+                                </span>
+                                <span>
+                                    <span class="dato-label">Restante</span>
+                                    <span class="dato-valor">@FormatearMonto(progreso.Restante)</span>
+                                </span>
+                                <span>
+                                    <span class="dato-label">Vence</span>
+                                    <span class="dato-valor">@progreso.Vence</span>
+                                </span>
+                            </div>
+
+                            @if (!item.Activo)
+                            {
+                                <div style="margin-top:0.5rem;font-size:0.8rem;color:var(--accent-red);font-weight:600;">
+                                    ⏸️ Finalizado / Inactivo
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-filtro">
+                <p style="text-align:center;color:var(--text-muted);padding:2rem 0;">
+                    😶 No hay resultados para este filtro
+                </p>
+                <div style="text-align:center;">
+                    <button class="btn-footer btn-cancelar" @onclick="LimpiarFiltros">Limpiar filtros</button>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <EmptyState Icon="🏦" Title="Sin financiamientos"
+                    Subtitle="Agrega tus tarjetas de crédito y préstamos para llevar control">
+            <button class="btn-primary" @onclick="AbrirModalNuevo" style="margin-top:0.75rem;">
+                + Agregar
+            </button>
+        </EmptyState>
+    }
+
+    <button class="fab-button" @onclick="AbrirModalNuevo" title="Agregar financiamiento">+</button>
+</div>
+
+<Modal Title="@(formEditandoId is null ? "Nuevo financiamiento" : "Editar financiamiento")" Visible="@modalAbierto" OnClose="CerrarModal">
+    <Body>
+        <div class="campo">
+            <label class="campo-label">Tipo</label>
+            <div style="display:flex;gap:0.5rem;">
+                <button class="btn-footer @(formTipo == "Credito" ? "btn-guardar" : "btn-cancelar")"
+                        @onclick="@(() => { formTipo = "Credito"; formTasa = null; })" style="flex:1;">
+                    💳 Crédito
+                </button>
+                <button class="btn-footer @(formTipo == "Prestamo" ? "btn-guardar" : "btn-cancelar")"
+                        @onclick="@(() => formTipo = "Prestamo")" style="flex:1;">
+                    💰 Préstamo
+                </button>
+            </div>
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Banco</label>
+            <select class="campo-input" @bind="formBanco">
+                <option value="">— Selecciona o elige Otro —</option>
+                @foreach (var banco in bancosDisponibles)
+                {
+                    <option value="@banco">@banco</option>
+                }
+                <option value="__otro__">✏️ Otro (escribir)</option>
+            </select>
+            @if (formBanco == "__otro__")
+            {
+                <input type="text" class="campo-input" @bind="formBancoPersonalizado"
+                       placeholder="Escribe el nombre del banco..." style="margin-top:0.5rem;" />
+            }
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Motivo de Financiamiento</label>
+            <input type="text" class="campo-input" @bind="formAlias" />
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Monto total</label>
+            <div class="monto-input-wrapper">
+                <span class="monto-simbolo">$</span>
+                <input type="number" class="monto-input" @bind="formMontoTotal" step="0.01" min="0.01" placeholder="0.00" />
+            </div>
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Plazo (meses)</label>
+            <input type="number" class="campo-input" @bind="formPlazoMeses" step="1" min="1" placeholder="12" />
+        </div>
+
+        @if (formTipo == "Prestamo")
+        {
+            <div class="campo">
+                <label class="campo-label">Tasa de interés anual (APR)</label>
+                <input type="number" class="campo-input" @bind="formTasa" step="0.01" min="0" max="100" placeholder="Opcional, ej: 23.5" />
+                <span class="campo-error" style="display:@(formTasa > 100 ? "block" : "none")">La tasa no puede superar 100%</span>
+            </div>
+        }
+
+        <div class="campo">
+            <label class="campo-label">Fecha de inicio</label>
+            <input type="date" class="campo-input" @bind="formFechaInicio" @bind:format="yyyy-MM-dd" />
+            @if (formFechaInicio.Year != DateTime.Now.Year || formFechaInicio.Month != DateTime.Now.Month)
+            {
+                <span class="campo-error">La fecha debe ser del mes actual (@DateTime.Now.ToString("MMMM yyyy"))</span>
+            }
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Categoría (opcional — se creará gasto automático)</label>
+            <select class="campo-input" @bind="formCategoriaId">
+                <option value="">— Sin categoría —</option>
+                @foreach (var cat in categoriasGasto)
+                {
+                    <option value="@cat.Id">@cat.Icono @cat.Nombre</option>
+                }
+            </select>
+        </div>
+    </Body>
+    <Footer>
+        <button class="btn-footer btn-cancelar" @onclick="CerrarModal">Cancelar</button>
+        <button class="btn-footer btn-guardar" @onclick="GuardarAsync" disabled="@(!FormularioValido || guardando)">
+            @(guardando ? "Guardando..." : "Guardar")
+        </button>
+    </Footer>
+</Modal>
+
+@if (eliminandoId is not null)
+{
+    <div class="confirm-overlay" @onclick="CancelarEliminar">
+        <div class="confirm-dialog" @onclick:stopPropagation>
+            <div class="confirm-dialog-icon">⚠️</div>
+            <div class="confirm-dialog-title">¿Eliminar este financiamiento?</div>
+            <div class="confirm-dialog-msg">¿Qué hacer con los gastos que generó?</div>
+            <div class="confirm-dialog-btns">
+                <button class="btn-confirm btn-keep" @onclick="EliminarSoloAsync">
+                    Conservar gastos anteriores
+                </button>
+                <button class="btn-confirm btn-delete-all" @onclick="EliminarConGastosAsync">
+                    Eliminar también los gastos
+                </button>
+                <button class="btn-confirm btn-cancel" @onclick="CancelarEliminar">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private static readonly Dictionary<string, string> BancosColores = new()
+    {
+        ["Banorte"] = "#E34234",
+        ["BBVA"] = "#1973B8",
+        ["Banamex"] = "#228B22",
+        ["HSBC"] = "#FFFFFF",
+        ["Banregio"] = "#FF6600",
+        ["Banco Azteca"] = "#90EE90",
+        ["Nu Bank"] = "#820AD1",
+        ["Plata Bank"] = "#808080",
+        ["Didi Bank"] = "#FF6600",
+    };
+
+    private static string ObtenerColorBanco(string banco) =>
+        BancosColores.TryGetValue(banco, out var color) ? color : "var(--accent-blue)";
+
+    private static string ObtenerBoxShadowBanco(string banco)
+    {
+        if (banco == "HSBC") return "inset 4px 0 0 #DB0011, inset 2px 0 0 #FFFFFF";
+        if (banco == "Banregio") return "inset 4px 0 0 #FF6600, inset 2px 0 0 #FFFFFF";
+        if (banco == "Banamex") return "inset 4px 0 0 #228B22, inset 2px 0 0 #CA3433";
+        if (banco == "Plata Bank") return "inset 4px 0 0 #808080, inset 2px 0 0 #FF8C00";
+        return $"inset 4px 0 0 {ObtenerColorBanco(banco)}";
+    }
+
+    private static string ObtenerBarraBanco(string banco)
+    {
+        if (banco == "HSBC") return "linear-gradient(90deg, #DB0011, #FFFFFF)";
+        if (banco == "Banregio") return "linear-gradient(90deg, #FF6600, #FFFFFF)";
+        if (banco == "Banamex") return "linear-gradient(90deg, #228B22, #CA3433)";
+        if (banco == "Plata Bank") return "linear-gradient(90deg, #808080, #FF8C00)";
+        return ObtenerColorBanco(banco);
+    }
+
+    private List<Financiamiento>? items;
+    private List<Categoria> categoriasGasto = new();
+    private List<string> bancosDisponibles = new();
+    private string filtro = "";
+    private string filtroBanco = "";
+    private bool mostrarMinutos;
+
+    private void LimpiarFiltros()
+    {
+        filtro = "";
+        filtroBanco = "";
+    }
+
+    private bool modalAbierto;
+    private bool guardando;
+    private string formTipo = "Credito";
+    private string formBanco = "";
+    private string formBancoPersonalizado = "";
+    private string formAlias = "";
+    private decimal formMontoTotal;
+    private int formPlazoMeses = 12;
+    private decimal? formTasa;
+    private DateTime formFechaInicio = DateTime.Now;
+    private string formCategoriaId = "";
+
+    private Guid? formEditandoId;
+    private Guid? eliminandoId;
+
+    private List<Financiamiento> itemsFuncion => (items ?? new())
+        .Where(i => (filtro == "" || i.Tipo == filtro) && (filtroBanco == "" || i.Banco == filtroBanco))
+        .OrderByDescending(i => i.Activo)
+        .ThenBy(i => i.Banco)
+        .ThenBy(i => i.Alias)
+        .ToList();
+
+    private decimal ResumenDeudaTotal => itemsFuncion.Where(i => i.Activo).Sum(i => i.MontoTotal);
+    private decimal ResumenPagoMensual => FinanciamientoCalculation.CalculateTotalMonthlyPayment(itemsFuncion);
+    private int ResumenActivos => itemsFuncion.Count(i => i.Activo);
+
+    private bool FormularioValido =>
+        (formBanco != "" || !string.IsNullOrWhiteSpace(formBancoPersonalizado))
+        && !string.IsNullOrWhiteSpace(formAlias)
+        && formMontoTotal > 0
+        && formPlazoMeses > 0
+        && (formTasa is null || (formTasa >= 0 && formTasa <= 100))
+        && formFechaInicio.Year == DateTime.Now.Year
+        && formFechaInicio.Month == DateTime.Now.Month;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatosAsync();
+    }
+
+    private async Task CargarDatosAsync()
+    {
+        try
+        {
+            var usuario = await UsuarioService.ObtenerUsuarioAsync();
+            mostrarMinutos = usuario.MostrarMinutos;
+
+            var categorias = await CategoriaService.ObtenerCategoriasAsync();
+            categoriasGasto = categorias.Where(c => c.Tipo == TipoGasto.Gasto).OrderBy(c => c.Orden).ToList();
+
+            bancosDisponibles = await FinanciamientoService.ObtenerBancosAsync();
+
+            await FinanciamientoService.GenerarCuotasPendientesAsync();
+
+            items = await FinanciamientoService.ObtenerFinanciamientosAsync();
+
+            var expirados = FinanciamientoCalculation.AutoDeactivateExpired(items);
+            var hayCambios = expirados.Where(i => !i.Activo).Any();
+            if (hayCambios)
+            {
+                foreach (var item in expirados.Where(i => !i.Activo))
+                    await FinanciamientoService.ActualizarFinanciamientoAsync(item);
+                items = await FinanciamientoService.ObtenerFinanciamientosAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al cargar: {ex.Message}");
+            items = new();
+        }
+
+        StateHasChanged();
+    }
+
+    private void AbrirModalNuevo()
+    {
+        formEditandoId = null;
+        formTipo = "Credito";
+        formBanco = "";
+        formBancoPersonalizado = "";
+        formAlias = "";
+        formMontoTotal = 0;
+        formPlazoMeses = 12;
+        formTasa = null;
+        formFechaInicio = DateTime.Now;
+        formCategoriaId = "";
+        modalAbierto = true;
+    }
+
+    private void AbrirModalEditar(Financiamiento item)
+    {
+        formEditandoId = item.Id;
+        formTipo = item.Tipo;
+        if (bancosDisponibles.Contains(item.Banco))
+        {
+            formBanco = item.Banco;
+            formBancoPersonalizado = "";
+        }
+        else
+        {
+            formBanco = "__otro__";
+            formBancoPersonalizado = item.Banco;
+        }
+        formAlias = item.Alias;
+        formMontoTotal = item.MontoTotal;
+        formPlazoMeses = item.PlazoMeses;
+        formTasa = item.TasaInteresAnual;
+        formFechaInicio = item.FechaInicio.Kind == DateTimeKind.Utc
+            ? item.FechaInicio.ToLocalTime()
+            : item.FechaInicio;
+        formCategoriaId = item.CategoriaId?.ToString() ?? "";
+        modalAbierto = true;
+    }
+
+    private void CerrarModal()
+    {
+        modalAbierto = false;
+        guardando = false;
+        formEditandoId = null;
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (!FormularioValido) return;
+
+        guardando = true;
+        StateHasChanged();
+
+        try
+        {
+            var bancoFinal = formBanco == "__otro__" ? formBancoPersonalizado.Trim() : formBanco;
+
+            if (formEditandoId is not null)
+            {
+                var itemsActuales = await FinanciamientoService.ObtenerFinanciamientosAsync();
+                var existente = itemsActuales.FirstOrDefault(i => i.Id == formEditandoId);
+                if (existente is null)
+                {
+                    ToastService.ShowError("Financiamiento no encontrado");
+                    return;
+                }
+
+                existente.Banco = bancoFinal;
+                existente.Alias = formAlias.Trim();
+                existente.MontoTotal = formMontoTotal;
+                existente.PlazoMeses = formPlazoMeses;
+                existente.TasaInteresAnual = formTasa;
+                existente.FechaInicio = formFechaInicio.ToUniversalTime();
+                existente.CategoriaId = string.IsNullOrEmpty(formCategoriaId) ? null : Guid.Parse(formCategoriaId);
+
+                await FinanciamientoService.ActualizarFinanciamientoAsync(existente);
+                ToastService.ShowSuccess("Financiamiento actualizado");
+            }
+            else
+            {
+                var item = new Financiamiento
+                {
+                    Tipo = formTipo,
+                    Banco = bancoFinal,
+                    Alias = formAlias.Trim(),
+                    MontoTotal = formMontoTotal,
+                    PlazoMeses = formPlazoMeses,
+                    TasaInteresAnual = formTasa,
+                    FechaInicio = formFechaInicio.ToUniversalTime(),
+                    CategoriaId = string.IsNullOrEmpty(formCategoriaId) ? null : Guid.Parse(formCategoriaId),
+                };
+
+                await FinanciamientoService.CrearFinanciamientoAsync(item);
+                ToastService.ShowSuccess("Financiamiento creado");
+            }
+
+            if (formBanco == "__otro__" && !string.IsNullOrWhiteSpace(formBancoPersonalizado))
+            {
+                await FinanciamientoService.AgregarBancoPersonalizadoAsync(bancoFinal);
+            }
+
+            CerrarModal();
+            await CargarDatosAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+
+        guardando = false;
+    }
+
+    private void ConfirmarEliminar(Guid id)
+    {
+        eliminandoId = id;
+    }
+
+    private void CancelarEliminar()
+    {
+        eliminandoId = null;
+    }
+
+    private async Task EliminarSoloAsync()
+    {
+        if (eliminandoId is null) return;
+
+        try
+        {
+            await FinanciamientoService.EliminarFinanciamientoAsync(eliminandoId.Value);
+            ToastService.ShowSuccess("Financiamiento eliminado. Los gastos anteriores se conservan.");
+            CancelarEliminar();
+            await CargarDatosAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task EliminarConGastosAsync()
+    {
+        if (eliminandoId is null) return;
+
+        try
+        {
+            var id = eliminandoId.Value;
+            await FinanciamientoService.EliminarFinanciamientoConGastosAsync(id);
+            ToastService.ShowSuccess("Financiamiento y sus gastos eliminados");
+            CancelarEliminar();
+            await CargarDatosAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+    }
+
+    private string FormatearMonto(decimal monto)
+    {
+        var prefijo = monto < 0 ? "-" : "";
+        return $"{prefijo}${Math.Abs(monto):N2}";
+    }
+}

@@ -1,0 +1,116 @@
+﻿@implements IDisposable
+@inherits LayoutComponentBase
+@inject IThemeService ThemeService
+@inject IJSRuntime JSRuntime
+@inject INotificacionService NotificacionService
+@inject IToastService ToastService
+@inject IPinLockService PinLockService
+@inject ILogger<MainLayout> Logger
+@inject NavigationManager Navigation
+
+<div class="page">
+    <button class="mobile-hamburger" @onclick="ToggleSidebar" title="Abrir menú">
+        ☰
+    </button>
+
+    <div class="sidebar @(sidebarOpen ? "open" : "")">
+        <NavMenu SidebarOpen="@sidebarOpen" OnToggle="@ToggleSidebar" />
+    </div>
+
+    @if (sidebarOpen)
+    {
+        <div class="sidebar-overlay" @onclick="CerrarSidebar" @ontouchstart="CerrarSidebar"></div>
+    }
+
+    <main>
+        <article class="content">
+            @Body
+        </article>
+    </main>
+</div>
+
+<BlazoredToasts />
+
+@code {
+    private bool sidebarOpen;
+
+    private void ToggleSidebar()
+    {
+        sidebarOpen = !sidebarOpen;
+    }
+
+    private void CerrarSidebar()
+    {
+        sidebarOpen = false;
+    }
+
+    private DotNetObjectReference<MainLayout>? _dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var claseBody = await ThemeService.ObtenerClaseBodyAsync();
+            if (!string.IsNullOrEmpty(claseBody))
+            {
+                await JSRuntime.InvokeVoidAsync("document.body.classList.add", claseBody);
+            }
+
+            await InicializarLockScreenAsync();
+            await MostrarNotificacionesAsync();
+        }
+    }
+
+    private async Task InicializarLockScreenAsync()
+    {
+        try
+        {
+            if (!await PinLockService.EstaConfiguradoAsync()) return;
+
+            _dotNetRef = DotNetObjectReference.Create(this);
+            var delay = await PinLockService.ObtenerDelayBloqueoSegundosAsync();
+            await JSRuntime.InvokeVoidAsync("pinLock.iniciar", _dotNetRef, delay);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al inicializar lock screen");
+        }
+    }
+
+    [JSInvokable]
+    public void CerrarSesion()
+    {
+        PinLockService.CerrarSesion();
+        _ = InvokeAsync(() =>
+        {
+            Navigation.NavigateTo("/pin-unlock", replace: true);
+        });
+    }
+
+    private async Task MostrarNotificacionesAsync()
+    {
+        try
+        {
+            var notificaciones = await NotificacionService.VerificarNotificacionesAsync();
+            foreach (var n in notificaciones)
+            {
+                var mensaje = $"{n.Icono} {n.Mensaje}";
+                if (n.Tipo == "presupuesto_excedido")
+                    ToastService.ShowError(mensaje);
+                else if (n.Tipo == "presupuesto_alerta")
+                    ToastService.ShowWarning(mensaje);
+                else
+                    ToastService.ShowInfo(mensaje);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al verificar notificaciones");
+        }
+    }
+
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}
