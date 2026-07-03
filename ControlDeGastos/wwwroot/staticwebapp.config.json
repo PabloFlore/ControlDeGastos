@@ -4,16 +4,11 @@
     "exclude": ["/css/*", "/js/*", "/icon-*", "/favicon.png", "/manifest.webmanifest", "/_framework/*"]
   },
   "routes": [],
-  "responseOverrides": {
-    "200": {
-      "headers": {
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "DENY",
-        "X-XSS-Protection": "1; mode=block"
-      }
-    }
-  },
+  "responseOverrides": {},
   "globalHeaders": {
-    "Referrer-Policy": "strict-origin-when-cross-origin"
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "X-XSS-Protection": "1; mode=block"
   }
 }
