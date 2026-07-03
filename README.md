@@ -2,96 +2,82 @@
 
 Aplicación PWA de finanzas personales construida con Blazor WebAssembly .NET 8.
 
+## Arquitectura
+
+- **Frontend**: Blazor WebAssembly (`ControlDeGastos/`)
+- **API**: Azure Functions .NET 8 isolated (`ControlDeGastos.Functions/`)
+- **Base de datos**: IndexedDB (offline-first) + Supabase (licencias)
+- **Hosting**: Azure Static Web Apps
+
 ## Publicar en Azure Static Web Apps
 
-### 1. Crear `staticwebapp.config.json`
+### 1. Migración SQL en Supabase
 
-El archivo ya está en `wwwroot/staticwebapp.config.json`. Redirige todas las rutas SPA a `index.html` y agrega headers de seguridad.
+Ejecuta esta SQL en el SQL Editor de tu proyecto Supabase:
 
-### 2. Subir a GitHub
+```sql
+CREATE TABLE IF NOT EXISTS revoked_tokens (
+    token_hash TEXT PRIMARY KEY,
+    revoked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    reason TEXT NOT NULL DEFAULT ''
+);
 
-```bash
-git init
-git add .
-git commit -m "Primer commit"
-gh repo create <nombre> --public --push
+ALTER TABLE revoked_tokens ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "service_role_all_revoked_tokens" ON revoked_tokens
+    FOR ALL TO service_role
+    USING (true)
+    WITH CHECK (true);
 ```
 
-### 3. Crear Azure Static Web App
+### 2. Crear Azure Static Web App
 
 Desde [portal.azure.com](https://portal.azure.com):
 
 - **Recurso**: Static Web App
 - **Plan**: Gratuito (Free)
 - **Origen**: GitHub
-- **Repo**: el que creaste en el paso 2
+- **Repositorio**: `PabloFlore/ControlDeGastos`
 - **Branch**: `main`
 - **Build Preset**: Blazor
 - **App location**: `ControlDeGastos`
+- **Api location**: `ControlDeGastos.Functions`
 - **Output location**: `wwwroot`
 
-Azure genera automáticamente un GitHub Actions workflow. La primera vez puede fallar porque el preset "Blazor" espera cierta estructura. Si falla, reemplaza el workflow generado con el de abajo.
+### 3. Variables de entorno en Azure
 
-### 4. Workflow de GitHub Actions (`.github/workflows/azure-static-web-apps.yml`)
+Después de crear el recurso, ve a **Settings → Environment variables** y agrega:
 
-Copia este workflow. Azure crea uno automáticamente pero puedes reemplazarlo con este:
+| Nombre | Valor |
+|--------|-------|
+| `Supabase__Url` | `https://upwbdekcbqjntundleet.supabase.co` |
+| `Supabase__ServiceRoleKey` | (tu Service Role Key de Supabase) |
+| `Revocation__ApiKey` | (clave secreta para revocar tokens) |
 
-```yaml
-name: Azure Static Web Apps CI/CD
+La `ServiceRoleKey` se obtiene de Supabase → **Settings → API → service_role secret**.
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches: [main]
+### 4. Workflow de GitHub Actions
 
-jobs:
-  build_and_deploy:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
-      - name: Publish
-        run: dotnet publish ControlDeGastos/ControlDeGastos.csproj -c Release -o publish
-      - name: Build And Deploy
-        id: builddeploy
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: upload
-          app_location: publish/wwwroot
-          output_location: ""
+El archivo `.github/workflows/azure-static-web-apps.yml` ya está configurado. Publica tanto el frontend como las Functions automáticamente en cada push a `main`.
 
-  close_pull_request:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Close PR
-        id: closepullrequest
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          action: close
-```
-
-> **Importante**: el workflow generado por Azure ya incluye el `AZURE_STATIC_WEB_APPS_API_TOKEN` en los secrets. No lo modifiques ni elimines.
-
-### 5. Build manual (opcional)
+### 5. Prueba local
 
 ```bash
-dotnet publish ControlDeGastos/ControlDeGastos.csproj -c Release -o publish
+cd ControlDeGastos.Functions
+func start
 ```
 
-El resultado publicable está en `publish/wwwroot/`. Puedes subir esa carpeta manualmente si no usas CI/CD.
+Endpoint           | Método | Ruta
+-------------------|--------|----------------------------
+Health             | GET    | `/api/health`
+Validate           | POST   | `/api/license/validate`
+Activate           | POST   | `/api/license/activate`
+Revoke             | POST   | `/api/license/revoke`
+Revoked List       | GET    | `/api/license/revoked`
 
 ## Notas
 
 - La app usa IndexedDB como almacenamiento local (offline-first). No requiere base de datos externa.
-- Supabase se usa únicamente para validación de licencias (evitar reuso de tokens). No es necesario para el funcionamiento básico.
+- Supabase se usa para validación de licencias y revocación de tokens.
 - El Service Worker se registra automáticamente para soporte offline.
+- Las Functions se ejecutan en el plan de consumo (costo $0 cuando no se usan).
