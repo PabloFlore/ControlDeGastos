@@ -12,7 +12,7 @@ public class LicenciaService : ILicenciaService
     private const string LastValidatedKey = "cdg_last_validated";
     private const int TrialDays = 180;
     private const int GracePeriodDays = 7;
-    private const string ApiBaseUrl = "http://localhost:5000";
+    private const string ApiBaseUrl = "";
 
     private readonly byte[] _publicKeyBytes;
     private readonly IStorageService _storage;

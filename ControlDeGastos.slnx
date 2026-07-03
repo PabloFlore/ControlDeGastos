@@ -7,5 +7,5 @@
     <Project Path="tools/KeyGenerator/KeyGenerator.csproj" />
   </Folder>
   <Project Path="ControlDeGastos/ControlDeGastos.csproj" />
-  <Project Path="ControlDeGastos.Api/ControlDeGastos.Api.csproj" />
+  <Project Path="ControlDeGastos.Functions/ControlDeGastos.Functions.csproj" />
 </Solution>
