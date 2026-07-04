@@ -12,20 +12,18 @@ public class LicenciaService : ILicenciaService
     private const string LastValidatedKey = "cdg_last_validated";
     private const int TrialDays = 180;
     private const int GracePeriodDays = 7;
-    private const string ApiBaseUrl = "";
-
     private readonly byte[] _publicKeyBytes;
     private readonly IStorageService _storage;
     private readonly ILogger<LicenciaService> _logger;
     private readonly HttpClient _http;
     private ECDsa? _verifier;
 
-    public LicenciaService(IStorageService storage, ILogger<LicenciaService> logger, byte[] publicKeyBytes, HttpClient? http = null)
+    public LicenciaService(IStorageService storage, ILogger<LicenciaService> logger, byte[] publicKeyBytes, HttpClient http)
     {
         _storage = storage;
         _logger = logger;
         _publicKeyBytes = publicKeyBytes;
-        _http = http ?? new HttpClient { BaseAddress = new Uri(ApiBaseUrl), Timeout = TimeSpan.FromSeconds(3) };
+        _http = http;
     }
 
     private ECDsa GetVerifier()

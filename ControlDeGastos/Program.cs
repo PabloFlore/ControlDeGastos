@@ -20,8 +20,9 @@ builder.Services.AddScoped<ILicenciaService>(sp =>
 {
     var storage = sp.GetRequiredService<IStorageService>();
     var logger = sp.GetRequiredService<ILogger<LicenciaService>>();
+    var http = sp.GetRequiredService<HttpClient>();
     var publicKeyBytes = new byte[] { 48, 89, 48, 19, 6, 7, 42, 134, 72, 206, 61, 2, 1, 6, 8, 42, 134, 72, 206, 61, 3, 1, 7, 3, 66, 0, 4, 228, 32, 164, 132, 157, 64, 233, 225, 242, 89, 10, 191, 20, 113, 221, 241, 196, 55, 220, 43, 181, 219, 225, 111, 115, 119, 210, 100, 129, 129, 7, 101, 0, 100, 225, 3, 183, 2, 225, 117, 130, 31, 13, 6, 192, 194, 76, 237, 29, 136, 206, 247, 124, 198, 58, 216, 240, 4, 123, 34, 155, 91, 27, 232 };
-    return new LicenciaService(storage, logger, publicKeyBytes);
+    return new LicenciaService(storage, logger, publicKeyBytes, http);
 });
 builder.Services.AddScoped<IThemeService, ThemeService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
