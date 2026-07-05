@@ -17,6 +17,8 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+      - name: Install WASM workload
+        run: dotnet workload install wasm-tools-net8
       - name: Publish Frontend
         run: dotnet publish ControlDeGastos/ControlDeGastos.csproj -c Release -o publish/frontend
       - name: Publish API
