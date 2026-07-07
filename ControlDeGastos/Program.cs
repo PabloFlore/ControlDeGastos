@@ -55,6 +55,7 @@ builder.Services.AddScoped<IPinLockService, PinLockService>();
 builder.Services.AddScoped<IStorageMonitorService, StorageMonitorService>();
 
 builder.Services.AddSingleton<IConnectivityService, ConnectivityService>();
+builder.Services.AddScoped<IUpdateService, UpdateService>();
 
 builder.Services.AddScoped<IndexedDbStorageService>();
 builder.Services.AddScoped<IStorageService>(sp => sp.GetRequiredService<IndexedDbStorageService>());

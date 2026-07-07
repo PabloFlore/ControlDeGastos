@@ -5,6 +5,7 @@
 @inject INotificacionService NotificacionService
 @inject IToastService ToastService
 @inject IPinLockService PinLockService
+@inject IUpdateService UpdateService
 @inject ILogger<MainLayout> Logger
 @inject NavigationManager Navigation
 
@@ -31,8 +32,13 @@
 
 <BlazoredToasts />
 
+<UpdateNotification Visible="@mostrarUpdateNotification"
+                   OnActualizarAhora="ActualizarAhoraAsync"
+                   OnMasTarde="PosponerActualizacionAsync" />
+
 @code {
     private bool sidebarOpen;
+    private bool mostrarUpdateNotification;
 
     private void ToggleSidebar()
     {
@@ -58,7 +64,38 @@
 
             await InicializarLockScreenAsync();
             await MostrarNotificacionesAsync();
+            await VerificarActualizacionAsync();
         }
+    }
+
+    private async Task VerificarActualizacionAsync()
+    {
+        try
+        {
+            if (await UpdateService.EstaPospuestoAsync()) return;
+
+            if (await UpdateService.HayActualizacionAsync())
+            {
+                mostrarUpdateNotification = true;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Error al verificar actualización");
+        }
+    }
+
+    private async Task ActualizarAhoraAsync()
+    {
+        mostrarUpdateNotification = false;
+        await UpdateService.ActivarAsync();
+    }
+
+    private async Task PosponerActualizacionAsync()
+    {
+        mostrarUpdateNotification = false;
+        await UpdateService.PosponerAsync();
     }
 
     private async Task InicializarLockScreenAsync()
