@@ -57,7 +57,7 @@ public class LicenciaService : ILicenciaService
 
         try
         {
-            var response = await _http.PostAsJsonAsync("/api/license/activate", new { token });
+            var response = await _http.PostAsJsonAsync("/api/license/activate", new { Token = token });
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<ValidateResponse>();
@@ -85,11 +85,14 @@ public class LicenciaService : ILicenciaService
                     return licencia;
                 }
 
-                return new Licencia { Valida = false, Mensaje = result?.Mensaje ?? "Error al activar la licencia en el servidor" };
+                if (plan == PlanType.Nube)
+                    return new Licencia { Valida = false, Mensaje = result?.Mensaje ?? "Error al activar la licencia en el servidor" };
             }
-
-            if (plan == PlanType.Nube)
-                return new Licencia { Valida = false, Mensaje = "❌ No se pudo activar el token en la nube. Verifica tu conexión." };
+            else
+            {
+                if (plan == PlanType.Nube)
+                    return new Licencia { Valida = false, Mensaje = "❌ No se pudo activar el token en la nube. Verifica tu conexión." };
+            }
         }
         catch (Exception ex)
         {
@@ -248,7 +251,7 @@ public class LicenciaService : ILicenciaService
 
         try
         {
-            var response = await _http.PostAsJsonAsync("/api/license/validate", new { token = licencia.Token });
+            var response = await _http.PostAsJsonAsync("/api/license/validate", new { Token = licencia.Token });
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<ValidateResponse>();
