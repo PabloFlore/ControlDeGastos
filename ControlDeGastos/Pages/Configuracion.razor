@@ -321,29 +321,30 @@ else
     </section>
 
     <section class="config-seccion">
-        <h2 class="seccion-titulo">🔄 Actualización</h2>
+        <h2 class="seccion-titulo">🔄 Forzar actualización</h2>
         <div class="seccion-cuerpo">
-            <p class="info-sub">Revisa si hay una nueva versión disponible.</p>
-            <button class="btn-plan" @onclick="ClickActualizacionAsync" disabled="@buscandoActualizacion">
-                @if (buscandoActualizacion)
+            <p class="info-sub">Limpia la caché temporal y recarga la app. Tus datos no se perderán.</p>
+            <button class="btn-plan" @onclick="() => mostrarConfirmRecarga = true" disabled="@recargando">
+                @if (recargando)
                 {
-                    <span>🔍 Buscando...</span>
-                }
-                else if (hayActualizacion)
-                {
-                    <span>🚀 Actualizar ahora</span>
+                    <span>⏳ Recargando...</span>
                 }
                 else
                 {
-                    <span>🔍 Buscar actualizaciones</span>
+                    <span>🔄 Forzar actualización</span>
                 }
             </button>
-            @if (!string.IsNullOrEmpty(mensajeActualizacion))
-            {
-                <p class="cambio-plan-msg">@mensajeActualizacion</p>
-            }
         </div>
     </section>
+
+<ConfirmDialog Visible="@mostrarConfirmRecarga"
+               Icon="🔄"
+               Title="¿Forzar actualización?"
+               Message="Se limpiará la caché temporal del navegador y se recargará la aplicación. Tus datos guardados no se perderán."
+               CancelText="Cancelar"
+               ConfirmText="Forzar recarga"
+               OnCancel="() => mostrarConfirmRecarga = false"
+               OnConfirm="EjecutarForzarRecargaAsync" />
 
     <section class="config-seccion config-info">
         <div class="seccion-cuerpo info-texto">
@@ -367,9 +368,8 @@ else
     private bool mostrarCambioPlan;
     private bool mostrarAvisoPrivacidadConfig;
     private string nuevoToken = "";
-    private bool buscandoActualizacion;
-    private bool hayActualizacion;
-    private string? mensajeActualizacion;
+    private bool mostrarConfirmRecarga;
+    private bool recargando;
     private string? mensajeCambioPlan;
 
     private string nombreInput = "";
@@ -883,47 +883,12 @@ else
         }
     }
 
-    private async Task ClickActualizacionAsync()
+    private async Task EjecutarForzarRecargaAsync()
     {
-        if (hayActualizacion)
-            await ActualizarAhoraDesdeConfigAsync();
-        else
-            await BuscarActualizacionAsync();
-    }
-
-    private async Task BuscarActualizacionAsync()
-    {
-        buscandoActualizacion = true;
-        mensajeActualizacion = null;
+        mostrarConfirmRecarga = false;
+        recargando = true;
         StateHasChanged();
-
-        try
-        {
-            if (await UpdateService.HayActualizacionAsync())
-            {
-                hayActualizacion = true;
-                mensajeActualizacion = "🚀 Hay una nueva versión disponible. Haz clic en 'Actualizar ahora' para aplicarla.";
-            }
-            else
-            {
-                hayActualizacion = false;
-                mensajeActualizacion = "✅ Tienes la versión más reciente.";
-            }
-        }
-        catch (Exception ex)
-        {
-            hayActualizacion = false;
-            mensajeActualizacion = $"❌ Error al buscar: {ex.Message}";
-        }
-        finally
-        {
-            buscandoActualizacion = false;
-        }
-    }
-
-    private async Task ActualizarAhoraDesdeConfigAsync()
-    {
-        await UpdateService.ActivarAsync();
+        await UpdateService.ForzarRecargaAsync();
     }
 
 }
