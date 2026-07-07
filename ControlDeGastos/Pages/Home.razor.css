@@ -524,6 +524,10 @@ body.rpg-theme .rpg-exp-link:hover {
     height: 280px;
     margin-left: auto;
     margin-right: auto;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .chart-leyenda {

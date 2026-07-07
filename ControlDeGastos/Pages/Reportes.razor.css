@@ -185,6 +185,10 @@
     max-width: 500px;
     height: 280px;
     margin: 0 auto;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .chart-leyenda {
