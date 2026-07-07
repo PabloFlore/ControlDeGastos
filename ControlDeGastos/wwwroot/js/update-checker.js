@@ -35,8 +35,12 @@ window.updateChecker = {
 
     activar: async function () {
         if (!window.updateChecker._waitingWorker) return false;
-        window.updateChecker._waitingWorker.postMessage({ type: 'SKIP_WAITING' });
-        window.location.reload();
-        return true;
+        return new Promise(function (resolve) {
+            navigator.serviceWorker.addEventListener('controllerchange', function () {
+                window.location.reload();
+                resolve(true);
+            });
+            window.updateChecker._waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+        });
     }
 };
