@@ -37,10 +37,10 @@ public class TiendaService : ITiendaService
         new() { Id = "caja_sorpresa", Nombre = "Caja", Descripcion = "Contiene un item aleatorio de la tienda", Icono = "📦", Categoria = CategoriaArticulo.CajaSorpresa, Precio = 250, EsConsumible = true, Orden = 17 },
 
         // Shop Titles
-        new() { Id = "titulo_estratega", Nombre = "Estratega financiero", Descripcion = "Título exclusivo de la tienda", Icono = "🧠", Categoria = CategoriaArticulo.TituloTienda, Precio = 200, TituloId = "shop_estratega", TituloIcono = "🧠", Orden = 18 },
-        new() { Id = "titulo_coleccionista", Nombre = "Coleccionista", Descripcion = "Título exclusivo de la tienda", Icono = "💎", Categoria = CategoriaArticulo.TituloTienda, Precio = 250, TituloId = "shop_coleccionista", TituloIcono = "💎", Orden = 19 },
-        new() { Id = "titulo_millonario", Nombre = "Millonario", Descripcion = "Título exclusivo de la tienda", Icono = "🤑", Categoria = CategoriaArticulo.TituloTienda, Precio = 300, TituloId = "shop_millonario", TituloIcono = "🤑", Orden = 20 },
-        new() { Id = "titulo_rey_tienda", Nombre = "Rey de la tienda", Descripcion = "Título exclusivo de la tienda", Icono = "👑", Categoria = CategoriaArticulo.TituloTienda, Precio = 300, TituloId = "shop_rey_tienda", TituloIcono = "👑", Orden = 21 },
+        new() { Id = "titulo_estratega", Nombre = "Estratega financiero", Descripcion = "Cada peso tiene un plan. Tus movimientos financieros son de libro de texto.", Icono = "🧠", Categoria = CategoriaArticulo.TituloTienda, Precio = 200, TituloId = "shop_estratega", TituloIcono = "🧠", Orden = 18 },
+        new() { Id = "titulo_coleccionista", Nombre = "Coleccionista", Descripcion = "No solo acumulas monedas... acumulas leyenda. Cada artículo cuenta una historia.", Icono = "💎", Categoria = CategoriaArticulo.TituloTienda, Precio = 250, TituloId = "shop_coleccionista", TituloIcono = "💎", Orden = 19 },
+        new() { Id = "titulo_millonario", Nombre = "Millonario", Descripcion = "Los ceros bailan a tu favor. Tu cuenta bancaria tiene su propia zona de confort.", Icono = "🤑", Categoria = CategoriaArticulo.TituloTienda, Precio = 300, TituloId = "shop_millonario", TituloIcono = "🤑", Orden = 20 },
+        new() { Id = "titulo_rey_tienda", Nombre = "Rey de la tienda", Descripcion = "El trono de la tienda es tuyo. Los demás solo alquilan el espacio.", Icono = "👑", Categoria = CategoriaArticulo.TituloTienda, Precio = 300, TituloId = "shop_rey_tienda", TituloIcono = "👑", Orden = 21 },
 
         // Card Skins
         new() { Id = "skin_metal", Nombre = "Skin Metal", Descripcion = "Tarjetas con acabado metálico plateado", Icono = "⚙️", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 300, SkinCssClass = "skin-metal", Orden = 22 },
