@@ -12,6 +12,10 @@ html, body {
     touch-action: manipulation;
 }
 
+input, textarea, select {
+    font-size: 16px;
+}
+
 :root {
     --bg-primary: #ffffff;
     --bg-secondary: #f8f9fa;
