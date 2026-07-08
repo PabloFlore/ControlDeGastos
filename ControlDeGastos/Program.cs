@@ -16,13 +16,15 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 builder.Services.AddBlazoredToast();
 
+builder.Services.AddScoped<ILocalStorageBackupService, LocalStorageBackupService>();
 builder.Services.AddScoped<ILicenciaService>(sp =>
 {
     var storage = sp.GetRequiredService<IStorageService>();
     var logger = sp.GetRequiredService<ILogger<LicenciaService>>();
     var http = sp.GetRequiredService<HttpClient>();
+    var backup = sp.GetRequiredService<ILocalStorageBackupService>();
     var publicKeyBytes = new byte[] { 48, 89, 48, 19, 6, 7, 42, 134, 72, 206, 61, 2, 1, 6, 8, 42, 134, 72, 206, 61, 3, 1, 7, 3, 66, 0, 4, 45, 85, 9, 191, 65, 250, 60, 109, 6, 28, 92, 118, 29, 115, 120, 180, 222, 98, 69, 153, 190, 35, 114, 26, 187, 229, 200, 93, 96, 108, 141, 160, 42, 215, 192, 186, 4, 77, 215, 122, 96, 53, 228, 108, 169, 44, 239, 203, 200, 246, 106, 0, 158, 21, 135, 31, 245, 3, 48, 149, 105, 61, 61, 164 };
-    return new LicenciaService(storage, logger, publicKeyBytes, http);
+    return new LicenciaService(storage, logger, publicKeyBytes, http, backup);
 });
 builder.Services.AddScoped<IThemeService, ThemeService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();

@@ -14,16 +14,24 @@ public class LicenciaService : ILicenciaService
     private const int GracePeriodDays = 7;
     private readonly byte[] _publicKeyBytes;
     private readonly IStorageService _storage;
+    private readonly ILocalStorageBackupService _backup;
     private readonly ILogger<LicenciaService> _logger;
     private readonly HttpClient _http;
     private ECDsa? _verifier;
 
-    public LicenciaService(IStorageService storage, ILogger<LicenciaService> logger, byte[] publicKeyBytes, HttpClient http)
+    public LicenciaService(IStorageService storage, ILogger<LicenciaService> logger, byte[] publicKeyBytes, HttpClient http, ILocalStorageBackupService backup)
     {
         _storage = storage;
         _logger = logger;
         _publicKeyBytes = publicKeyBytes;
         _http = http;
+        _backup = backup;
+    }
+
+    private async Task GuardarConBackupAsync(Licencia licencia)
+    {
+        await _storage.SetAsync(StorageKey, licencia);
+        await _backup.GuardarLicenciaAsync(licencia);
     }
 
     private ECDsa GetVerifier()
@@ -80,7 +88,7 @@ public class LicenciaService : ILicenciaService
                         ModoGamificadoIncluido = game
                     };
 
-                    await _storage.SetAsync(StorageKey, licencia);
+                    await GuardarConBackupAsync(licencia);
                     await _storage.SetAsync(LastValidatedKey, DateTime.UtcNow);
                     return licencia;
                 }
@@ -133,7 +141,7 @@ public class LicenciaService : ILicenciaService
             ModoGamificadoIncluido = game
         };
 
-        await _storage.SetAsync(StorageKey, licenciaLocal);
+        await GuardarConBackupAsync(licenciaLocal);
         await _storage.SetAsync(LastValidatedKey, DateTime.UtcNow);
         return licenciaLocal;
     }
@@ -235,13 +243,23 @@ public class LicenciaService : ILicenciaService
 
     public async Task GuardarLicenciaLocalAsync(Licencia licencia)
     {
-        await _storage.SetAsync(StorageKey, licencia);
+        await GuardarConBackupAsync(licencia);
     }
 
     public async Task<Licencia> ObtenerEstadoLicenciaAsync()
     {
         var licencia = await _storage.GetAsync<Licencia>(StorageKey);
-        return licencia ?? new Licencia { Valida = false, Mensaje = "No hay licencia activada" };
+        if (licencia is not null) return licencia;
+
+        var backup = await _backup.CargarLicenciaAsync();
+        if (backup is not null)
+        {
+            _logger.LogInformation("Licencia recuperada desde localStorage backup");
+            await _storage.SetAsync(StorageKey, backup);
+            return backup;
+        }
+
+        return new Licencia { Valida = false, Mensaje = "No hay licencia activada" };
     }
 
     public async Task<bool> VerificarYActualizarVigenciaAsync()
@@ -258,15 +276,21 @@ public class LicenciaService : ILicenciaService
                 if (result != null && result.Valido)
                 {
                     licencia.UltimaValidacion = DateTime.UtcNow;
-                    await _storage.SetAsync(StorageKey, licencia);
+                    await GuardarConBackupAsync(licencia);
                     await _storage.SetAsync(LastValidatedKey, DateTime.UtcNow);
                     return true;
                 }
 
-                licencia.Valida = false;
-                licencia.Mensaje = result?.Mensaje ?? "Licencia inválida según el servidor";
-                await _storage.SetAsync(StorageKey, licencia);
-                return false;
+                if (licencia.PlanIncluido == PlanType.Nube)
+                {
+                    licencia.Valida = false;
+                    licencia.Mensaje = result?.Mensaje ?? "Licencia inválida según el servidor";
+                    await _storage.SetAsync(StorageKey, licencia);
+                    return false;
+                }
+
+                _logger.LogWarning("API devolvió Valido=false para licencia LOCAL ({Mensaje}), se mantiene validez local", result?.Mensaje);
+                return licencia.Valida;
             }
         }
         catch

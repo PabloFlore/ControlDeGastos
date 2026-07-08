@@ -12,7 +12,8 @@ public class LicenciaServiceTests
     private static LicenciaService CrearService(IStorageService storage)
     {
         var http = new HttpClient(new MockHttpHandler());
-        return new LicenciaService(storage, new Mock<ILogger<LicenciaService>>().Object, TestPublicKeyBytes, http);
+        var backup = new Mock<ILocalStorageBackupService>().Object;
+        return new LicenciaService(storage, new Mock<ILogger<LicenciaService>>().Object, TestPublicKeyBytes, http, backup);
     }
 
     private class MockHttpHandler : HttpMessageHandler
