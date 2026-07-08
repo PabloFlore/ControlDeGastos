@@ -8,6 +8,10 @@
     box-sizing: border-box;
 }
 
+html, body {
+    touch-action: manipulation;
+}
+
 :root {
     --bg-primary: #ffffff;
     --bg-secondary: #f8f9fa;

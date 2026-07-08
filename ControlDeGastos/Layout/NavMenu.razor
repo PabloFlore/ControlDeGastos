@@ -8,7 +8,7 @@
     <a class="sidebar-brand" href="">ControlDeGastos</a>
 </div>
 
-<nav class="sidebar-nav">
+<nav class="sidebar-nav" @onclick="CerrarSiAbierto">
     <div class="nav-item">
         <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
             <span class="nav-icon">🏠</span>
@@ -66,8 +66,17 @@
     [Parameter]
     public EventCallback OnToggle { get; set; }
 
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
     private async Task InvokeToggle()
     {
         await OnToggle.InvokeAsync();
+    }
+
+    private async Task CerrarSiAbierto()
+    {
+        if (SidebarOpen)
+            await OnClose.InvokeAsync();
     }
 }

@@ -14,7 +14,7 @@
     </button>
 
     <div class="sidebar @(sidebarOpen ? "open" : "")">
-        <NavMenu SidebarOpen="@sidebarOpen" OnToggle="@ToggleSidebar" />
+        <NavMenu SidebarOpen="@sidebarOpen" OnToggle="@ToggleSidebar" OnClose="@CerrarSidebar" />
     </div>
 
     @if (sidebarOpen)
