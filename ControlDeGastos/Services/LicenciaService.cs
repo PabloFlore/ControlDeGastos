@@ -273,38 +273,17 @@ public class LicenciaService : ILicenciaService
         {
         }
 
-        if (licencia.LicenciaTipo == TipoLicencia.ParaSiempre)
+        if (licencia.LicenciaTipo == TipoLicencia.Trial
+            && licencia.FechaExpiracion.HasValue
+            && licencia.FechaExpiracion.Value < DateTime.UtcNow)
         {
-            licencia.UltimaValidacion = DateTime.UtcNow;
+            licencia.Valida = false;
+            licencia.Mensaje = "Licencia de prueba expirada";
             await _storage.SetAsync(StorageKey, licencia);
-            return true;
+            return false;
         }
 
-        var ultimaValidacion = await _storage.GetAsync<DateTime?>(LastValidatedKey);
-        if (ultimaValidacion.HasValue && (DateTime.UtcNow - ultimaValidacion.Value).TotalDays < GracePeriodDays)
-        {
-            switch (licencia.LicenciaTipo)
-            {
-                case TipoLicencia.Trial:
-                    if (licencia.FechaExpiracion == null || licencia.FechaExpiracion.Value < DateTime.UtcNow)
-                    {
-                        licencia.Valida = false;
-                        licencia.Mensaje = "Licencia de prueba expirada";
-                        await _storage.SetAsync(StorageKey, licencia);
-                        return false;
-                    }
-                    licencia.UltimaValidacion = DateTime.UtcNow;
-                    await _storage.SetAsync(StorageKey, licencia);
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        licencia.Valida = false;
-        licencia.Mensaje = "No se pudo validar la licencia. Conéctate a internet para continuar.";
-        await _storage.SetAsync(StorageKey, licencia);
-        return false;
+        return licencia.Valida;
     }
 
     public static (bool valido, TipoLicencia tipo, DateTime? expiracion, string mensaje, PlanType plan, bool modoGamificado) ValidarToken(string token)

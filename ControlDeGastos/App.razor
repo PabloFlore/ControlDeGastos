@@ -99,7 +99,14 @@
     private async Task<bool> TieneAccesoAsync()
     {
         var licencia = await LicenciaService.ObtenerEstadoLicenciaAsync();
-        return licencia.Valida;
+        if (!licencia.Valida || string.IsNullOrEmpty(licencia.Token)) return false;
+
+        if (licencia.LicenciaTipo == TipoLicencia.Trial
+            && licencia.FechaExpiracion.HasValue
+            && licencia.FechaExpiracion.Value < DateTime.UtcNow)
+            return false;
+
+        return true;
     }
 
     private async Task DesactivarFuncionesNoPermitidasAsync()
