@@ -138,7 +138,18 @@ public class PinLockService : IPinLockService
         var storedHash = await _storage.GetAsync<string>(StorageKeyRecoveryCodeHash);
         if (string.IsNullOrEmpty(storedHash)) return false;
 
-        var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(code));
+        var normalized = code
+            .Trim()
+            .Replace("CDG-", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("-", "")
+            .ToUpperInvariant();
+
+        if (normalized.Length == 8)
+            normalized = $"{normalized[..4]}-{normalized[4..]}";
+        else if (normalized.Length != 9 || normalized[4] != '-')
+            return false;
+
+        var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(normalized));
         var storedBytes = Convert.FromBase64String(storedHash);
 
         return CryptographicOperations.FixedTimeEquals(hashBytes, storedBytes);
