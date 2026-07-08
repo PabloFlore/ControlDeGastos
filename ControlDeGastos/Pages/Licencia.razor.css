@@ -68,7 +68,7 @@
 .licencia-input {
     box-sizing: border-box;
     font-family: 'SF Mono', 'Courier New', monospace;
-    font-size: 0.85rem;
+    font-size: 16px;
     text-align: center;
     padding: 12px 16px;
     letter-spacing: 0.5px;

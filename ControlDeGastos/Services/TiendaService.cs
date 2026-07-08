@@ -62,7 +62,7 @@ public class TiendaService : ITiendaService
 
         // Extended Titles
         new() { Id = "titulo_cabra", Nombre = "La CABRA", Descripcion = "El mas grande de todos los tiempos... o por cabrear?", Icono = "🐐", Categoria = CategoriaArticulo.TituloTienda, Precio = 400, TituloId = "shop_cabra", TituloIcono = "🐐", Orden = 39 },
-        new() { Id = "titulo_son_of_god", Nombre = "Son of God", Descripcion = "Demuestra que no estas solo, sino caminando en El", Icono = "💫", Categoria = CategoriaArticulo.TituloTienda, Precio = 600, TituloId = "shop_son_of_god", TituloIcono = "💫", Orden = 40 },
+        new() { Id = "titulo_son_of_god", Nombre = "Son of God", Descripcion = "Demuestra que no estas solo, sino caminando en El", Icono = "💫", Categoria = CategoriaArticulo.TituloTienda, Precio = 600, TituloId = "shop_son_of_god", TituloIcono = "💫", Orden = 44 },
         new() { Id = "titulo_aura_10k", Nombre = "+10,000 de aura", Descripcion = "Derramas mucha Aura.", Icono = "✨", Categoria = CategoriaArticulo.TituloTienda, Precio = 400, TituloId = "shop_aura_10k", TituloIcono = "✨", Orden = 41 },
         new() { Id = "titulo_aura_negativa", Nombre = "Aura Negativa", Descripcion = "Ya no le muevas porfa", Icono = "💀", Categoria = CategoriaArticulo.TituloTienda, Precio = 400, TituloId = "shop_aura_negativa", TituloIcono = "💀", Orden = 42 },
         new() { Id = "titulo_deudor_aura", Nombre = "Deudor de Aura", Descripcion = "Debes aura, pa", Icono = "💳", Categoria = CategoriaArticulo.TituloTienda, Precio = 400, TituloId = "shop_deudor_aura", TituloIcono = "💳", Orden = 43 },
