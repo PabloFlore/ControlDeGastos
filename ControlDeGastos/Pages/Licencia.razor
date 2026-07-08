@@ -167,18 +167,14 @@
                 return;
             }
 
-            var vigente = await LicenciaService.VerificarYActualizarVigenciaAsync();
-
-            if (!vigente)
-            {
-                estado = EstadoLicencia.Expirada;
-                mensajeError = "Tu licencia ha expirado. Ingresa un nuevo código.";
-                return;
-            }
-
             if (licencia.LicenciaTipo == Models.TipoLicencia.ParaSiempre)
             {
                 estado = EstadoLicencia.ParaSiempre;
+            }
+            else if (licencia.FechaExpiracion.HasValue && licencia.FechaExpiracion.Value < DateTime.UtcNow)
+            {
+                estado = EstadoLicencia.Expirada;
+                mensajeError = "Tu licencia ha expirado. Ingresa un nuevo código.";
             }
             else
             {
