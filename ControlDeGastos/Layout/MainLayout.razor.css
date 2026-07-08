@@ -68,19 +68,18 @@ main {
         display: block;
         position: fixed;
         top: 0.75rem;
-        left: 0.75rem;
+        right: 0.75rem;
         z-index: 1004;
-        background: transparent;
-        border: none;
-        padding: 0.3rem;
-        font-size: 1.4rem;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        padding: 0.3rem 0.5rem;
+        font-size: 1.2rem;
         cursor: pointer;
-        color: rgba(255, 255, 255, 0.8);
+        color: rgba(255, 255, 255, 0.6);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         line-height: 1;
-    }
-
-    .content {
-        padding-left: 3rem;
+        backdrop-filter: blur(4px);
     }
 
     .sidebar {
