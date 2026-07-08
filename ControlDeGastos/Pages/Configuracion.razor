@@ -188,10 +188,19 @@ else
                         <p class="confirm-title">@modalPinTitulo</p>
                         @if (modalPinEliminar)
                         {
-                            <p class="confirm-msg">Ingresa tu PIN actual para eliminarlo.</p>
-                            <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4"
-                                   class="pin-modal-input @(modalPinError is not null ? "pin-input-error" : "")"
-                                   @bind="modalPinInput1" placeholder="• • • •" />
+                            @if (modalPinRecuperando)
+                            {
+                                <p class="confirm-msg">Ingresa tu código de recuperación para eliminar el PIN.</p>
+                                <input type="text" class="pin-modal-input @(modalPinError is not null ? "pin-input-error" : "")"
+                                       @bind="modalPinInput1" placeholder="CDG-XXXX-XXXX" />
+                            }
+                            else
+                            {
+                                <p class="confirm-msg">Ingresa tu PIN actual para eliminarlo.</p>
+                                <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4"
+                                       class="pin-modal-input @(modalPinError is not null ? "pin-input-error" : "")"
+                                       @bind="modalPinInput1" placeholder="• • • •" />
+                            }
                         }
                         else
                         {
@@ -215,12 +224,32 @@ else
                         @if (modalPinError is not null)
                         {
                             <p class="campo-error">@modalPinError</p>
+                            @if (modalPinEliminar && !modalPinRecuperando)
+                            {
+                                <a class="pin-recovery-link" @onclick="IniciarRecuperacionEliminar">No recuerdo mi PIN</a>
+                            }
                         }
                         <div class="confirm-actions">
                             <button class="btn-confirm-cancel" @onclick="CancelarPinModal">Cancelar</button>
                             <button class="btn-confirm-ok" @onclick="EjecutarAccionPinAsync">
                                 @(modalPinEliminar ? "Eliminar" : modalPinCambiar ? "Cambiar" : "Configurar")
                             </button>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (mostrarRecoveryCode)
+            {
+                <div class="modal-overlay">
+                    <div class="confirm-dialog" @onclick:stopPropagation>
+                        <div class="confirm-icon">🔑</div>
+                        <p class="confirm-title">¡Guarda este código!</p>
+                        <p class="confirm-msg" style="margin-bottom:0.5rem">Tu código de recuperación es:</p>
+                        <p class="confirm-msg" style="font-family:monospace;font-size:1.5rem;text-align:center;letter-spacing:0.2rem;background:var(--card-bg);padding:0.75rem;border-radius:8px;margin:0.75rem 0">CDG-@recoveryCodeTexto</p>
+                        <p class="confirm-msg">Si olvidas tu PIN, este código es la única forma de recuperar acceso. Toma un screenshot o escríbelo en un lugar seguro. No lo compartas.</p>
+                        <div class="confirm-actions" style="justify-content:center">
+                            <button class="btn-confirm-ok" @onclick="CerrarRecoveryCodeModal">✔️ Ya lo guardé</button>
                         </div>
                     </div>
                 </div>
@@ -370,6 +399,9 @@ else
     private string nuevoToken = "";
     private bool mostrarConfirmRecarga;
     private bool recargando;
+    private bool mostrarRecoveryCode;
+    private string? recoveryCodeTexto;
+    private bool modalPinRecuperando;
     private string? mensajeCambioPlan;
 
     private string nombreInput = "";
@@ -812,6 +844,20 @@ else
         modalPinInput1 = "";
         modalPinInput2 = "";
         modalPinError = null;
+        modalPinRecuperando = false;
+    }
+
+    private void IniciarRecuperacionEliminar()
+    {
+        modalPinRecuperando = true;
+        modalPinError = null;
+        modalPinInput1 = "";
+    }
+
+    private void CerrarRecoveryCodeModal()
+    {
+        mostrarRecoveryCode = false;
+        ToastService.ShowSuccess("PIN configurado correctamente");
     }
 
     private async Task EjecutarAccionPinAsync()
@@ -822,6 +868,15 @@ else
         {
             if (modalPinEliminar)
             {
+                if (modalPinRecuperando)
+                {
+                    await PinLockService.DesactivarConRecoveryCodeAsync(modalPinInput1);
+                    pinConfigurado = false;
+                    CancelarPinModal();
+                    ToastService.ShowSuccess("PIN eliminado correctamente");
+                    return;
+                }
+
                 if (string.IsNullOrWhiteSpace(modalPinInput1) || modalPinInput1.Length != 4 || !modalPinInput1.All(char.IsDigit))
                 {
                     modalPinError = "Ingresa tu PIN actual de 4 dígitos.";
@@ -863,7 +918,17 @@ else
                 await PinLockService.ConfigurarPinAsync(modalPinInput1);
                 pinConfigurado = true;
                 CancelarPinModal();
-                ToastService.ShowSuccess("PIN configurado correctamente");
+                var recoveryCode = await PinLockService.GenerarRecoveryCodeSiNoExisteAsync();
+                if (recoveryCode is not null)
+                {
+                    recoveryCodeTexto = recoveryCode;
+                    mostrarRecoveryCode = true;
+                    StateHasChanged();
+                }
+                else
+                {
+                    ToastService.ShowSuccess("PIN configurado correctamente");
+                }
             }
         }
         catch (Exception ex)

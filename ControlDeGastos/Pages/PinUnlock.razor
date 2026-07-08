@@ -2,40 +2,101 @@
 @inject IPinLockService PinLockService
 @inject NavigationManager Navigation
 @inject IUsuarioService UsuarioService
+@inject IToastService ToastService
 
 <PageTitle>Bloqueo - Control de Gastos</PageTitle>
 
 <div class="pin-unlock-page">
     <div class="pin-unlock-card">
-        <div class="pin-unlock-logo">🔒</div>
-        <h1 class="pin-unlock-titulo">Ingresa tu PIN</h1>
-        <p class="pin-unlock-sub">@mensaje</p>
-
-        @if (temporalmenteBloqueado)
+        @if (mostrandoRecuperacion)
         {
-            <p class="pin-unlock-error">Demasiados intentos. Espera @segundosEspera s e intenta de nuevo.</p>
+            @if (recoveryVerificado)
+            {
+                <div class="pin-unlock-logo">🔑</div>
+                <h1 class="pin-unlock-titulo">Configurar nuevo PIN</h1>
+                <p class="pin-unlock-sub">Ingresa un nuevo PIN de 4 dígitos.</p>
+
+                <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4"
+                       class="pin-unlock-input"
+                       @bind="nuevoPin1" placeholder="Nuevo PIN" />
+
+                <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4"
+                       class="pin-unlock-input"
+                       @bind="nuevoPin2" placeholder="Confirmar PIN" />
+
+                @if (!string.IsNullOrEmpty(recoveryError))
+                {
+                    <p class="pin-unlock-error">@recoveryError</p>
+                }
+
+                <button class="pin-unlock-btn" @onclick="GuardarNuevoPinAsync"
+                        disabled="@(nuevoPin1.Length != 4 || nuevoPin2.Length != 4)">
+                    Guardar y desbloquear
+                </button>
+
+                <button class="btn-confirm-cancel" @onclick="CancelarRecuperacion"
+                        style="margin-top:0.5rem">Volver</button>
+            }
+            else
+            {
+                <div class="pin-unlock-logo">🔑</div>
+                <h1 class="pin-unlock-titulo">Recuperar acceso</h1>
+                <p class="pin-unlock-sub">Ingresa tu código de recuperación.</p>
+
+                <input type="text" class="pin-unlock-input"
+                       @bind="recoveryInput" placeholder="CDG-XXXX-XXXX" />
+
+                @if (!string.IsNullOrEmpty(recoveryError))
+                {
+                    <p class="pin-unlock-error">@recoveryError</p>
+                }
+
+                <button class="pin-unlock-btn" @onclick="VerificarRecoveryAsync"
+                        disabled="@string.IsNullOrWhiteSpace(recoveryInput)">
+                    Verificar código
+                </button>
+
+                <button class="btn-confirm-cancel" @onclick="CancelarRecuperacion"
+                        style="margin-top:0.5rem">Volver</button>
+            }
         }
         else
         {
-            <input type="password"
-                   inputmode="numeric"
-                   pattern="[0-9]*"
-                   maxlength="4"
-                   class="pin-unlock-input @(!string.IsNullOrEmpty(error) ? "pin-input-error" : "")"
-                   @bind-value="pinInput"
-                   @bind-value:event="oninput"
-                   autofocus
-                   placeholder="• • • •"
-                   @onkeydown="OnKeyDown" />
+            <div class="pin-unlock-logo">🔒</div>
+            <h1 class="pin-unlock-titulo">Ingresa tu PIN</h1>
+            <p class="pin-unlock-sub">@mensaje</p>
 
-            @if (!string.IsNullOrEmpty(error))
+            @if (temporalmenteBloqueado)
             {
-                <p class="pin-unlock-error">@error</p>
+                <p class="pin-unlock-error">Demasiados intentos. Espera @segundosEspera s e intenta de nuevo.</p>
             }
+            else
+            {
+                <input type="password"
+                       inputmode="numeric"
+                       pattern="[0-9]*"
+                       maxlength="4"
+                       class="pin-unlock-input @(!string.IsNullOrEmpty(error) ? "pin-input-error" : "")"
+                       @bind-value="pinInput"
+                       @bind-value:event="oninput"
+                       autofocus
+                       placeholder="• • • •"
+                       @onkeydown="OnKeyDown" />
 
-            <button class="pin-unlock-btn" @onclick="DesbloquearAsync" disabled="@(pinInput.Length != 4)">
-                Desbloquear
-            </button>
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <p class="pin-unlock-error">@error</p>
+                }
+
+                <button class="pin-unlock-btn" @onclick="DesbloquearAsync" disabled="@(pinInput.Length != 4)">
+                    Desbloquear
+                </button>
+
+                <a class="pin-recovery-link" @onclick="() => mostrandoRecuperacion = true"
+                   style="display:block;text-align:center;margin-top:1rem;cursor:pointer;color:var(--accent);font-size:0.9rem">
+                    ¿Olvidaste tu PIN?
+                </a>
+            }
         }
     </div>
 </div>
@@ -47,6 +108,13 @@
     private bool temporalmenteBloqueado;
     private int segundosEspera;
     private Timer? _timer;
+
+    private bool mostrandoRecuperacion;
+    private string recoveryInput = "";
+    private bool recoveryVerificado;
+    private string? recoveryError;
+    private string nuevoPin1 = "";
+    private string nuevoPin2 = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,5 +181,59 @@
                 IniciarContadorEspera();
             }
         }
+    }
+
+    private async Task VerificarRecoveryAsync()
+    {
+        recoveryError = null;
+
+        if (string.IsNullOrWhiteSpace(recoveryInput))
+        {
+            recoveryError = "Ingresa tu código de recuperación.";
+            return;
+        }
+
+        if (await PinLockService.VerificarRecoveryCodeAsync(recoveryInput.Trim()))
+        {
+            recoveryVerificado = true;
+            recoveryError = null;
+        }
+        else
+        {
+            recoveryError = "Código incorrecto. Verifica que lo hayas escrito correctamente.";
+        }
+    }
+
+    private async Task GuardarNuevoPinAsync()
+    {
+        recoveryError = null;
+
+        if (nuevoPin1.Length != 4 || !nuevoPin1.All(char.IsDigit))
+        {
+            recoveryError = "El PIN debe tener exactamente 4 dígitos numéricos.";
+            return;
+        }
+
+        if (nuevoPin1 != nuevoPin2)
+        {
+            recoveryError = "Los PIN no coinciden.";
+            return;
+        }
+
+        await PinLockService.ConfigurarPinAsync(nuevoPin1);
+        PinLockService.EstablecerSesionAutenticada();
+        _timer?.Dispose();
+        ToastService.ShowSuccess("PIN configurado correctamente");
+        Navigation.NavigateTo("/");
+    }
+
+    private void CancelarRecuperacion()
+    {
+        mostrandoRecuperacion = false;
+        recoveryInput = "";
+        recoveryVerificado = false;
+        recoveryError = null;
+        nuevoPin1 = "";
+        nuevoPin2 = "";
     }
 }

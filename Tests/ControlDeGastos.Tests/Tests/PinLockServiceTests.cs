@@ -336,4 +336,109 @@ public class PinLockServiceTests
         Assert.True(await service.VerificarPinAsync("5678"));
         Assert.False(await service.VerificarPinAsync("1234"));
     }
+
+    [Fact]
+    public async Task GenerarRecoveryCodeSiNoExisteAsync_SinCodigo_GeneraYRetorna()
+    {
+        var service = CrearService();
+
+        var code = await service.GenerarRecoveryCodeSiNoExisteAsync();
+
+        Assert.NotNull(code);
+        Assert.Matches(@"^[A-Z2-9]{4}-[A-Z2-9]{4}$", code);
+    }
+
+    [Fact]
+    public async Task GenerarRecoveryCodeSiNoExisteAsync_CodigoYaExiste_RetornaNull()
+    {
+        var service = CrearService();
+
+        var code1 = await service.GenerarRecoveryCodeSiNoExisteAsync();
+        Assert.NotNull(code1);
+
+        var code2 = await service.GenerarRecoveryCodeSiNoExisteAsync();
+        Assert.Null(code2);
+    }
+
+    [Fact]
+    public async Task VerificarRecoveryCodeAsync_CodigoCorrecto_DevuelveTrue()
+    {
+        var service = CrearService();
+
+        var code = await service.GenerarRecoveryCodeSiNoExisteAsync();
+        Assert.NotNull(code);
+
+        Assert.True(await service.VerificarRecoveryCodeAsync(code));
+    }
+
+    [Fact]
+    public async Task VerificarRecoveryCodeAsync_CodigoIncorrecto_DevuelveFalse()
+    {
+        var service = CrearService();
+
+        await service.GenerarRecoveryCodeSiNoExisteAsync();
+
+        Assert.False(await service.VerificarRecoveryCodeAsync("XXXX-XXXX"));
+    }
+
+    [Fact]
+    public async Task VerificarRecoveryCodeAsync_SinHash_DevuelveFalse()
+    {
+        var service = CrearService();
+
+        Assert.False(await service.VerificarRecoveryCodeAsync("ABCD-1234"));
+    }
+
+    [Fact]
+    public async Task DesactivarConRecoveryCodeAsync_CodigoCorrecto_EliminaPin()
+    {
+        var service = CrearService();
+        await service.ConfigurarPinAsync("1234");
+
+        var code = await service.GenerarRecoveryCodeSiNoExisteAsync();
+        Assert.NotNull(code);
+
+        await service.DesactivarConRecoveryCodeAsync(code);
+
+        Assert.False(await service.EstaConfiguradoAsync());
+    }
+
+    [Fact]
+    public async Task DesactivarConRecoveryCodeAsync_CodigoIncorrecto_LanzaExcepcion()
+    {
+        var service = CrearService();
+        await service.ConfigurarPinAsync("1234");
+
+        await service.GenerarRecoveryCodeSiNoExisteAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.DesactivarConRecoveryCodeAsync("XXXX-XXXX"));
+    }
+
+    [Fact]
+    public async Task DesactivarConRecoveryCodeAsync_SinCodigo_LanzaExcepcion()
+    {
+        var service = CrearService();
+        await service.ConfigurarPinAsync("1234");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.DesactivarConRecoveryCodeAsync("ABCD-1234"));
+    }
+
+    [Fact]
+    public async Task RecoveryCode_PersisteTrasReconfigurarPin()
+    {
+        var service = CrearService();
+        await service.ConfigurarPinAsync("1234");
+
+        var code = await service.GenerarRecoveryCodeSiNoExisteAsync();
+        Assert.NotNull(code);
+
+        await service.ConfigurarPinAsync("5678");
+
+        var code2 = await service.GenerarRecoveryCodeSiNoExisteAsync();
+        Assert.Null(code2);
+
+        Assert.True(await service.VerificarRecoveryCodeAsync(code));
+    }
 }

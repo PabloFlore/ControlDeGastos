@@ -7,6 +7,9 @@ public interface IPinLockService
     Task<bool> VerificarPinAsync(string pin);
     Task CambiarPinAsync(string pinViejo, string pinNuevo);
     Task DesactivarPinAsync(string pin);
+    Task<string?> GenerarRecoveryCodeSiNoExisteAsync();
+    Task<bool> VerificarRecoveryCodeAsync(string code);
+    Task DesactivarConRecoveryCodeAsync(string code);
     Task<int> ObtenerDelayBloqueoSegundosAsync();
     Task GuardarDelayBloqueoSegundosAsync(int segundos);
     bool SesionEstaAutenticada();

@@ -29,6 +29,9 @@ public class PinLockService : IPinLockService
     private const int IteracionesPbkdf2 = 1500;
     private const int TamanoClaveAes = 32;
 
+    private const string RecoveryCodeChars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    private const string StorageKeyRecoveryCodeHash = "cdg_recovery_code_hash";
+
     public PinLockService(IStorageService storage, IUsuarioService usuarioService, ILogger<PinLockService>? logger = null)
     {
         _storage = storage;
@@ -107,6 +110,44 @@ public class PinLockService : IPinLockService
     {
         if (!await VerificarPinAsync(pin))
             throw new InvalidOperationException("El PIN no es correcto.");
+
+        await _storage.RemoveAsync(StorageKeyHash);
+        await LimpiarIntentosAsync();
+        CerrarSesion();
+    }
+
+    public async Task<string?> GenerarRecoveryCodeSiNoExisteAsync()
+    {
+        if (await _storage.KeyExistsAsync(StorageKeyRecoveryCodeHash))
+            return null;
+
+        var chars = RecoveryCodeChars.ToCharArray();
+        var random = RandomNumberGenerator.GetBytes(8);
+        var parte1 = new string([chars[random[0] % chars.Length], chars[random[1] % chars.Length], chars[random[2] % chars.Length], chars[random[3] % chars.Length]]);
+        var parte2 = new string([chars[random[4] % chars.Length], chars[random[5] % chars.Length], chars[random[6] % chars.Length], chars[random[7] % chars.Length]]);
+        var code = $"{parte1}-{parte2}";
+
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(code));
+        await _storage.SetAsync(StorageKeyRecoveryCodeHash, Convert.ToBase64String(hash));
+
+        return code;
+    }
+
+    public async Task<bool> VerificarRecoveryCodeAsync(string code)
+    {
+        var storedHash = await _storage.GetAsync<string>(StorageKeyRecoveryCodeHash);
+        if (string.IsNullOrEmpty(storedHash)) return false;
+
+        var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(code));
+        var storedBytes = Convert.FromBase64String(storedHash);
+
+        return CryptographicOperations.FixedTimeEquals(hashBytes, storedBytes);
+    }
+
+    public async Task DesactivarConRecoveryCodeAsync(string code)
+    {
+        if (!await VerificarRecoveryCodeAsync(code))
+            throw new InvalidOperationException("El código de recuperación no es correcto.");
 
         await _storage.RemoveAsync(StorageKeyHash);
         await LimpiarIntentosAsync();
