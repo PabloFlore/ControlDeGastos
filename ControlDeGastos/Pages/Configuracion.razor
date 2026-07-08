@@ -630,7 +630,9 @@ else
 
             estadoLicencia = resultado;
             nuevoToken = "";
-            ToastService.ShowSuccess("✅ Licencia actualizada");
+            mensajeCambioPlan = "✅ Licencia activada. Recargando...";
+            StateHasChanged();
+            await UpdateService.ForzarRecargaAsync();
         }
         else
         {
