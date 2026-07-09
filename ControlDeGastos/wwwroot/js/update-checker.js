@@ -1,7 +1,13 @@
 window.forzarRecarga = async function () {
-    const keys = await caches.keys();
-    await Promise.all(keys.map(key => caches.delete(key)));
-    const reg = await navigator.serviceWorker.getRegistration();
-    if (reg) await reg.unregister();
-    window.location.reload();
+    var keys = await caches.keys();
+    var appCaches = keys.filter(function (k) { return k.startsWith('offline-cache-'); });
+    await Promise.all(appCaches.map(function (key) { return caches.delete(key); }));
+    var reg = await navigator.serviceWorker.getRegistration();
+    if (reg) {
+        if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        reg.update();
+    }
+    window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
 };
