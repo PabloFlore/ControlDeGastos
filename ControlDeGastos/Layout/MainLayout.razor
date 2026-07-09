@@ -9,9 +9,18 @@
 @inject NavigationManager Navigation
 
 <div class="page">
-    <button class="mobile-hamburger" @onclick="ToggleSidebar" title="Abrir menú">
-        ☰
-    </button>
+    @if (!sidebarOpen)
+    {
+        <button class="mobile-hamburger" @onclick="ToggleSidebar" title="Abrir menú">
+            ☰
+        </button>
+    }
+
+    <main>
+        <article class="content">
+            @Body
+        </article>
+    </main>
 
     <div class="sidebar @(sidebarOpen ? "open" : "")">
         <NavMenu SidebarOpen="@sidebarOpen" OnToggle="@ToggleSidebar" OnClose="@CerrarSidebar" />
@@ -21,12 +30,6 @@
     {
         <div class="sidebar-overlay" @onclick="CerrarSidebar" @ontouchstart="CerrarSidebar"></div>
     }
-
-    <main>
-        <article class="content">
-            @Body
-        </article>
-    </main>
 </div>
 
 <BlazoredToasts />
