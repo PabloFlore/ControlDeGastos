@@ -316,7 +316,7 @@
     private string formBanco = "";
     private string formBancoPersonalizado = "";
     private string formAlias = "";
-    private decimal formMontoTotal;
+    private decimal? formMontoTotal;
     private int formPlazoMeses = 12;
     private decimal? formTasa;
     private DateTime formFechaInicio = DateTime.Now;
@@ -339,7 +339,7 @@
     private bool FormularioValido =>
         (formBanco != "" || !string.IsNullOrWhiteSpace(formBancoPersonalizado))
         && !string.IsNullOrWhiteSpace(formAlias)
-        && formMontoTotal > 0
+        && (formMontoTotal ?? 0) > 0
         && formPlazoMeses > 0
         && (formTasa is null || (formTasa >= 0 && formTasa <= 100))
         && formFechaInicio.Year == DateTime.Now.Year
@@ -391,7 +391,7 @@
         formBanco = "";
         formBancoPersonalizado = "";
         formAlias = "";
-        formMontoTotal = 0;
+        formMontoTotal = null;
         formPlazoMeses = 12;
         formTasa = null;
         formFechaInicio = DateTime.Now;
@@ -454,7 +454,7 @@
 
                 existente.Banco = bancoFinal;
                 existente.Alias = formAlias.Trim();
-                existente.MontoTotal = formMontoTotal;
+                existente.MontoTotal = formMontoTotal ?? 0;
                 existente.PlazoMeses = formPlazoMeses;
                 existente.TasaInteresAnual = formTasa;
                 existente.FechaInicio = formFechaInicio.ToUniversalTime();
@@ -470,7 +470,7 @@
                     Tipo = formTipo,
                     Banco = bancoFinal,
                     Alias = formAlias.Trim(),
-                    MontoTotal = formMontoTotal,
+                    MontoTotal = formMontoTotal ?? 0,
                     PlazoMeses = formPlazoMeses,
                     TasaInteresAnual = formTasa,
                     FechaInicio = formFechaInicio.ToUniversalTime(),

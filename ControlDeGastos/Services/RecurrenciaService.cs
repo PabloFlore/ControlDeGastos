@@ -148,8 +148,19 @@ public class RecurrenciaService : IRecurrenciaService
         var index = recurrencias.FindIndex(r => r.Id == recurrencia.Id);
         if (index >= 0)
         {
+            var oldCategoriaId = recurrencias[index].CategoriaId;
             recurrencias[index] = recurrencia;
             await _storage.SetAsync(StorageKey, recurrencias);
+
+            if (oldCategoriaId != recurrencia.CategoriaId)
+            {
+                var gastos = await _gastoService.ObtenerGastosAsync();
+                foreach (var g in gastos.Where(g => g.RecurrenciaId == recurrencia.Id))
+                {
+                    g.CategoriaId = recurrencia.CategoriaId ?? Guid.Empty;
+                    await _gastoService.ActualizarGastoAsync(g);
+                }
+            }
         }
 
         var usuario = await _usuarioService.ObtenerUsuarioAsync();

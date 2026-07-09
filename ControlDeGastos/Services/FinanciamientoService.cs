@@ -167,8 +167,19 @@ public class FinanciamientoService : IFinanciamientoService
         var index = items.FindIndex(i => i.Id == item.Id);
         if (index >= 0)
         {
+            var oldCategoriaId = items[index].CategoriaId;
             items[index] = item;
             await _storage.SetAsync(StorageKey, items);
+
+            if (oldCategoriaId != item.CategoriaId)
+            {
+                var gastos = await _gastoService.ObtenerGastosAsync();
+                foreach (var g in gastos.Where(g => g.FinanciamientoId == item.Id))
+                {
+                    g.CategoriaId = item.CategoriaId ?? Guid.Empty;
+                    await _gastoService.ActualizarGastoAsync(g);
+                }
+            }
         }
 
         return item;

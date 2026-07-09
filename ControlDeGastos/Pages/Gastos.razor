@@ -273,13 +273,13 @@
                 <span class="monto-simbolo">$</span>
                 <input type="number"
                        class="monto-input"
-                       @bind="gastoForm.Monto"
+                       @bind="gastoFormMonto"
                        @bind:event="oninput"
                        @onfocus="() => montoTocado = true"
                        step="0.01"
                        placeholder="0.00" />
             </div>
-            @if (montoTocado && gastoForm.Monto <= 0)
+            @if (montoTocado && (gastoFormMonto ?? 0) <= 0)
             {
                 <span class="campo-error">El monto debe ser mayor a 0</span>
             }
@@ -357,12 +357,12 @@
 <Modal Title="@(editandoRecurrencia ? "Editar recurrencia" : "Nueva recurrencia")" Visible="@modalRecurrenciaFormAbierto" OnClose="CerrarModalRecurrenciaForm">
     <Body>
         <div class="tipo-toggle">
-            <button class="tipo-btn @(recurrenciaFormMonto >= 0 ? "tipo-activo tipo-gasto" : "")"
-                    @onclick="() => { recurrenciaFormMonto = Math.Abs(recurrenciaFormMonto); }">
+            <button class="tipo-btn @((recurrenciaFormMonto ?? 0) >= 0 ? "tipo-activo tipo-gasto" : "")"
+                    @onclick="() => { recurrenciaFormMonto = Math.Abs(recurrenciaFormMonto ?? 0); }">
                 💸 Gasto
             </button>
-            <button class="tipo-btn @(recurrenciaFormMonto < 0 ? "tipo-activo tipo-ingreso" : "")"
-                    @onclick="() => { recurrenciaFormMonto = -Math.Abs(recurrenciaFormMonto); }">
+            <button class="tipo-btn @((recurrenciaFormMonto ?? 0) < 0 ? "tipo-activo tipo-ingreso" : "")"
+                    @onclick="() => { recurrenciaFormMonto = -Math.Abs(recurrenciaFormMonto ?? 0); }">
                 💰 Ingreso
             </button>
         </div>
@@ -476,6 +476,7 @@
     private bool modalAbierto;
     private bool editando;
     private Gasto gastoForm = new();
+    private decimal? gastoFormMonto;
     private string tipoForm = "Gasto";
     private bool guardando;
     private bool montoTocado;
@@ -712,7 +713,7 @@
     // }
 
     private bool FormularioValido =>
-        gastoForm.Monto > 0 &&
+        (gastoFormMonto ?? 0) > 0 &&
         gastoForm.CategoriaId != Guid.Empty &&
         categoriasFiltradas.Any(c => c.Id == gastoForm.CategoriaId);
 
@@ -988,6 +989,7 @@
         tipoForm = "Gasto";
         montoTocado = false;
         gastoForm = new Gasto { CategoriaId = Guid.Empty, EsGastoCompartido = usuario?.HogarId is not null };
+        gastoFormMonto = null;
         fechaForm = DateTime.Now;
         modalAbierto = true;
     }
@@ -1005,6 +1007,7 @@
             return;
         }
         editando = true;
+        gastoFormMonto = Math.Abs(gasto.Monto);
         gastoForm = new Gasto
         {
             Id = gasto.Id,
@@ -1039,13 +1042,13 @@
         guardando = true;
         StateHasChanged();
 
-        var montoOriginal = gastoForm.Monto;
+        var montoOriginal = gastoFormMonto ?? 0;
 
         try
         {
             gastoForm.Monto = tipoForm == "Gasto"
-                ? Math.Abs(gastoForm.Monto)
-                : -Math.Abs(gastoForm.Monto);
+                ? Math.Abs(gastoFormMonto ?? 0)
+                : -Math.Abs(gastoFormMonto ?? 0);
             gastoForm.Fecha = fechaForm.ToUniversalTime();
 
             if (editando)
@@ -1159,11 +1162,11 @@
     private Guid? recurrenciaEliminandoId;
 
     private Guid recurrenciaFormCategoriaId = Guid.Empty;
-    private decimal recurrenciaFormMonto = 0;
+    private decimal? recurrenciaFormMonto;
     private decimal recurrenciaFormMontoAbs
     {
-        get => Math.Abs(recurrenciaFormMonto);
-        set => recurrenciaFormMonto = recurrenciaFormMonto >= 0 ? value : -value;
+        get => Math.Abs(recurrenciaFormMonto ?? 0);
+        set => recurrenciaFormMonto = (recurrenciaFormMonto ?? 0) >= 0 ? value : -value;
     }
     private string recurrenciaFormDesc = "";
     private string recurrenciaFormPeriodo = "Mensual";
@@ -1172,7 +1175,7 @@
 
     private bool RecurrenciaFormValida =>
         recurrenciaFormCategoriaId != Guid.Empty &&
-        recurrenciaFormMonto != 0 &&
+        (recurrenciaFormMonto ?? 0) != 0 &&
         categorias.Any(c => c.Id == recurrenciaFormCategoriaId);
 
     private string LabelRecurrencia(Recurrencia r)
@@ -1219,7 +1222,7 @@
         editandoRecurrencia = false;
         editandoRecurrenciaId = null;
         recurrenciaFormCategoriaId = Guid.Empty;
-        recurrenciaFormMonto = 0;
+        recurrenciaFormMonto = null;
         recurrenciaFormDesc = "";
         recurrenciaFormPeriodo = "Mensual";
         recurrenciaFormActiva = true;
@@ -1277,7 +1280,7 @@
                 if (existente != null)
                 {
                     existente.CategoriaId = recurrenciaFormCategoriaId;
-                    existente.Monto = recurrenciaFormMonto;
+                    existente.Monto = recurrenciaFormMonto ?? 0;
                     existente.Descripcion = string.IsNullOrWhiteSpace(recurrenciaFormDesc) ? null : recurrenciaFormDesc.Trim();
                     existente.TipoRecurrencia = tipo;
                     existente.Activa = recurrenciaFormActiva;
@@ -1290,7 +1293,7 @@
                 var rec = new Recurrencia
                 {
                     CategoriaId = recurrenciaFormCategoriaId,
-                    Monto = recurrenciaFormMonto,
+                    Monto = recurrenciaFormMonto ?? 0,
                     Descripcion = string.IsNullOrWhiteSpace(recurrenciaFormDesc) ? null : recurrenciaFormDesc.Trim(),
                     TipoRecurrencia = tipo,
                     FechaInicio = DateTime.UtcNow,

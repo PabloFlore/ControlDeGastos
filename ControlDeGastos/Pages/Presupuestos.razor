@@ -139,7 +139,7 @@
                        min="0.01"
                        placeholder="0.00" />
             </div>
-            @if (formMonto <= 0)
+            @if ((formMonto ?? 0) <= 0)
             {
                 <span class="campo-error">El límite debe ser mayor a 0</span>
             }
@@ -174,14 +174,14 @@
     private bool modalAbierto;
     private Guid formCategoriaId = Guid.Empty;
     private PeriodoPresupuesto formPeriodo = PeriodoPresupuesto.Mensual;
-    private decimal formMonto;
+    private decimal? formMonto;
     private DateTime formFecha = DateTime.Now;
     private bool guardando;
 
     private Guid? formEditandoId;
     private Guid? eliminandoId;
 
-    private bool FormularioValido => formMonto > 0;
+    private bool FormularioValido => (formMonto ?? 0) > 0;
 
     private static readonly string[] NombresMes =
         ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -257,8 +257,8 @@
             formCategoriaId = guid;
             var cat = categoriasGasto.FirstOrDefault(c => c.Id == guid);
             // Auto-llena el monto con el PresupuestoPorDefecto de la categoría (útil para gastos fijos como renta, servicios, suscripciones)
-            if (cat?.PresupuestoPorDefecto > 0 && formMonto <= 0)
-                formMonto = cat.PresupuestoPorDefecto.Value;
+            if (cat?.PresupuestoPorDefecto > 0 && (formMonto ?? 0) <= 0)
+                formMonto = cat.PresupuestoPorDefecto;
         }
     }
 
@@ -267,7 +267,7 @@
         formEditandoId = null;
         formCategoriaId = Guid.Empty;
         formPeriodo = PeriodoPresupuesto.Mensual;
-        formMonto = 0;
+        formMonto = null;
         formFecha = DateTime.Now;
         modalAbierto = true;
     }
@@ -309,7 +309,7 @@
                 }
 
                 existente.CategoriaId = formCategoriaId == Guid.Empty ? null : formCategoriaId;
-                existente.MontoLimite = formMonto;
+                existente.MontoLimite = formMonto ?? 0;
                 existente.Periodo = formPeriodo;
                 existente.FechaInicio = formFecha.ToUniversalTime();
 
@@ -321,7 +321,7 @@
                 var presupuesto = new Presupuesto
                 {
                     CategoriaId = formCategoriaId == Guid.Empty ? null : formCategoriaId,
-                    MontoLimite = formMonto,
+                    MontoLimite = formMonto ?? 0,
                     Periodo = formPeriodo,
                     FechaInicio = formFecha.ToUniversalTime(),
                 };

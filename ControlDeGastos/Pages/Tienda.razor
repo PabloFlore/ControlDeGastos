@@ -197,7 +197,13 @@
     {
         cargando = true;
         StateHasChanged();
+        await RecargarDatosAsync();
+        cargando = false;
+        StateHasChanged();
+    }
 
+    private async Task RecargarDatosAsync()
+    {
         try
         {
             catalogo = await TiendaService.ObtenerCatalogoAsync();
@@ -223,7 +229,6 @@
             ToastService.ShowError($"Error al cargar la tienda: {ex.Message}");
         }
 
-        cargando = false;
         StateHasChanged();
     }
 
@@ -301,7 +306,7 @@
         if (exito)
         {
             ToastService.ShowSuccess(mensaje);
-            await CargarDatosAsync();
+            await RecargarDatosAsync();
         }
         else
         {
@@ -370,7 +375,7 @@
         cajaMensaje = "";
         cajaAnimacionCompleta = false;
         itemsCajaReel.Clear();
-        await CargarDatosAsync();
+        await RecargarDatosAsync();
     }
 
     private async Task EquiparItemAsync(ArticuloTienda item)
@@ -391,7 +396,7 @@
             ToastService.ShowSuccess(EsItemActivo(item)
                 ? "Skin desequipada. Usando la predeterminada."
                 : $"¡Equipado: {item.Nombre}!");
-            await CargarDatosAsync();
+            await RecargarDatosAsync();
         }
 
         procesando = false;
