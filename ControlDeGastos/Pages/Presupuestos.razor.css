@@ -703,3 +703,9 @@ body.rpg-theme .btn-finalizar:hover {
     color: var(--accent-red);
     margin-top: 0.25rem;
 }
+
+.sin-limite {
+    font-style: italic;
+    color: var(--text-secondary);
+    font-weight: 400;
+}

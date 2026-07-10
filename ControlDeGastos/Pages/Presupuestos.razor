@@ -84,44 +84,66 @@
                                     <button class="btn-editar" @onclick="() => AbrirModalEditar(item)">✏️</button>
                                     <button class="btn-finalizar" @onclick="() => finalizandoId = item.Id" title="Finalizar ahora">🔚</button>
                                 }
+                                @if (!item.EsVencido && item.MontoLimite == 0)
+                                {
+                                    <button class="btn-gastos" @onclick="() => AbrirFondosModal(item)" title="Agregar fondos">💰</button>
+                                }
                                 <button class="btn-gastos" @onclick="() => AbrirGastosModal(item)" title="Ver gastos">📋</button>
                                 <button class="btn-eliminar" @onclick="() => ConfirmarEliminar(item.Id)">🗑️</button>
                             </div>
                         </div>
 
-                        <div class="presupuesto-bar-wrapper">
-                            <div class="presupuesto-bar">
-                                <div class="presupuesto-fill @ClaseColor(item.Porcentaje)"
-                                     style="width: @Math.Min(100, item.Porcentaje)%"></div>
+                        @if (item.MontoLimite > 0)
+                        {
+                            <div class="presupuesto-bar-wrapper">
+                                <div class="presupuesto-bar">
+                                    <div class="presupuesto-fill @ClaseColor(item.Porcentaje)"
+                                         style="width: @Math.Min(100, item.Porcentaje)%"></div>
+                                </div>
                             </div>
-                        </div>
+                        }
 
-                        <div class="presupuesto-datos">
+                        <div class="presupuesto-datos" style="grid-template-columns: @(item.MontoLimite > 0 ? "1fr 1fr 1fr" : "1fr 1fr")">
                             <div class="dato-item">
                                 <span class="dato-label">Gastado</span>
                                 <span class="dato-valor @(item.Porcentaje > 100 ? "texto-rojo" : "")">@FormatearMonto(item.Gastado)</span>
                             </div>
                             <div class="dato-item">
                                 <span class="dato-label">Límite</span>
-                                <span class="dato-valor">@FormatearMonto(item.MontoLimite)</span>
+                                <span class="dato-valor">
+                                    @if (item.MontoLimite > 0)
+                                    {
+                                        @FormatearMonto(item.MontoLimite)
+                                    }
+                                    else
+                                    {
+                                        <span class="sin-limite">Sin límite</span>
+                                    }
+                                </span>
                             </div>
-                            <div class="dato-item">
-                                <span class="dato-label">Restante</span>
-                                <span class="dato-valor @(item.Restante >= 0 ? "texto-verde" : "texto-rojo")">@FormatearMonto(item.Restante)</span>
-                            </div>
+                            @if (item.MontoLimite > 0)
+                            {
+                                <div class="dato-item">
+                                    <span class="dato-label">Restante</span>
+                                    <span class="dato-valor @(item.Restante >= 0 ? "texto-verde" : "texto-rojo")">@FormatearMonto(item.Restante)</span>
+                                </div>
+                            }
                         </div>
 
-                        @if (item.Gastado > item.MontoLimite)
+                        @if (item.MontoLimite > 0)
                         {
-                            <div class="presupuesto-alerta alerta-excedido">
-                                ⚡ Te excediste por @FormatearMonto(Math.Abs(item.Restante))
-                            </div>
-                        }
-                        else if (item.Porcentaje >= 80)
-                        {
-                            <div class="presupuesto-alerta alerta-atencion">
-                                ⚡ Te queda @FormatearMonto(item.Restante)
-                            </div>
+                            @if (item.Gastado > item.MontoLimite)
+                            {
+                                <div class="presupuesto-alerta alerta-excedido">
+                                    ⚡ Te excediste por @FormatearMonto(Math.Abs(item.Restante))
+                                </div>
+                            }
+                            else if (item.Porcentaje >= 80)
+                            {
+                                <div class="presupuesto-alerta alerta-atencion">
+                                    ⚡ Te queda @FormatearMonto(item.Restante)
+                                </div>
+                            }
                         }
                     </div>
                 }
@@ -217,13 +239,9 @@
                        class="monto-input"
                        @bind="formMonto"
                        step="0.01"
-                       min="0.01"
+                       min="0"
                        placeholder="0.00" />
-            </div>
-            @if ((formMonto ?? 0) <= 0)
-            {
-                <span class="campo-error">El límite debe ser mayor a 0</span>
-            }
+           </div>
         </div>
 
         <div class="campo">
@@ -288,6 +306,35 @@
     </Body>
 </Modal>
 
+<Modal Title="Agregar fondos" Visible="@fondosModalAbierto" OnClose="CerrarFondosModal">
+    <Body>
+        <p style="margin-bottom:0.75rem;font-size:0.9rem;color:var(--text-secondary);">
+            Agregando fondos a <strong style="color:var(--text-primary);">@fondosModalItem?.Nombre</strong>
+        </p>
+        <div class="campo">
+            <label class="campo-label">Monto</label>
+            <div class="monto-input-wrapper">
+                <span class="monto-simbolo">$</span>
+                <input type="number" class="monto-input" @bind="fondosMonto" step="0.01" min="0.01" placeholder="0.00" />
+            </div>
+        </div>
+        <div class="campo">
+            <label class="campo-label">Fecha</label>
+            <input type="date" class="campo-input" @bind="fondosFecha" @bind:format="yyyy-MM-dd" />
+        </div>
+        <div class="campo">
+            <label class="campo-label">Descripción <span class="campo-opcional">(opcional)</span></label>
+            <input type="text" class="campo-input" @bind="fondosDescripcion" placeholder="Ej: Aguinaldo, bono, etc." />
+        </div>
+    </Body>
+    <Footer>
+        <button class="btn-footer btn-cancelar" @onclick="CerrarFondosModal">Cancelar</button>
+        <button class="btn-footer btn-guardar" @onclick="GuardarFondosAsync" disabled="@((fondosMonto ?? 0) <= 0 || guardandoFondos)">
+            @(guardandoFondos ? "Guardando..." : "Agregar fondos")
+        </button>
+    </Footer>
+</Modal>
+
 @code {
     private List<PresupuestoItem>? items;
     private List<Categoria> categoriasGasto = new();
@@ -317,12 +364,20 @@
     private PresupuestoItem? gastosModalItem;
     private List<GastoResumen> gastosModalLista = new();
 
+    // Fondos modal
+    private bool fondosModalAbierto;
+    private PresupuestoItem? fondosModalItem;
+    private decimal? fondosMonto;
+    private DateTime fondosFecha = DateTime.Now;
+    private string? fondosDescripcion;
+    private bool guardandoFondos;
+
     private int mesSeleccionado = DateTime.Now.Month;
     private int anioSeleccionado = DateTime.Now.Year;
     private string textoBusqueda = "";
 
     private bool _navegando;
-    private bool FormularioValido => (formMonto ?? 0) > 0;
+    private bool FormularioValido => true;
 
     private static readonly string[] NombresMes =
         ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -556,6 +611,66 @@
         gastosModalAbierto = false;
         gastosModalItem = null;
         gastosModalLista = new();
+    }
+
+    private void AbrirFondosModal(PresupuestoItem item)
+    {
+        fondosModalItem = item;
+        fondosMonto = null;
+        fondosFecha = DateTime.Now;
+        fondosDescripcion = null;
+        fondosModalAbierto = true;
+    }
+
+    private void CerrarFondosModal()
+    {
+        fondosModalAbierto = false;
+        fondosModalItem = null;
+        fondosMonto = null;
+        fondosDescripcion = null;
+        guardandoFondos = false;
+    }
+
+    private async Task GuardarFondosAsync()
+    {
+        if ((fondosMonto ?? 0) <= 0 || fondosModalItem is null) return;
+
+        guardandoFondos = true;
+        StateHasChanged();
+
+        try
+        {
+            var monto = Math.Abs(fondosMonto ?? 0);
+
+            var gasto = new Gasto
+            {
+                CategoriaId = fondosModalItem.CategoriaId ?? Guid.Empty,
+                Monto = -monto,
+                Descripcion = !string.IsNullOrWhiteSpace(fondosDescripcion)
+                    ? fondosDescripcion.Trim()
+                    : "Fondos para presupuesto",
+                Fecha = fondosFecha.ToUniversalTime()
+            };
+            await GastoService.CrearGastoAsync(gasto);
+
+            var presupuestos = await PresupuestoService.ObtenerPresupuestosAsync();
+            var presupuesto = presupuestos.FirstOrDefault(p => p.Id == fondosModalItem.Id);
+            if (presupuesto is not null)
+            {
+                presupuesto.MontoLimite += monto;
+                await PresupuestoService.ActualizarPresupuestoAsync(presupuesto);
+            }
+
+            ToastService.ShowSuccess($"💰 ${monto:N2} agregados al presupuesto");
+            CerrarFondosModal();
+            await CargarDatosAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+
+        guardandoFondos = false;
     }
 
     private void CancelarFinalizar()
