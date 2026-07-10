@@ -202,7 +202,7 @@
                 @foreach (var p in Enum.GetValues<PeriodoPresupuesto>())
                 {
                     <button class="periodo-btn @(formPeriodo == p ? "periodo-activo" : "")"
-                            @onclick="() => { formPeriodo = p; if (p == PeriodoPresupuesto.Personalizado && formFechaFin is null) formFechaFin = formFecha.AddDays(30); }">
+                            @onclick="() => formPeriodo = p">
                         @LabelPeriodo(p)
                     </button>
                 }
@@ -514,6 +514,8 @@
     private string RangoTexto(PresupuestoItem item)
     {
         var inicio = SafeLocalFecha(item.FechaInicio);
+        if (item.FechaFin is null && item.Periodo == PeriodoPresupuesto.Personalizado)
+            return $"📅 {inicio:dd MMM yyyy} → Sin fecha de fin";
         var fin = SafeLocalFecha(item.FechaFinCalculada);
         return $"📅 {inicio:dd MMM} → {fin:dd MMM yyyy}";
     }
