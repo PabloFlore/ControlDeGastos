@@ -81,7 +81,7 @@
                                         }
                                         @if (item.EsFuturo)
                                         {
-                                            <span class="badge-finalizado">⏳ Por comenzar</span>
+                                            <span class="badge-finalizado">⏳</span>
                                         }
                                     </div>
                                     <div class="presupuesto-periodo">@LabelPeriodo(item.Periodo)</div>
@@ -497,7 +497,7 @@
                     activos.Add(item);
             }
 
-            items = activos.ToList();
+            items = activos.Concat(vencidos).ToList();
         }
         catch (Exception ex)
         {
