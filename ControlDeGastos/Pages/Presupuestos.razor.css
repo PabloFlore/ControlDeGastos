@@ -709,3 +709,24 @@ body.rpg-theme .btn-finalizar:hover {
     color: var(--text-secondary);
     font-weight: 400;
 }
+
+.badge-finalizado {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+}
+
+.fondos-alerta {
+    padding: 0.5rem 0.6rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    background: rgba(255, 140, 0, 0.1);
+    color: var(--accent-orange);
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}

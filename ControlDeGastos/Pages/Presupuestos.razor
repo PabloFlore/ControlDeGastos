@@ -73,7 +73,13 @@
                                     @item.Icono
                                 </div>
                                 <div>
-                                    <div class="presupuesto-nombre">@item.Nombre @(item.EsVencido ? "⏰" : "")</div>
+                                    <div class="presupuesto-nombre">
+                                        @item.Nombre
+                                        @if (item.EsVencido)
+                                        {
+                                            <span class="badge-finalizado">🔚 Finalizado</span>
+                                        }
+                                    </div>
                                     <div class="presupuesto-periodo">@LabelPeriodo(item.Periodo)</div>
                                     <div class="presupuesto-rango">@RangoTexto(item)</div>
                                 </div>
@@ -84,7 +90,7 @@
                                     <button class="btn-editar" @onclick="() => AbrirModalEditar(item)">✏️</button>
                                     <button class="btn-finalizar" @onclick="() => finalizandoId = item.Id" title="Finalizar ahora">🔚</button>
                                 }
-                                @if (!item.EsVencido && item.MontoLimite == 0)
+                                @if (!item.EsVencido)
                                 {
                                     <button class="btn-gastos" @onclick="() => AbrirFondosModal(item)" title="Agregar fondos">💰</button>
                                 }
@@ -186,6 +192,10 @@
                 </select>
                 <button class="btn-add-categoria" @onclick="() => mostrarFormCategoria = !mostrarFormCategoria" title="Crear categoría" type="button">➕</button>
             </div>
+            @if (formCategoriaId == Guid.Empty && modalAbierto && !mostrarFormCategoria)
+            {
+                <span class="campo-error">Debes seleccionar una categoría</span>
+            }
             @if (mostrarFormCategoria)
             {
                 <div class="form-categoria-inline">
@@ -311,16 +321,23 @@
         <p style="margin-bottom:0.75rem;font-size:0.9rem;color:var(--text-secondary);">
             Agregando fondos a <strong style="color:var(--text-primary);">@fondosModalItem?.Nombre</strong>
         </p>
+        @{
+            var gastadoPrevio = fondosModalItem?.Gastado ?? 0;
+        }
+        @if (gastadoPrevio > 0)
+        {
+            var nuevoLimite = (fondosModalItem?.MontoLimite ?? 0) + (fondosMonto ?? 0);
+            var nuevoRestante = nuevoLimite - gastadoPrevio;
+            <div class="fondos-alerta">
+                ⚠️ Ya hay @FormatearMonto(gastadoPrevio) gastados en esta categoría. Al agregar @FormatearMonto(fondosMonto ?? 0) de fondos, el restante será @FormatearMonto(nuevoRestante).
+            </div>
+        }
         <div class="campo">
             <label class="campo-label">Monto</label>
             <div class="monto-input-wrapper">
                 <span class="monto-simbolo">$</span>
                 <input type="number" class="monto-input" @bind="fondosMonto" step="0.01" min="0.01" placeholder="0.00" />
             </div>
-        </div>
-        <div class="campo">
-            <label class="campo-label">Fecha</label>
-            <input type="date" class="campo-input" @bind="fondosFecha" @bind:format="yyyy-MM-dd" />
         </div>
         <div class="campo">
             <label class="campo-label">Descripción <span class="campo-opcional">(opcional)</span></label>
@@ -368,7 +385,6 @@
     private bool fondosModalAbierto;
     private PresupuestoItem? fondosModalItem;
     private decimal? fondosMonto;
-    private DateTime fondosFecha = DateTime.Now;
     private string? fondosDescripcion;
     private bool guardandoFondos;
 
@@ -377,7 +393,7 @@
     private string textoBusqueda = "";
 
     private bool _navegando;
-    private bool FormularioValido => true;
+    private bool FormularioValido => formCategoriaId != Guid.Empty;
 
     private static readonly string[] NombresMes =
         ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -403,6 +419,23 @@
             categoriasGasto = categorias.Where(c => c.Tipo == TipoGasto.Gasto).OrderBy(c => c.Orden).ToList();
 
             var presupuestos = await PresupuestoService.ObtenerPresupuestosAsync();
+
+            var inicioMesLocal = new DateTime(anioSeleccionado, mesSeleccionado, 1);
+            var inicioMesUtc = inicioMesLocal.ToUniversalTime();
+            var finMesUtc = inicioMesUtc.AddMonths(1);
+
+            presupuestos = presupuestos.Where(p =>
+            {
+                var fin = p.FechaFin ?? (p.Periodo switch
+                {
+                    PeriodoPresupuesto.Mensual => p.FechaInicio.AddMonths(1),
+                    PeriodoPresupuesto.Anual => p.FechaInicio.AddYears(1),
+                    PeriodoPresupuesto.Personalizado => DateTime.MaxValue,
+                    _ => p.FechaInicio.AddDays(7)
+                });
+                return p.FechaInicio < finMesUtc && fin > inicioMesUtc;
+            }).ToList();
+
             var todosGastos = await GastoService.ObtenerGastosAsync();
             todosGastos = await PresupuestoService.FiltrarGastosParaPresupuestoAsync(todosGastos);
             _todosGastos = todosGastos;
@@ -617,7 +650,6 @@
     {
         fondosModalItem = item;
         fondosMonto = null;
-        fondosFecha = DateTime.Now;
         fondosDescripcion = null;
         fondosModalAbierto = true;
     }
@@ -649,7 +681,7 @@
                 Descripcion = !string.IsNullOrWhiteSpace(fondosDescripcion)
                     ? fondosDescripcion.Trim()
                     : "Fondos para presupuesto",
-                Fecha = fondosFecha.ToUniversalTime()
+                Fecha = DateTime.UtcNow
             };
             await GastoService.CrearGastoAsync(gasto);
 
@@ -714,8 +746,21 @@
 
         if (duplicado is not null)
         {
-            ToastService.ShowError("Ya existe un presupuesto con esa categoría y período");
-            return;
+            var ahora = DateTime.UtcNow;
+            var fin = duplicado.FechaFin ?? (duplicado.Periodo switch
+            {
+                PeriodoPresupuesto.Mensual => duplicado.FechaInicio.AddMonths(1),
+                PeriodoPresupuesto.Anual => duplicado.FechaInicio.AddYears(1),
+                PeriodoPresupuesto.Personalizado => DateTime.MaxValue,
+                _ => duplicado.FechaInicio.AddDays(7)
+            });
+            var esVencido = ahora < duplicado.FechaInicio || ahora > fin;
+
+            if (!esVencido)
+            {
+                ToastService.ShowError("Ya existe un presupuesto activo con esa categoría y período");
+                return;
+            }
         }
 
         guardando = true;
