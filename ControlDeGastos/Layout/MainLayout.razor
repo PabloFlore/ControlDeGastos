@@ -5,6 +5,7 @@
 @inject INotificacionService NotificacionService
 @inject IToastService ToastService
 @inject IPinLockService PinLockService
+@inject IUpdateService UpdateService
 @inject ILogger<MainLayout> Logger
 @inject NavigationManager Navigation
 
@@ -34,8 +35,21 @@
 
 <BlazoredToasts />
 
+@if (hayActualizacion)
+{
+    <div class="update-banner">
+        <span class="update-banner-texto">🔄 Hay una actualización disponible</span>
+        <div class="update-banner-acciones">
+            <button class="update-banner-btn" @onclick="AceptarActualizacionAsync">Actualizar</button>
+            <button class="update-banner-cerrar" @onclick="CerrarBannerAsync">✕</button>
+        </div>
+    </div>
+}
+
 @code {
     private bool sidebarOpen;
+    private bool hayActualizacion;
+    private DotNetObjectReference<MainLayout>? _dotNetRef;
 
     private void ToggleSidebar()
     {
@@ -46,8 +60,6 @@
     {
         sidebarOpen = false;
     }
-
-    private DotNetObjectReference<MainLayout>? _dotNetRef;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -61,6 +73,10 @@
 
             await InicializarLockScreenAsync();
             await MostrarNotificacionesAsync();
+            await VerificarActualizacionAsync();
+
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("registrarVisibilidad", _dotNetRef);
         }
     }
 
@@ -88,6 +104,39 @@
         {
             Navigation.NavigateTo("/pin-unlock", replace: true);
         });
+    }
+
+    [JSInvokable]
+    public async Task OnPageVisibleAsync()
+    {
+        await VerificarActualizacionAsync();
+    }
+
+    private async Task VerificarActualizacionAsync()
+    {
+        try
+        {
+            var cerrado = await JSRuntime.InvokeAsync<bool>("localStorage.getItem", "updateBannerCerrado");
+            if (cerrado) return;
+
+            hayActualizacion = await UpdateService.HayActualizacionPendienteAsync();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogDebug(ex, "No se pudo verificar actualización");
+        }
+    }
+
+    private async Task CerrarBannerAsync()
+    {
+        hayActualizacion = false;
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", "updateBannerCerrado", "true");
+    }
+
+    private async Task AceptarActualizacionAsync()
+    {
+        await UpdateService.ForzarRecargaAsync();
     }
 
     private async Task MostrarNotificacionesAsync()
