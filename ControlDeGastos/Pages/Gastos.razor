@@ -10,6 +10,7 @@
 @inject IGamificacionService GamificacionService
 @inject ITiendaService TiendaService
 @inject IRecurrenciaService RecurrenciaService
+@inject IPresupuestoService PresupuestoService
 @* @inject IHogarService HogarService *@
 @inject ILogger<Gastos> Logger
  
@@ -426,7 +427,7 @@
 <ConfirmDialog Visible="@(gastoEliminando is not null)"
                Icon="⚠️"
                Title="¿Eliminar este gasto?"
-               Message="Esta acción no se puede deshacer"
+               Message="@mensajeEliminar"
                CancelText="Cancelar"
                ConfirmText="Eliminar"
                OnCancel="CancelarEliminar"
@@ -483,6 +484,18 @@
     private DateTime fechaForm = DateTime.Now;
 
     private Guid? gastoEliminando;
+
+    private string mensajeEliminar
+    {
+        get
+        {
+            if (gastoEliminando is null) return "";
+            var g = gastos.FirstOrDefault(x => x.Id == gastoEliminando);
+            if (g?.Monto < 0 && g?.Descripcion == "Fondos para presupuesto")
+                return "⚠️ Este ingreso está vinculado a un presupuesto. Al eliminarlo, el límite se reducirá automáticamente.";
+            return "Esta acción no se puede deshacer";
+        }
+    }
 
     private string filtroBusqueda = "";
     private string filtroTipo = "Todos";
@@ -1134,8 +1147,24 @@
 
         try
         {
-            await GastoService.EliminarGastoAsync(gastoEliminando.Value);
             var eliminado = gastos.FirstOrDefault(g => g.Id == gastoEliminando.Value);
+            await GastoService.EliminarGastoAsync(gastoEliminando.Value);
+
+            if (eliminado?.Monto < 0 && eliminado?.Descripcion == "Fondos para presupuesto")
+            {
+                var catId = eliminado.CategoriaId == Guid.Empty ? null : (Guid?)eliminado.CategoriaId;
+                var presupuestos = await PresupuestoService.ObtenerPresupuestosAsync();
+                var presupuesto = presupuestos.FirstOrDefault(p =>
+                    p.CategoriaId == catId);
+                if (presupuesto is not null)
+                {
+                    var monto = Math.Abs(eliminado.Monto);
+                    presupuesto.MontoLimite = Math.Max(0, presupuesto.MontoLimite - monto);
+                    await PresupuestoService.ActualizarPresupuestoAsync(presupuesto);
+                    ToastService.ShowInfo($"📉 Límite del presupuesto reducido en ${monto:N2}");
+                }
+            }
+
             ToastService.ShowSuccess(eliminado?.Monto < 0 ? "Ingreso eliminado" : "Gasto eliminado");
             CancelarEliminar();
 

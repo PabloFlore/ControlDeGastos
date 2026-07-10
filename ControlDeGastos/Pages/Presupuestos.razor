@@ -79,6 +79,10 @@
                                         {
                                             <span class="badge-finalizado">🔚 Finalizado</span>
                                         }
+                                        @if (item.EsFuturo)
+                                        {
+                                            <span class="badge-finalizado">⏳ Por comenzar</span>
+                                        }
                                     </div>
                                     <div class="presupuesto-periodo">@LabelPeriodo(item.Periodo)</div>
                                     <div class="presupuesto-rango">@RangoTexto(item)</div>
@@ -483,7 +487,8 @@
                     Gastado = gastado,
                     FechaInicio = p.FechaInicio,
                     FechaFin = p.FechaFin,
-                    EsVencido = ahora < p.FechaInicio || ahora > fin,
+                    EsVencido = ahora > fin,
+                    EsFuturo = ahora < p.FechaInicio,
                 };
 
                 if (item.EsVencido)
@@ -492,7 +497,7 @@
                     activos.Add(item);
             }
 
-            items = activos.Concat(vencidos).ToList();
+            items = activos.ToList();
         }
         catch (Exception ex)
         {
@@ -918,6 +923,7 @@
         public decimal Restante => MontoLimite - Gastado;
         public int Porcentaje => MontoLimite > 0 ? (int)Math.Round(Math.Min(200, Gastado * 100 / MontoLimite)) : 0;
         public bool EsVencido { get; set; }
+        public bool EsFuturo { get; set; }
         public DateTime FechaInicio { get; set; }
         public DateTime? FechaFin { get; set; }
         public DateTime FechaFinCalculada => FechaFin ?? (Periodo switch

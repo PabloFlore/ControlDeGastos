@@ -350,7 +350,7 @@ else
     </section>
 
     <section class="config-seccion">
-        <h2 class="seccion-titulo">🔄 Forzar actualización</h2>
+        <h2 class="seccion-titulo">🔄 Actualizar</h2>
         <div class="seccion-cuerpo">
             <p class="info-sub">Limpia la caché temporal y recarga la app. Tus datos no se perderán.</p>
             <button class="btn-plan" @onclick="() => mostrarConfirmRecarga = true" disabled="@recargando">
@@ -360,7 +360,7 @@ else
                 }
                 else
                 {
-                    <span>🔄 Forzar actualización</span>
+                    <span>🔄 Actualizar</span>
                 }
             </button>
         </div>
@@ -368,10 +368,10 @@ else
 
 <ConfirmDialog Visible="@mostrarConfirmRecarga"
                Icon="🔄"
-               Title="¿Forzar actualización?"
+               Title="¿Actualizar?"
                Message="Se limpiará la caché temporal del navegador y se recargará la aplicación. Tus datos guardados no se perderán."
                CancelText="Cancelar"
-               ConfirmText="Forzar recarga"
+               ConfirmText="Actualizar"
                OnCancel="() => mostrarConfirmRecarga = false"
                OnConfirm="EjecutarForzarRecargaAsync" />
 
