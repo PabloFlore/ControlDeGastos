@@ -9,93 +9,140 @@
 <div class="presupuestos-page">
     <div class="page-header">
         <h1 class="page-titulo">Presupuestos</h1>
-        <p class="page-sub">@NombresMes[DateTime.Now.Month - 1] @DateTime.Now.Year</p>
+        <p class="page-sub">Gastos de @NombresMes[mesSeleccionado - 1] @anioSeleccionado</p>
+    </div>
+
+    <div class="mes-navegacion">
+        <button class="mes-btn" disabled="@_navegando" @onclick="MesAnterior">‹</button>
+        <div class="mes-selector">
+            <select class="mes-select" disabled="@_navegando" value="@mesSeleccionado" @onchange="OnMesChanged">
+                @for (int i = 1; i <= 12; i++)
+                {
+                    <option value="@i">@NombresMes[i - 1]</option>
+                }
+            </select>
+            <select class="anio-select" disabled="@_navegando" value="@anioSeleccionado" @onchange="OnAnioChanged">
+                @for (int i = anioSeleccionado - 5; i <= anioSeleccionado + 1; i++)
+                {
+                    <option value="@i">@i</option>
+                }
+            </select>
+        </div>
+        <button class="mes-btn" disabled="@_navegando" @onclick="MesSiguiente">›</button>
+    </div>
+
+    <div class="busqueda-wrapper">
+        <span class="busqueda-icono">🔍</span>
+        <input type="text" class="busqueda-input" placeholder="Buscar presupuesto..." @bind="textoBusqueda" @bind:event="oninput" />
     </div>
 
     <div class="presupuestos-lista">
-        @if (items is null)
+        @if (_navegando && items is not null)
+        {
+            <LoadingSpinner Message="Cargando..." />
+        }
+        else if (items is null)
         {
             <LoadingSpinner Message="Cargando presupuestos..." />
         }
-        else if (!items.Any())
-        {
-            <EmptyState Icon="🎯" Title="Sin presupuestos" Subtitle="Crea uno para controlar tus gastos por categoría" />
-        }
         else
         {
-            @foreach (var item in items)
+            var itemsFiltrados = !string.IsNullOrWhiteSpace(textoBusqueda)
+                ? items.Where(i => i.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)).ToList()
+                : items;
+
+            if (!itemsFiltrados.Any())
             {
-                <div @key="item.Id" class="presupuesto-card @(item.EsVencido ? "presupuesto-vencido" : "")">
-                    <div class="presupuesto-top">
-                        <div class="presupuesto-categoria">
-                            <div class="presupuesto-icono" style="background: @(item.Color + "22")">
-                                @item.Icono
+                if (!string.IsNullOrWhiteSpace(textoBusqueda))
+                {
+                    <EmptyState Icon="🔍" Title="Sin resultados" Subtitle="@("No hay presupuestos que coincidan con \"" + textoBusqueda + "\"")" />
+                }
+                else
+                {
+                    <EmptyState Icon="🎯" Title="Sin presupuestos" Subtitle="Crea uno para controlar tus gastos por categoría" />
+                }
+            }
+            else
+            {
+                @foreach (var item in itemsFiltrados)
+                {
+                    <div @key="item.Id" class="presupuesto-card @(item.EsVencido ? "presupuesto-vencido" : "")">
+                        <div class="presupuesto-top">
+                            <div class="presupuesto-categoria">
+                                <div class="presupuesto-icono" style="background: @(item.Color + "22")">
+                                    @item.Icono
+                                </div>
+                                <div>
+                                    <div class="presupuesto-nombre">@item.Nombre @(item.EsVencido ? "⏰" : "")</div>
+                                    <div class="presupuesto-periodo">@LabelPeriodo(item.Periodo)</div>
+                                    <div class="presupuesto-rango">@RangoTexto(item)</div>
+                                </div>
                             </div>
-                            <div>
-                                <div class="presupuesto-nombre">@item.Nombre @(item.EsVencido ? "⏰" : "")</div>
-                                <div class="presupuesto-periodo">@LabelPeriodo(item.Periodo)</div>
+                            <div class="card-actions">
+                                @if (!item.EsVencido)
+                                {
+                                    <button class="btn-editar" @onclick="() => AbrirModalEditar(item)">✏️</button>
+                                }
+                                <button class="btn-gastos" @onclick="() => AbrirGastosModal(item)" title="Ver gastos">📋</button>
+                                <button class="btn-eliminar" @onclick="() => ConfirmarEliminar(item.Id)">🗑️</button>
                             </div>
                         </div>
-                        <div class="card-actions">
-                            <button class="btn-editar" @onclick="() => AbrirModalEditar(item)">✏️</button>
-                            <button class="btn-eliminar" @onclick="() => ConfirmarEliminar(item.Id)">🗑️</button>
-                        </div>
-                    </div>
 
-                    <div class="presupuesto-bar-wrapper">
-                        <div class="presupuesto-bar">
-                            <div class="presupuesto-fill @ClaseColor(item.Porcentaje)"
-                                 style="width: @Math.Min(100, item.Porcentaje)%"></div>
+                        <div class="presupuesto-bar-wrapper">
+                            <div class="presupuesto-bar">
+                                <div class="presupuesto-fill @ClaseColor(item.Porcentaje)"
+                                     style="width: @Math.Min(100, item.Porcentaje)%"></div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="presupuesto-datos">
-                        <div class="dato-item">
-                            <span class="dato-label">Gastado</span>
-                            <span class="dato-valor @(item.Porcentaje > 100 ? "texto-rojo" : "")">@FormatearMonto(item.Gastado)</span>
+                        <div class="presupuesto-datos">
+                            <div class="dato-item">
+                                <span class="dato-label">Gastado</span>
+                                <span class="dato-valor @(item.Porcentaje > 100 ? "texto-rojo" : "")">@FormatearMonto(item.Gastado)</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Límite</span>
+                                <span class="dato-valor">@FormatearMonto(item.MontoLimite)</span>
+                            </div>
+                            <div class="dato-item">
+                                <span class="dato-label">Restante</span>
+                                <span class="dato-valor @(item.Restante >= 0 ? "texto-verde" : "texto-rojo")">@FormatearMonto(item.Restante)</span>
+                            </div>
                         </div>
-                        <div class="dato-item">
-                            <span class="dato-label">Límite</span>
-                            <span class="dato-valor">@FormatearMonto(item.MontoLimite)</span>
-                        </div>
-                        <div class="dato-item">
-                            <span class="dato-label">Restante</span>
-                            <span class="dato-valor @(item.Restante >= 0 ? "texto-verde" : "texto-rojo")">@FormatearMonto(item.Restante)</span>
-                        </div>
-                    </div>
 
-                    @if (item.Gastado > item.MontoLimite)
-                    {
-                        <div class="presupuesto-alerta alerta-excedido">
-                            ⚡ Te excediste por @FormatearMonto(Math.Abs(item.Restante))
-                        </div>
-                    }
-                    else if (item.Porcentaje >= 80)
-                    {
-                        <div class="presupuesto-alerta alerta-atencion">
-                            ⚡ Te queda @FormatearMonto(item.Restante)
-                        </div>
-                    }
+                        @if (item.Gastado > item.MontoLimite)
+                        {
+                            <div class="presupuesto-alerta alerta-excedido">
+                                ⚡ Te excediste por @FormatearMonto(Math.Abs(item.Restante))
+                            </div>
+                        }
+                        else if (item.Porcentaje >= 80)
+                        {
+                            <div class="presupuesto-alerta alerta-atencion">
+                                ⚡ Te queda @FormatearMonto(item.Restante)
+                            </div>
+                        }
+                    </div>
+                }
+
+                <div class="total-general">
+                    <div class="total-row">
+                        <span>Total presupuestado</span>
+                        <span>@FormatearMonto(itemsFiltrados.Sum(i => i.MontoLimite))</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Total gastado</span>
+                        <span class="texto-rojo">@FormatearMonto(itemsFiltrados.Sum(i => i.Gastado))</span>
+                    </div>
+                    <div class="total-row total-final">
+                        <span>Balance</span>
+                        @{
+                            var balanceTotal = itemsFiltrados.Sum(i => i.MontoLimite) - itemsFiltrados.Sum(i => i.Gastado);
+                        }
+                        <span class="@(balanceTotal >= 0 ? "texto-verde" : "texto-rojo")">@FormatearMonto(balanceTotal)</span>
+                    </div>
                 </div>
             }
-
-            <div class="total-general">
-                <div class="total-row">
-                    <span>Total presupuestado</span>
-                    <span>@FormatearMonto(items.Sum(i => i.MontoLimite))</span>
-                </div>
-                <div class="total-row">
-                    <span>Total gastado</span>
-                    <span class="texto-rojo">@FormatearMonto(items.Sum(i => i.Gastado))</span>
-                </div>
-                <div class="total-row total-final">
-                    <span>Balance</span>
-                    @{
-                        var balanceTotal = items.Sum(i => i.MontoLimite) - items.Sum(i => i.Gastado);
-                    }
-                    <span class="@(balanceTotal >= 0 ? "texto-verde" : "texto-rojo")">@FormatearMonto(balanceTotal)</span>
-                </div>
-            </div>
         }
     </div>
 
@@ -106,13 +153,46 @@
     <Body>
         <div class="campo">
             <label class="campo-label">Categoría</label>
-            <select class="campo-input" value="@formCategoriaId" @onchange="OnCategoriaChanged">
-                <option value="@Guid.Empty">— Todas las categorías —</option>
-                @foreach (var cat in categoriasGasto)
-                {
-                    <option value="@cat.Id">@cat.Icono @cat.Nombre</option>
-                }
-            </select>
+            <div class="campo-categoria-row">
+                <select class="campo-input" value="@formCategoriaId" @onchange="OnCategoriaChanged">
+                    <option value="@Guid.Empty">— Todas las categorías —</option>
+                    @foreach (var cat in categoriasGasto)
+                    {
+                        <option value="@cat.Id">@cat.Icono @cat.Nombre</option>
+                    }
+                </select>
+                <button class="btn-add-categoria" @onclick="() => mostrarFormCategoria = !mostrarFormCategoria" title="Crear categoría" type="button">➕</button>
+            </div>
+            @if (mostrarFormCategoria)
+            {
+                <div class="form-categoria-inline">
+                    <div class="campo">
+                        <label class="campo-label">Nombre</label>
+                        <input type="text" class="campo-input" @bind="formCatNombre" placeholder="Nombre de la categoría" />
+                    </div>
+                    <div class="campo">
+                        <label class="campo-label">Icono</label>
+                        <div class="emoji-grid">
+                            @foreach (var emoji in EmojisCategoria)
+                            {
+                                <button type="button" class="emoji-item @(formCatIcono == emoji ? "emoji-seleccionado" : "")"
+                                        @onclick="() => formCatIcono = emoji">@emoji</button>
+                            }
+                        </div>
+                    </div>
+                    <div class="campo">
+                        <label class="campo-label">Color</label>
+                        <input type="color" class="color-picker" @bind="formCatColor" />
+                    </div>
+                    <div class="form-categoria-actions">
+                        <button type="button" class="btn-footer btn-cancelar" @onclick="CancelarCrearCategoria">Cancelar</button>
+                        <button type="button" class="btn-footer btn-guardar" @onclick="CrearCategoriaAsync"
+                                disabled="@(string.IsNullOrWhiteSpace(formCatNombre) || creandoCategoria)">
+                            @(creandoCategoria ? "Creando..." : "Crear categoría")
+                        </button>
+                    </div>
+                </div>
+            }
         </div>
 
         <div class="campo">
@@ -149,6 +229,11 @@
             <label class="campo-label">Fecha de inicio</label>
             <input type="date" class="campo-input" @bind="formFecha" @bind:format="yyyy-MM-dd" />
         </div>
+
+        <div class="campo">
+            <label class="campo-label">Fecha de fin <span class="campo-opcional">(opcional)</span></label>
+            <input type="date" class="campo-input" value="@formFechaFin?.ToString("yyyy-MM-dd")" @onchange="OnFechaFinChanged" />
+        </div>
     </Body>
     <Footer>
         <button class="btn-footer btn-cancelar" @onclick="CerrarModal">Cancelar</button>
@@ -167,25 +252,75 @@
                OnCancel="CancelarEliminar"
                OnConfirm="EliminarAsync" />
 
+<Modal Title="@(gastosModalItem?.Nombre ?? "")" Visible="@gastosModalAbierto" OnClose="CerrarGastosModal">
+    <Body>
+        @if (!gastosModalLista.Any())
+        {
+            <EmptyState Icon="📭" Title="Sin gastos" Subtitle="No hay gastos en este período" />
+        }
+        else
+        {
+            <div class="gastos-modal-lista">
+                @foreach (var g in gastosModalLista)
+                {
+                    <div class="gasto-modal-item">
+                        <span class="gasto-modal-fecha">@g.Fecha.ToString("dd MMM yyyy")</span>
+                        <span class="gasto-modal-monto">@FormatearMonto(g.Monto)</span>
+                        <span class="gasto-modal-desc">@(string.IsNullOrWhiteSpace(g.Descripcion) ? "—" : g.Descripcion)</span>
+                    </div>
+                }
+            </div>
+            <div class="gastos-modal-total">
+                <span>Total</span>
+                <span>@FormatearMonto(gastosModalLista.Sum(g => g.Monto))</span>
+            </div>
+        }
+    </Body>
+</Modal>
+
 @code {
     private List<PresupuestoItem>? items;
     private List<Categoria> categoriasGasto = new();
+    private List<Gasto> _todosGastos = new();
 
     private bool modalAbierto;
     private Guid formCategoriaId = Guid.Empty;
     private PeriodoPresupuesto formPeriodo = PeriodoPresupuesto.Mensual;
     private decimal? formMonto;
     private DateTime formFecha = DateTime.Now;
+    private DateTime? formFechaFin;
     private bool guardando;
 
     private Guid? formEditandoId;
     private Guid? eliminandoId;
 
+    // Category creation inline
+    private bool mostrarFormCategoria;
+    private string formCatNombre = "";
+    private string formCatIcono = "📁";
+    private string formCatColor = "#6c757d";
+    private bool creandoCategoria;
+
+    // Gastos modal
+    private bool gastosModalAbierto;
+    private PresupuestoItem? gastosModalItem;
+    private List<GastoResumen> gastosModalLista = new();
+
+    private int mesSeleccionado = DateTime.Now.Month;
+    private int anioSeleccionado = DateTime.Now.Year;
+    private string textoBusqueda = "";
+
+    private bool _navegando;
     private bool FormularioValido => (formMonto ?? 0) > 0;
 
     private static readonly string[] NombresMes =
         ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
          "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+    private static readonly string[] EmojisCategoria =
+        ["🍽️", "🛒", "🚗", "🏠", "💡", "📱", "👕", "💊",
+         "🎮", "📚", "🎬", "✈️", "🐾", "🏋️", "🎵", "🎁",
+         "💻", "☕", "🍺", "🧹", "🌿", "💄", "🔧", "📦"];
 
     protected override async Task OnInitializedAsync()
     {
@@ -194,6 +329,8 @@
 
     private async Task CargarDatosAsync()
     {
+        _navegando = true;
+        StateHasChanged();
         try
         {
             var categorias = await CategoriaService.ObtenerCategoriasAsync();
@@ -202,6 +339,16 @@
             var presupuestos = await PresupuestoService.ObtenerPresupuestosAsync();
             var todosGastos = await GastoService.ObtenerGastosAsync();
             todosGastos = await PresupuestoService.FiltrarGastosParaPresupuestoAsync(todosGastos);
+            _todosGastos = todosGastos;
+
+            var gastosDelMes = todosGastos.Where(g =>
+            {
+                var utc = g.Fecha.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(g.Fecha, DateTimeKind.Utc)
+                    : g.Fecha;
+                return utc.ToLocalTime().Year == anioSeleccionado && utc.ToLocalTime().Month == mesSeleccionado;
+            }).ToList();
+
             var ahora = DateTime.UtcNow;
             var activos = new List<PresupuestoItem>();
             var vencidos = new List<PresupuestoItem>();
@@ -219,7 +366,11 @@
                     _ => p.FechaInicio.AddDays(7)
                 });
 
-                var gastado = await PresupuestoService.CalcularGastadoAsync(p, todosGastos);
+                var gastado = gastosDelMes
+                    .Where(g => g.Monto > 0)
+                    .Where(g => p.CategoriaId == null || g.CategoriaId == p.CategoriaId)
+                    .Sum(g => g.Monto);
+
                 var item = new PresupuestoItem
                 {
                     Id = p.Id,
@@ -230,6 +381,8 @@
                     Periodo = p.Periodo,
                     MontoLimite = p.MontoLimite,
                     Gastado = gastado,
+                    FechaInicio = p.FechaInicio,
+                    FechaFin = p.FechaFin,
                     EsVencido = ahora < p.FechaInicio || ahora > fin,
                 };
 
@@ -246,8 +399,11 @@
             ToastService.ShowError($"Error al cargar: {ex.Message}");
             items = new();
         }
-
-        StateHasChanged();
+        finally
+        {
+            _navegando = false;
+            StateHasChanged();
+        }
     }
 
     private void OnCategoriaChanged(ChangeEventArgs e)
@@ -255,8 +411,8 @@
         if (Guid.TryParse(e.Value?.ToString(), out var guid))
         {
             formCategoriaId = guid;
+            if (guid == Guid.Empty) return;
             var cat = categoriasGasto.FirstOrDefault(c => c.Id == guid);
-            // Auto-llena el monto con el PresupuestoPorDefecto de la categoría (útil para gastos fijos como renta, servicios, suscripciones)
             if (cat?.PresupuestoPorDefecto > 0 && (formMonto ?? 0) <= 0)
                 formMonto = cat.PresupuestoPorDefecto;
         }
@@ -269,6 +425,7 @@
         formPeriodo = PeriodoPresupuesto.Mensual;
         formMonto = null;
         formFecha = DateTime.Now;
+        formFechaFin = null;
         modalAbierto = true;
     }
 
@@ -278,7 +435,8 @@
         formCategoriaId = item.CategoriaId ?? Guid.Empty;
         formPeriodo = item.Periodo;
         formMonto = item.MontoLimite;
-        formFecha = DateTime.Now;
+        formFecha = item.FechaInicio;
+        formFechaFin = item.FechaFin;
         modalAbierto = true;
     }
 
@@ -287,11 +445,121 @@
         modalAbierto = false;
         guardando = false;
         formEditandoId = null;
+        mostrarFormCategoria = false;
+        formCatNombre = "";
+        formCatIcono = "📁";
+        formCatColor = "#6c757d";
+    }
+
+    private void CancelarCrearCategoria()
+    {
+        mostrarFormCategoria = false;
+        formCatNombre = "";
+        formCatIcono = "📁";
+        formCatColor = "#6c757d";
+    }
+
+    private async Task CrearCategoriaAsync()
+    {
+        if (string.IsNullOrWhiteSpace(formCatNombre)) return;
+        creandoCategoria = true;
+        StateHasChanged();
+        try
+        {
+            var cat = new Categoria
+            {
+                Nombre = formCatNombre.Trim(),
+                Icono = formCatIcono,
+                Color = formCatColor,
+                Tipo = TipoGasto.Gasto
+            };
+            await CategoriaService.CrearCategoriaAsync(cat);
+            var categorias = await CategoriaService.ObtenerCategoriasAsync();
+            categoriasGasto = categorias.Where(c => c.Tipo == TipoGasto.Gasto).OrderBy(c => c.Orden).ToList();
+            formCategoriaId = cat.Id;
+            mostrarFormCategoria = false;
+            formCatNombre = "";
+            formCatIcono = "📁";
+            formCatColor = "#6c757d";
+            ToastService.ShowSuccess($"Categoría '{cat.Nombre}' creada");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error al crear categoría: {ex.Message}");
+        }
+        creandoCategoria = false;
+    }
+
+    private void OnFechaFinChanged(ChangeEventArgs e)
+    {
+        var str = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(str))
+            formFechaFin = null;
+        else if (DateTime.TryParse(str, out var dt))
+            formFechaFin = dt;
+    }
+
+    private string RangoTexto(PresupuestoItem item)
+    {
+        var inicio = SafeLocalFecha(item.FechaInicio);
+        var fin = SafeLocalFecha(item.FechaFinCalculada);
+        return $"📅 {inicio:dd MMM} → {fin:dd MMM yyyy}";
+    }
+
+    private static DateTime SafeLocalFecha(DateTime dt) =>
+        dt.Kind == DateTimeKind.Utc ? dt.ToLocalTime() : dt;
+
+    private void AbrirGastosModal(PresupuestoItem item)
+    {
+        gastosModalItem = item;
+        var fin = item.FechaFinCalculada;
+        var gastos = _todosGastos
+            .Where(g => g.Monto > 0)
+            .Where(g => item.CategoriaId == null || g.CategoriaId == item.CategoriaId)
+            .Where(g =>
+            {
+                var local = SafeLocalFecha(g.Fecha.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(g.Fecha, DateTimeKind.Utc)
+                    : g.Fecha);
+                var inicio = SafeLocalFecha(item.FechaInicio);
+                return local >= inicio && local <= fin;
+            })
+            .OrderByDescending(g => g.Fecha)
+            .ToList();
+        gastosModalLista = gastos.Select(g => new GastoResumen
+        {
+            Fecha = SafeLocalFecha(g.Fecha.Kind == DateTimeKind.Unspecified
+                ? DateTime.SpecifyKind(g.Fecha, DateTimeKind.Utc)
+                : g.Fecha),
+            Monto = g.Monto,
+            Descripcion = g.Descripcion ?? ""
+        }).ToList();
+        gastosModalAbierto = true;
+    }
+
+    private void CerrarGastosModal()
+    {
+        gastosModalAbierto = false;
+        gastosModalItem = null;
+        gastosModalLista = new();
     }
 
     private async Task GuardarAsync()
     {
         if (!FormularioValido) return;
+
+        var todos = await PresupuestoService.ObtenerPresupuestosAsync();
+        Guid? catId = formCategoriaId == Guid.Empty ? null : formCategoriaId;
+        var duplicado = todos.FirstOrDefault(p =>
+            p.Id != formEditandoId
+            && p.CategoriaId == catId
+            && p.Periodo == formPeriodo);
+
+        if (duplicado is not null)
+        {
+            ToastService.ShowError("Ya existe un presupuesto con esa categoría y período");
+            return;
+        }
 
         guardando = true;
         StateHasChanged();
@@ -300,18 +568,18 @@
         {
             if (formEditandoId is not null)
             {
-                var presupuestos = await PresupuestoService.ObtenerPresupuestosAsync();
-                var existente = presupuestos.FirstOrDefault(p => p.Id == formEditandoId);
+                var existente = todos.FirstOrDefault(p => p.Id == formEditandoId);
                 if (existente is null)
                 {
                     ToastService.ShowError("Presupuesto no encontrado");
                     return;
                 }
 
-                existente.CategoriaId = formCategoriaId == Guid.Empty ? null : formCategoriaId;
+                existente.CategoriaId = catId;
                 existente.MontoLimite = formMonto ?? 0;
                 existente.Periodo = formPeriodo;
                 existente.FechaInicio = formFecha.ToUniversalTime();
+                existente.FechaFin = formFechaFin?.ToUniversalTime();
 
                 await PresupuestoService.ActualizarPresupuestoAsync(existente);
                 ToastService.ShowSuccess("Presupuesto actualizado");
@@ -320,10 +588,11 @@
             {
                 var presupuesto = new Presupuesto
                 {
-                    CategoriaId = formCategoriaId == Guid.Empty ? null : formCategoriaId,
+                    CategoriaId = catId,
                     MontoLimite = formMonto ?? 0,
                     Periodo = formPeriodo,
                     FechaInicio = formFecha.ToUniversalTime(),
+                    FechaFin = formFechaFin?.ToUniversalTime(),
                 };
 
                 await PresupuestoService.CrearPresupuestoAsync(presupuesto);
@@ -368,6 +637,50 @@
         }
     }
 
+    private async Task MesAnterior()
+    {
+        if (_navegando) return;
+        mesSeleccionado--;
+        if (mesSeleccionado < 1)
+        {
+            mesSeleccionado = 12;
+            anioSeleccionado--;
+        }
+        await CargarDatosAsync();
+    }
+
+    private async Task MesSiguiente()
+    {
+        if (_navegando) return;
+        mesSeleccionado++;
+        if (mesSeleccionado > 12)
+        {
+            mesSeleccionado = 1;
+            anioSeleccionado++;
+        }
+        await CargarDatosAsync();
+    }
+
+    private async Task OnMesChanged(ChangeEventArgs e)
+    {
+        if (_navegando) return;
+        if (int.TryParse(e.Value?.ToString(), out var mes) && mes >= 1 && mes <= 12)
+        {
+            mesSeleccionado = mes;
+            await CargarDatosAsync();
+        }
+    }
+
+    private async Task OnAnioChanged(ChangeEventArgs e)
+    {
+        if (_navegando) return;
+        if (int.TryParse(e.Value?.ToString(), out var anio) && anio >= 1900 && anio <= 2100)
+        {
+            anioSeleccionado = anio;
+            await CargarDatosAsync();
+        }
+    }
+
     private string LabelPeriodo(PeriodoPresupuesto p) => p switch
     {
         PeriodoPresupuesto.Semanal => "Semanal",
@@ -403,5 +716,20 @@
         public decimal Restante => MontoLimite - Gastado;
         public int Porcentaje => MontoLimite > 0 ? (int)Math.Round(Math.Min(200, Gastado * 100 / MontoLimite)) : 0;
         public bool EsVencido { get; set; }
+        public DateTime FechaInicio { get; set; }
+        public DateTime? FechaFin { get; set; }
+        public DateTime FechaFinCalculada => FechaFin ?? (Periodo switch
+        {
+            PeriodoPresupuesto.Mensual => FechaInicio.AddMonths(1),
+            PeriodoPresupuesto.Anual => FechaInicio.AddYears(1),
+            _ => FechaInicio.AddDays(7)
+        });
+    }
+
+    private class GastoResumen
+    {
+        public DateTime Fecha { get; set; }
+        public decimal Monto { get; set; }
+        public string Descripcion { get; set; } = "";
     }
 }
