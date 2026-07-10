@@ -667,3 +667,43 @@ body.rpg-theme .gastos-modal-total {
 body.rpg-theme .btn-gastos:hover {
     background: rgba(0, 240, 100, 0.1);
 }
+
+/* Finalizar button */
+.btn-finalizar {
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    opacity: 0.4;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.btn-finalizar:hover {
+    opacity: 1;
+    background: rgba(200, 100, 0, 0.1);
+}
+
+body.rpg-theme .btn-finalizar:hover {
+    background: rgba(255, 140, 0, 0.15);
+}
+
+/* Required field indicator */
+.campo-obligatorio {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--accent-red);
+}
+
+.campo-error-borde {
+    border-color: var(--accent-red) !important;
+}
+
+.campo-error {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--accent-red);
+    margin-top: 0.25rem;
+}

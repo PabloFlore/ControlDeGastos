@@ -82,6 +82,7 @@
                                 @if (!item.EsVencido)
                                 {
                                     <button class="btn-editar" @onclick="() => AbrirModalEditar(item)">✏️</button>
+                                    <button class="btn-finalizar" @onclick="() => FinalizarAhoraAsync(item)" title="Finalizar ahora">🔚</button>
                                 }
                                 <button class="btn-gastos" @onclick="() => AbrirGastosModal(item)" title="Ver gastos">📋</button>
                                 <button class="btn-eliminar" @onclick="() => ConfirmarEliminar(item.Id)">🗑️</button>
@@ -201,7 +202,7 @@
                 @foreach (var p in Enum.GetValues<PeriodoPresupuesto>())
                 {
                     <button class="periodo-btn @(formPeriodo == p ? "periodo-activo" : "")"
-                            @onclick="() => formPeriodo = p">
+                            @onclick="() => { formPeriodo = p; if (p == PeriodoPresupuesto.Personalizado && formFechaFin is null) formFechaFin = formFecha.AddDays(30); }">
                         @LabelPeriodo(p)
                     </button>
                 }
@@ -231,8 +232,23 @@
         </div>
 
         <div class="campo">
-            <label class="campo-label">Fecha de fin <span class="campo-opcional">(opcional)</span></label>
-            <input type="date" class="campo-input" value="@formFechaFin?.ToString("yyyy-MM-dd")" @onchange="OnFechaFinChanged" />
+            <label class="campo-label">
+                Fecha de fin
+                @if (formPeriodo == PeriodoPresupuesto.Personalizado)
+                {
+                    <span class="campo-obligatorio">*</span>
+                }
+                else
+                {
+                    <span class="campo-opcional">(opcional)</span>
+                }
+            </label>
+            <input type="date" class="campo-input @(formPeriodo == PeriodoPresupuesto.Personalizado && formFechaFin is null ? "campo-error-borde" : "")"
+                   value="@formFechaFin?.ToString("yyyy-MM-dd")" @onchange="OnFechaFinChanged" />
+            @if (formPeriodo == PeriodoPresupuesto.Personalizado && formFechaFin is null)
+            {
+                <span class="campo-error">Debes indicar una fecha de fin</span>
+            }
         </div>
     </Body>
     <Footer>
@@ -311,7 +327,8 @@
     private string textoBusqueda = "";
 
     private bool _navegando;
-    private bool FormularioValido => (formMonto ?? 0) > 0;
+    private bool FormularioValido => (formMonto ?? 0) > 0
+        && (formPeriodo != PeriodoPresupuesto.Personalizado || formFechaFin is not null);
 
     private static readonly string[] NombresMes =
         ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -363,6 +380,7 @@
                 {
                     PeriodoPresupuesto.Mensual => p.FechaInicio.AddMonths(1),
                     PeriodoPresupuesto.Anual => p.FechaInicio.AddYears(1),
+                    PeriodoPresupuesto.Personalizado => DateTime.MaxValue,
                     _ => p.FechaInicio.AddDays(7)
                 });
 
@@ -544,6 +562,17 @@
         gastosModalLista = new();
     }
 
+    private async Task FinalizarAhoraAsync(PresupuestoItem item)
+    {
+        var presupuestos = await PresupuestoService.ObtenerPresupuestosAsync();
+        var presupuesto = presupuestos.FirstOrDefault(p => p.Id == item.Id);
+        if (presupuesto is null) return;
+        presupuesto.FechaFin = DateTime.UtcNow;
+        await PresupuestoService.ActualizarPresupuestoAsync(presupuesto);
+        ToastService.ShowSuccess($"Presupuesto '{item.Nombre}' finalizado");
+        await CargarDatosAsync();
+    }
+
     private async Task GuardarAsync()
     {
         if (!FormularioValido) return;
@@ -686,6 +715,7 @@
         PeriodoPresupuesto.Semanal => "Semanal",
         PeriodoPresupuesto.Mensual => "Mensual",
         PeriodoPresupuesto.Anual => "Anual",
+        PeriodoPresupuesto.Personalizado => "Personalizado",
         _ => ""
     };
 
@@ -722,6 +752,7 @@
         {
             PeriodoPresupuesto.Mensual => FechaInicio.AddMonths(1),
             PeriodoPresupuesto.Anual => FechaInicio.AddYears(1),
+            PeriodoPresupuesto.Personalizado => DateTime.MaxValue,
             _ => FechaInicio.AddDays(7)
         });
     }

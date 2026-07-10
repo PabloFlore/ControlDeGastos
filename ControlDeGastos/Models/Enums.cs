@@ -16,7 +16,8 @@ public enum PeriodoPresupuesto
 {
     Semanal,
     Mensual,
-    Anual
+    Anual,
+    Personalizado
 }
 
 public enum TipoLicencia
