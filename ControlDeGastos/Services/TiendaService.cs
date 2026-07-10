@@ -56,9 +56,10 @@ public class TiendaService : ITiendaService
         new() { Id = "skin_hacker", Nombre = "Skin Hacker", Descripcion = "Tarjetas con estética matrix verde", Icono = "💚", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-hacker", Orden = 32 },
         new() { Id = "skin_oro", Nombre = "Skin Oro", Descripcion = "Tarjetas de gasto con acabado dorado", Icono = "✨", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-oro", Orden = 33 },
         new() { Id = "skin_retro", Nombre = "Skin Retro", Descripcion = "Tarjetas con estilo vaporwave retro", Icono = "🕹️", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-retro", Orden = 34 },
-        new() { Id = "skin_mistica", Nombre = "Skin Mística", Descripcion = "Tarjetas con estética cósmica púrpura", Icono = "🔮", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-mistica", Orden = 35 },
-        new() { Id = "skin_dragon", Nombre = "Skin Dragón", Descripcion = "Tarjetas con textura de escamas de dragón", Icono = "🐉", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-dragon", Orden = 36 },
-        new() { Id = "skin_rgb", Nombre = "Skin RGB", Descripcion = "Tarjetas con animación de colores rojo, verde y azul", Icono = "💈", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-rgb", Orden = 37 },
+        new() { Id = "skin_aurora", Nombre = "Skin Aurora", Descripcion = "Tarjetas con efecto de aurora boreal animada", Icono = "🌌", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1, SkinCssClass = "skin-aurora", Orden = 35 },
+        new() { Id = "skin_mistica", Nombre = "Skin Mística", Descripcion = "Tarjetas con estética cósmica púrpura", Icono = "🔮", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-mistica", Orden = 36 },
+        new() { Id = "skin_dragon", Nombre = "Skin Dragón", Descripcion = "Tarjetas con textura de escamas de dragón", Icono = "🐉", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-dragon", Orden = 37 },
+        new() { Id = "skin_rgb", Nombre = "Skin RGB", Descripcion = "Tarjetas con animación de colores rojo, verde y azul", Icono = "💈", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-rgb", Orden = 38 },
 
         // Extended Titles
         new() { Id = "titulo_cabra", Nombre = "La CABRA", Descripcion = "El mas grande de todos los tiempos... o por cabrear?", Icono = "🐐", Categoria = CategoriaArticulo.TituloTienda, Precio = 400, TituloId = "shop_cabra", TituloIcono = "🐐", Orden = 39 },

@@ -2517,3 +2517,123 @@ body.rpg-theme .gasto-item.skin-rgb .gasto-icono {
 
 body.rpg-theme .gasto-item.skin-rgb .monto-gasto { color: #ff4466; }
 body.rpg-theme .gasto-item.skin-rgb .monto-ingreso { color: #33ff99; }
+
+/* --- SKIN AURORA (Northern Lights / Aurora Borealis) --- */
+@keyframes skin-aurora-drift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes skin-aurora-glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(0, 255, 128, 0.15), 0 0 20px rgba(0, 200, 255, 0.08); }
+    33% { box-shadow: 0 0 12px rgba(0, 200, 255, 0.25), 0 0 28px rgba(128, 0, 255, 0.1); }
+    66% { box-shadow: 0 0 14px rgba(128, 0, 255, 0.2), 0 0 24px rgba(0, 255, 128, 0.12); }
+}
+
+@keyframes skin-aurora-shimmer {
+    0% { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(200%) skewX(-15deg); }
+}
+
+.gasto-item.skin-aurora {
+    position: relative;
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1526 50%, #0a0e1a 100%);
+    border-color: rgba(0, 255, 128, 0.3);
+    box-shadow: 0 0 8px rgba(0, 255, 128, 0.1), inset 0 1px 0 rgba(0, 255, 128, 0.06);
+    overflow: hidden;
+}
+
+.gasto-item.skin-aurora::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(0, 255, 128, 0.06) 15%,
+        rgba(0, 200, 255, 0.1) 30%,
+        rgba(128, 0, 255, 0.08) 50%,
+        rgba(0, 255, 128, 0.06) 70%,
+        transparent 100%);
+    background-size: 200% 100%;
+    animation: skin-aurora-drift 8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.gasto-item.skin-aurora::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 128, 0.06), rgba(0, 200, 255, 0.04), transparent);
+    transform: skewX(-15deg);
+    pointer-events: none;
+    animation: skin-aurora-shimmer 6s ease-in-out infinite;
+}
+
+.gasto-item.skin-aurora:hover {
+    border-color: rgba(0, 255, 128, 0.5);
+    animation: skin-aurora-glow 4s ease-in-out infinite;
+}
+
+.gasto-item.skin-aurora:hover::before {
+    background-size: 150% 100%;
+}
+
+.gasto-item.skin-aurora .gasto-categoria { color: #00ff88; font-weight: 600; }
+.gasto-item.skin-aurora .gasto-descripcion { color: rgba(0, 230, 180, 0.5); }
+.gasto-item.skin-aurora .gasto-fecha { color: rgba(0, 200, 255, 0.35); }
+
+.gasto-item.skin-aurora .gasto-icono {
+    border: 1px solid rgba(0, 255, 128, 0.2);
+    background: rgba(0, 255, 128, 0.06);
+}
+
+.gasto-item.skin-aurora .monto-gasto { color: #ff5566; }
+.gasto-item.skin-aurora .monto-ingreso { color: #00ff88; }
+
+/* Aurora RPG Theme */
+body.rpg-theme .gasto-item.skin-aurora {
+    position: relative;
+    background: linear-gradient(135deg, #050a12 0%, #081020 50%, #050a12 100%);
+    border-color: rgba(0, 255, 128, 0.35);
+    box-shadow: 0 0 10px rgba(0, 255, 128, 0.12), inset 0 1px 0 rgba(0, 255, 128, 0.08);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-aurora::before {
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(0, 255, 128, 0.08) 15%,
+        rgba(0, 200, 255, 0.12) 30%,
+        rgba(128, 0, 255, 0.1) 50%,
+        rgba(0, 255, 128, 0.08) 70%,
+        transparent 100%);
+    background-size: 200% 100%;
+    animation: skin-aurora-drift 8s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-aurora::after {
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 128, 0.08), rgba(0, 200, 255, 0.06), transparent);
+    animation: skin-aurora-shimmer 6s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-aurora:hover {
+    border-color: rgba(0, 255, 128, 0.6);
+    animation: skin-aurora-glow 4s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-aurora .gasto-categoria { color: #00ff88; font-weight: 600; }
+body.rpg-theme .gasto-item.skin-aurora .gasto-descripcion { color: rgba(0, 230, 180, 0.5); }
+body.rpg-theme .gasto-item.skin-aurora .gasto-fecha { color: rgba(0, 200, 255, 0.4); }
+body.rpg-theme .gasto-item.skin-aurora .gasto-icono {
+    border: 1px solid rgba(0, 255, 128, 0.25);
+    background: rgba(0, 255, 128, 0.08);
+}
+body.rpg-theme .gasto-item.skin-aurora .monto-gasto { color: #ff5566; }
+body.rpg-theme .gasto-item.skin-aurora .monto-ingreso { color: #00ff88; }
