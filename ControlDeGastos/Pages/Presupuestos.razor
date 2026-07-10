@@ -232,23 +232,8 @@
         </div>
 
         <div class="campo">
-            <label class="campo-label">
-                Fecha de fin
-                @if (formPeriodo == PeriodoPresupuesto.Personalizado)
-                {
-                    <span class="campo-obligatorio">*</span>
-                }
-                else
-                {
-                    <span class="campo-opcional">(opcional)</span>
-                }
-            </label>
-            <input type="date" class="campo-input @(formPeriodo == PeriodoPresupuesto.Personalizado && formFechaFin is null ? "campo-error-borde" : "")"
-                   value="@formFechaFin?.ToString("yyyy-MM-dd")" @onchange="OnFechaFinChanged" />
-            @if (formPeriodo == PeriodoPresupuesto.Personalizado && formFechaFin is null)
-            {
-                <span class="campo-error">Debes indicar una fecha de fin</span>
-            }
+            <label class="campo-label">Fecha de fin <span class="campo-opcional">(opcional)</span></label>
+            <input type="date" class="campo-input" value="@formFechaFin?.ToString("yyyy-MM-dd")" @onchange="OnFechaFinChanged" />
         </div>
     </Body>
     <Footer>
@@ -337,8 +322,7 @@
     private string textoBusqueda = "";
 
     private bool _navegando;
-    private bool FormularioValido => (formMonto ?? 0) > 0
-        && (formPeriodo != PeriodoPresupuesto.Personalizado || formFechaFin is not null);
+    private bool FormularioValido => (formMonto ?? 0) > 0;
 
     private static readonly string[] NombresMes =
         ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",

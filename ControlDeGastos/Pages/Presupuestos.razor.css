@@ -697,10 +697,6 @@ body.rpg-theme .btn-finalizar:hover {
     color: var(--accent-red);
 }
 
-.campo-error-borde {
-    border-color: var(--accent-red) !important;
-}
-
 .campo-error {
     display: block;
     font-size: 0.78rem;
