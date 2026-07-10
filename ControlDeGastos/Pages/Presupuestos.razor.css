@@ -279,7 +279,64 @@ body.rpg-theme .periodo-activo {
     opacity: 0.45;
 }
 
+/* Filter tabs */
+.filter-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+}
+
+.filter-tab {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.filter-tab:hover {
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+}
+
+.filter-active {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: #fff;
+}
+
+.filter-active:hover {
+    color: #fff;
+}
+
 /* RPG overrides */
+body.rpg-theme .filter-tab {
+    background: var(--rpg-bg-secondary);
+    border-color: var(--rpg-border);
+    color: var(--rpg-text-secondary);
+}
+
+body.rpg-theme .filter-tab:hover {
+    border-color: var(--rpg-accent-cyan);
+    color: var(--rpg-text-primary);
+}
+
+body.rpg-theme .filter-active {
+    background: var(--rpg-accent-cyan);
+    border-color: var(--rpg-accent-cyan);
+    color: #000;
+}
+
+body.rpg-theme .filter-active:hover {
+    color: #000;
+}
+
 body.rpg-theme .presupuesto-card {
     background: var(--rpg-bg-card);
     border-color: var(--rpg-border);

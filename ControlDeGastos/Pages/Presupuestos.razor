@@ -36,6 +36,13 @@
         <input type="text" class="busqueda-input" placeholder="Buscar presupuesto..." @bind="textoBusqueda" @bind:event="oninput" />
     </div>
 
+    <div class="filter-tabs">
+        <button class="filter-tab @(filtroEstado == "Todos" ? "filter-active" : "")" @onclick='() => CambiarFiltro("Todos")'>Todos</button>
+        <button class="filter-tab @(filtroEstado == "Vigentes" ? "filter-active" : "")" @onclick='() => CambiarFiltro("Vigentes")'>✅ Vigentes</button>
+        <button class="filter-tab @(filtroEstado == "Vencidos" ? "filter-active" : "")" @onclick='() => CambiarFiltro("Vencidos")'>🔴 Vencidos</button>
+        <button class="filter-tab @(filtroEstado == "Proximamente" ? "filter-active" : "")" @onclick='() => CambiarFiltro("Proximamente")'>⏳ Próximamente</button>
+    </div>
+
     <div class="presupuestos-lista">
         @if (_navegando && items is not null)
         {
@@ -47,15 +54,27 @@
         }
         else
         {
-            var itemsFiltrados = !string.IsNullOrWhiteSpace(textoBusqueda)
-                ? items.Where(i => i.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)).ToList()
-                : items;
+            var itemsFiltrados = items.AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(textoBusqueda))
+                itemsFiltrados = itemsFiltrados.Where(i => i.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase));
+            itemsFiltrados = filtroEstado switch
+            {
+                "Vigentes" => itemsFiltrados.Where(i => !i.EsVencido && !i.EsFuturo),
+                "Vencidos" => itemsFiltrados.Where(i => i.EsVencido),
+                "Proximamente" => itemsFiltrados.Where(i => i.EsFuturo),
+                _ => itemsFiltrados
+            };
+            var itemsFiltradosLista = itemsFiltrados.ToList();
 
-            if (!itemsFiltrados.Any())
+            if (!itemsFiltradosLista.Any())
             {
                 if (!string.IsNullOrWhiteSpace(textoBusqueda))
                 {
                     <EmptyState Icon="🔍" Title="Sin resultados" Subtitle="@("No hay presupuestos que coincidan con \"" + textoBusqueda + "\"")" />
+                }
+                else if (filtroEstado != "Todos")
+                {
+                    <EmptyState Icon="🔍" Title="Sin resultados" Subtitle="@("No hay presupuestos " + filtroEstado.ToLower())" />
                 }
                 else
                 {
@@ -64,7 +83,7 @@
             }
             else
             {
-                @foreach (var item in itemsFiltrados)
+                @foreach (var item in itemsFiltradosLista)
                 {
                     <div @key="item.Id" class="presupuesto-card @(item.EsVencido || item.EsFuturo ? "presupuesto-vencido" : "")">
                         <div class="presupuesto-top">
@@ -161,16 +180,16 @@
                 <div class="total-general">
                     <div class="total-row">
                         <span>Total presupuestado</span>
-                        <span>@FormatearMonto(itemsFiltrados.Sum(i => i.MontoLimite))</span>
+                        <span>@FormatearMonto(itemsFiltradosLista.Sum(i => i.MontoLimite))</span>
                     </div>
                     <div class="total-row">
                         <span>Total gastado</span>
-                        <span class="texto-rojo">@FormatearMonto(itemsFiltrados.Sum(i => i.Gastado))</span>
+                        <span class="texto-rojo">@FormatearMonto(itemsFiltradosLista.Sum(i => i.Gastado))</span>
                     </div>
                     <div class="total-row total-final">
                         <span>Balance</span>
                         @{
-                            var balanceTotal = itemsFiltrados.Sum(i => i.MontoLimite) - itemsFiltrados.Sum(i => i.Gastado);
+                            var balanceTotal = itemsFiltradosLista.Sum(i => i.MontoLimite) - itemsFiltradosLista.Sum(i => i.Gastado);
                         }
                         <span class="@(balanceTotal >= 0 ? "texto-verde" : "texto-rojo")">@FormatearMonto(balanceTotal)</span>
                     </div>
@@ -395,6 +414,12 @@
     private int mesSeleccionado = DateTime.Now.Month;
     private int anioSeleccionado = DateTime.Now.Year;
     private string textoBusqueda = "";
+    private string filtroEstado = "Todos";
+
+    private void CambiarFiltro(string estado)
+    {
+        filtroEstado = estado;
+    }
 
     private bool _navegando;
     private bool FormularioValido => formCategoriaId != Guid.Empty;
