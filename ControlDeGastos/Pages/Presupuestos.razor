@@ -301,9 +301,9 @@
             <div class="gastos-modal-lista">
                 @foreach (var g in gastosModalLista)
                 {
-                    <div class="gasto-modal-item">
+                    <div class="gasto-modal-item @(g.Monto >= 0 ? "" : "es-ingreso")">
                         <span class="gasto-modal-fecha">@g.Fecha.ToString("dd MMM yyyy")</span>
-                        <span class="gasto-modal-monto">@FormatearMonto(g.Monto)</span>
+                        <span class="gasto-modal-monto @(g.Monto >= 0 ? "monto-gasto" : "monto-ingreso")">@FormatearMonto(g.Monto)</span>
                         <span class="gasto-modal-desc">@(string.IsNullOrWhiteSpace(g.Descripcion) ? "—" : g.Descripcion)</span>
                     </div>
                 }
@@ -616,7 +616,6 @@
         gastosModalItem = item;
         var fin = item.FechaFinCalculada;
         var gastos = _todosGastos
-            .Where(g => g.Monto > 0)
             .Where(g => item.CategoriaId == null || g.CategoriaId == item.CategoriaId)
             .Where(g =>
             {

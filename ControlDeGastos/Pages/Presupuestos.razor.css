@@ -626,6 +626,20 @@ body.rpg-theme .color-picker {
     border-bottom: none;
 }
 
+.es-ingreso {
+    background: rgba(0, 180, 80, 0.04);
+    border-left: 3px solid var(--accent-green);
+    padding-left: 0.5rem;
+}
+
+.monto-ingreso {
+    color: var(--accent-green);
+}
+
+.monto-gasto {
+    color: var(--accent-red);
+}
+
 .gasto-modal-fecha {
     color: var(--text-secondary);
     font-size: 0.78rem;
