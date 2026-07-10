@@ -544,6 +544,18 @@
                         PeriodoPresupuesto.Anual => p.FechaInicio.AddYears(1) >= inicioMes,
                         _ => true
                     })
+                .Where(p =>
+                {
+                    var ahora = DateTime.UtcNow;
+                    var fin = p.FechaFin ?? (p.Periodo switch
+                    {
+                        PeriodoPresupuesto.Mensual => p.FechaInicio.AddMonths(1),
+                        PeriodoPresupuesto.Anual => p.FechaInicio.AddYears(1),
+                        PeriodoPresupuesto.Personalizado => DateTime.MaxValue,
+                        _ => p.FechaInicio.AddDays(7)
+                    });
+                    return ahora >= p.FechaInicio && ahora <= fin;
+                })
                 .ToList();
 
             foreach (var pres in presupuestosActivos)

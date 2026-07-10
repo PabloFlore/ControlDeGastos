@@ -19,12 +19,13 @@
 <div class="gastos-page">
     <div class="mes-selector">
         <button class="mes-btn" @onclick="MesAnterior" title="Mes anterior">‹</button>
-        <span class="mes-titulo">@NombresMes[mesSeleccionado - 1] @añoSeleccionado</span>
+        <span class="mes-titulo">@(modoTodos ? "Todos los meses" : $"{NombresMes[mesSeleccionado - 1]} {añoSeleccionado}")</span>
         <button class="mes-btn @(EsMesActual ? "btn-deshabilitado" : "")" @onclick="MesSiguiente" title="Mes siguiente">›</button>
         @if (mesSeleccionado != DateTime.Now.Month || añoSeleccionado != DateTime.Now.Year)
         {
             <button class="mes-btn hoy-btn" @onclick="IrAlMesActual" title="Volver al mes actual">●</button>
         }
+        <button class="mes-btn @(modoTodos ? "hoy-btn" : "")" @onclick="AlternarModoTodos" title="Ver todos los gastos">📋</button>
     </div>
 
     <div class="acciones-barra">
@@ -737,6 +738,7 @@
     private List<(DateTime Fecha, List<Gasto> Gastos)>? gastosAgrupados;
     private int paginaActual = 1;
     private int totalPaginas = 1;
+    private bool modoTodos;
     private string? _skinActiva;
 
     protected override async Task OnInitializedAsync()
@@ -804,8 +806,8 @@
             var paginacion = new Paginacion { Pagina = paginaActual, TamanoPagina = 50 };
             var filtro = new FiltroGasto
             {
-                Year = añoSeleccionado,
-                Month = mesSeleccionado,
+                Year = modoTodos ? null : añoSeleccionado,
+                Month = modoTodos ? null : mesSeleccionado,
                 Desde = filtroFechaDesde,
                 Hasta = filtroFechaHasta
             };
@@ -989,6 +991,18 @@
         paginaActual = 1;
         mesSeleccionado = DateTime.Now.Month;
         añoSeleccionado = DateTime.Now.Year;
+        modoTodos = false;
+        var oldCts = ctsCarga;
+        ctsCarga?.Cancel();
+        ctsCarga = new CancellationTokenSource();
+        oldCts?.Dispose();
+        await CargarGastosAsync(ctsCarga.Token);
+    }
+
+    private async Task AlternarModoTodos()
+    {
+        modoTodos = !modoTodos;
+        paginaActual = 1;
         var oldCts = ctsCarga;
         ctsCarga?.Cancel();
         ctsCarga = new CancellationTokenSource();

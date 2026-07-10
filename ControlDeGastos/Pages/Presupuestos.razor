@@ -66,7 +66,7 @@
             {
                 @foreach (var item in itemsFiltrados)
                 {
-                    <div @key="item.Id" class="presupuesto-card @(item.EsVencido ? "presupuesto-vencido" : "")">
+                    <div @key="item.Id" class="presupuesto-card @(item.EsVencido || item.EsFuturo ? "presupuesto-vencido" : "")">
                         <div class="presupuesto-top">
                             <div class="presupuesto-categoria">
                                 <div class="presupuesto-icono" style="background: @(item.Color + "22")">
