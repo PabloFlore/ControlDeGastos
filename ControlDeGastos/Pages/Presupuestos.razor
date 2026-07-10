@@ -82,7 +82,7 @@
                                 @if (!item.EsVencido)
                                 {
                                     <button class="btn-editar" @onclick="() => AbrirModalEditar(item)">✏️</button>
-                                    <button class="btn-finalizar" @onclick="() => FinalizarAhoraAsync(item)" title="Finalizar ahora">🔚</button>
+                                    <button class="btn-finalizar" @onclick="() => finalizandoId = item.Id" title="Finalizar ahora">🔚</button>
                                 }
                                 <button class="btn-gastos" @onclick="() => AbrirGastosModal(item)" title="Ver gastos">📋</button>
                                 <button class="btn-eliminar" @onclick="() => ConfirmarEliminar(item.Id)">🗑️</button>
@@ -268,6 +268,15 @@
                OnCancel="CancelarEliminar"
                OnConfirm="EliminarAsync" />
 
+<ConfirmDialog Visible="@(finalizandoId is not null)"
+               Icon="🔚"
+               Title="¿Finalizar este presupuesto?"
+               Message="Se marcará como vencido y ya no se contabilizarán más gastos en él"
+               CancelText="Cancelar"
+               ConfirmText="Finalizar"
+               OnCancel="CancelarFinalizar"
+               OnConfirm="ConfirmarFinalizarAsync" />
+
 <Modal Title="@(gastosModalItem?.Nombre ?? "")" Visible="@gastosModalAbierto" OnClose="CerrarGastosModal">
     <Body>
         @if (!gastosModalLista.Any())
@@ -309,6 +318,7 @@
 
     private Guid? formEditandoId;
     private Guid? eliminandoId;
+    private Guid? finalizandoId;
 
     // Category creation inline
     private bool mostrarFormCategoria;
@@ -562,14 +572,31 @@
         gastosModalLista = new();
     }
 
-    private async Task FinalizarAhoraAsync(PresupuestoItem item)
+    private void CancelarFinalizar()
     {
-        var presupuestos = await PresupuestoService.ObtenerPresupuestosAsync();
-        var presupuesto = presupuestos.FirstOrDefault(p => p.Id == item.Id);
-        if (presupuesto is null) return;
-        presupuesto.FechaFin = DateTime.UtcNow;
-        await PresupuestoService.ActualizarPresupuestoAsync(presupuesto);
-        ToastService.ShowSuccess($"Presupuesto '{item.Nombre}' finalizado");
+        finalizandoId = null;
+    }
+
+    private async Task ConfirmarFinalizarAsync()
+    {
+        if (finalizandoId is null) return;
+        try
+        {
+            var presupuestos = await PresupuestoService.ObtenerPresupuestosAsync();
+            var presupuesto = presupuestos.FirstOrDefault(p => p.Id == finalizandoId.Value);
+            if (presupuesto is null) return;
+            presupuesto.FechaFin = DateTime.UtcNow;
+            await PresupuestoService.ActualizarPresupuestoAsync(presupuesto);
+            var nombre = presupuesto.CategoriaId.HasValue
+                ? categoriasGasto.FirstOrDefault(c => c.Id == presupuesto.CategoriaId.Value)?.Nombre ?? "General"
+                : "General";
+            ToastService.ShowSuccess($"Presupuesto '{nombre}' finalizado");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+        finalizandoId = null;
         await CargarDatosAsync();
     }
 
