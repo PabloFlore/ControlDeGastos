@@ -73,10 +73,11 @@
 
             await InicializarLockScreenAsync();
             await MostrarNotificacionesAsync();
-            await VerificarActualizacionAsync();
 
             _dotNetRef = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("registrarVisibilidad", _dotNetRef);
+
+            await VerificarActualizacionAsync();
         }
     }
 
@@ -86,9 +87,9 @@
         {
             if (!await PinLockService.EstaConfiguradoAsync()) return;
 
-            _dotNetRef = DotNetObjectReference.Create(this);
+            var dotNetRef = _dotNetRef ?? DotNetObjectReference.Create(this);
             var delay = await PinLockService.ObtenerDelayBloqueoSegundosAsync();
-            await JSRuntime.InvokeVoidAsync("pinLock.iniciar", _dotNetRef, delay);
+            await JSRuntime.InvokeVoidAsync("pinLock.iniciar", dotNetRef, delay);
         }
         catch (Exception ex)
         {
@@ -116,8 +117,8 @@
     {
         try
         {
-            var cerrado = await JSRuntime.InvokeAsync<bool>("localStorage.getItem", "updateBannerCerrado");
-            if (cerrado) return;
+            var cerrado = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "updateBannerCerrado");
+            if (cerrado == "true") return;
 
             hayActualizacion = await UpdateService.HayActualizacionPendienteAsync();
             StateHasChanged();

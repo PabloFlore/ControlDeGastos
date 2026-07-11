@@ -13,29 +13,30 @@ window.forzarRecarga = async function () {
 };
 
 window.verificarActualizacionPendiente = async function () {
-    var reg = await navigator.serviceWorker.getRegistration();
-    if (!reg) return false;
-
-    try { await reg.update(); } catch {}
-
-    await new Promise(function (r) { setTimeout(r, 1000); });
-
-    if (reg.waiting) return true;
+    if (!('serviceWorker' in navigator)) return false;
 
     try {
-        var resp = await fetch('/service-worker-assets.js', { cache: 'no-store' });
-        var text = await resp.text();
-        var match = text.match(/version:\s*["']([^"']+)["']/);
-        if (match) {
-            var newVersion = match[1];
-            var cacheKeys = await caches.keys();
-            var hasCache = cacheKeys.some(function (k) { return k.indexOf(newVersion) !== -1; });
-            if (!hasCache) return true;
-        }
+        var resp = await fetch('/service-worker.js', { cache: 'no-store' });
+        var serverText = await resp.text();
+        var serverHash = await hashString(serverText);
+
+        var reg = await navigator.serviceWorker.getRegistration();
+        if (!reg || !reg.active) return false;
+
+        var cachedResp = await fetch(reg.active.scriptURL, { cache: 'no-store' });
+        var cachedBody = await cachedResp.text();
+        var cachedHash = await hashString(cachedBody);
+
+        return serverHash !== cachedHash;
     } catch {}
 
     return false;
 };
+
+async function hashString(str) {
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
 
 window.registrarVisibilidad = function (dotNetRef) {
     document.addEventListener('visibilitychange', function () {
