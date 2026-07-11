@@ -112,7 +112,7 @@
                                   TooltipPosition="LiveChartsCore.Measure.TooltipPosition.Top" />
                     </div>
                     <div class="chart-leyenda">
-                        @foreach (var item in gastosPorCategoria.Take(6))
+                        @foreach (var item in (mostrarTodasLeyenda ? gastosPorCategoria : gastosPorCategoria.Take(6)))
                         {
                             <div @key="item.CategoriaId" class="leyenda-item">
                                 <span class="leyenda-color" style="background: @item.Color"></span>
@@ -122,7 +122,9 @@
                         }
                         @if (gastosPorCategoria.Count > 6)
                         {
-                            <div class="leyenda-item leyenda-mas">+@(gastosPorCategoria.Count - 6) más</div>
+                            <div class="leyenda-item leyenda-mas" @onclick="() => mostrarTodasLeyenda = !mostrarTodasLeyenda">
+                                @(mostrarTodasLeyenda ? "▲ Mostrar menos" : $"+{gastosPorCategoria.Count - 6} más")
+                            </div>
                         }
                     </div>
                 }
@@ -214,6 +216,7 @@
     private bool cargando = true;
     private bool huboError;
     private bool compararActivo;
+    private bool mostrarTodasLeyenda;
 
     private int anioAnteriorComp;
     private DateTime? filtroFechaDesde;

@@ -191,7 +191,7 @@
                                   TooltipPosition="LiveChartsCore.Measure.TooltipPosition.Top" />
                     </div>
                     <div class="chart-leyenda">
-                        @foreach (var item in gastosPorCategoria.Take(5))
+                        @foreach (var item in (mostrarTodasLeyendaHome ? gastosPorCategoria : gastosPorCategoria.Take(5)))
                         {
                             <div @key="item.CategoriaId" class="leyenda-item">
                                 <span class="leyenda-color" style="background: @item.Color"></span>
@@ -201,7 +201,9 @@
                         }
                         @if (gastosPorCategoria.Count > 5)
                         {
-                            <div class="leyenda-item leyenda-mas">+@(gastosPorCategoria.Count - 5) más</div>
+                            <div class="leyenda-item leyenda-mas" @onclick="() => mostrarTodasLeyendaHome = !mostrarTodasLeyendaHome">
+                                @(mostrarTodasLeyendaHome ? "▲ Mostrar menos" : $"+{gastosPorCategoria.Count - 5} más")
+                            </div>
                         }
                     </div>
                 }
@@ -336,6 +338,7 @@
     private bool mostrarAvisoPrivacidad;
     private bool mostrarOnboarding;
     private bool _bannerMostradoHoy;
+    private bool mostrarTodasLeyendaHome;
     private Dictionary<Guid, Categoria> cacheCategorias = new();
     private enum EstadoLicenciaUI { None, Valid, ExpiringSoon, Expired }
     private EstadoLicenciaUI _estadoLicencia = EstadoLicenciaUI.None;

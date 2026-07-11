@@ -562,8 +562,16 @@ body.rpg-theme .rpg-exp-link:hover {
 }
 
 .leyenda-mas {
-    color: var(--text-muted);
+    color: var(--accent-blue, #4a90d9);
     font-size: 0.7rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.15s ease;
+}
+
+.leyenda-mas:hover {
+    opacity: 0.7;
+    text-decoration: underline;
 }
 
 body.rpg-theme .chart-card {

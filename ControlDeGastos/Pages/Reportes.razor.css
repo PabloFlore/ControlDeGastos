@@ -223,9 +223,17 @@
 }
 
 .leyenda-mas {
-    color: var(--text-muted);
+    color: var(--accent-blue, #4a90d9);
     font-size: 0.8rem;
     justify-content: center;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.15s ease;
+}
+
+.leyenda-mas:hover {
+    opacity: 0.7;
+    text-decoration: underline;
 }
 
 .card-seccion {
