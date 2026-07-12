@@ -2640,7 +2640,7 @@ body.rpg-theme .gasto-item.skin-aurora .monto-ingreso { color: #00ff88; }
 
 /* --- SKIN SAKURA (Flor de Cereza / Cherry Blossom) --- */
 @keyframes skin-sakura-petal-fall {
-    0%   { transform: translateY(0) rotate(0deg) translateX(0); opacity: 0; }
+    0%   { transform: translateY(-15px) rotate(0deg) translateX(0); opacity: 0; }
     10%  { opacity: 0.8; }
     90%  { opacity: 0.6; }
     100% { transform: translateY(70px) rotate(360deg) translateX(15px); opacity: 0; }
