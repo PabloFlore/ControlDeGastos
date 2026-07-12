@@ -57,14 +57,14 @@ public class TiendaService : ITiendaService
         new() { Id = "skin_hacker", Nombre = "Skin Hacker", Descripcion = "Tarjetas con estética matrix verde", Icono = "💚", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-hacker", Orden = 33 },
         new() { Id = "skin_oro", Nombre = "Skin Oro", Descripcion = "Tarjetas de gasto con acabado dorado", Icono = "✨", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-oro", Orden = 34 },
         new() { Id = "skin_retro", Nombre = "Skin Retro", Descripcion = "Tarjetas con estilo vaporwave retro", Icono = "🕹️", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-retro", Orden = 35 },
-        new() { Id = "skin_aurora", Nombre = "Skin Aurora", Descripcion = "Tarjetas con efecto de aurora boreal animada", Icono = "🌌", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-aurora", Orden = 36 },
-        new() { Id = "skin_mistica", Nombre = "Skin Mística", Descripcion = "Tarjetas con estética cósmica púrpura", Icono = "🔮", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-mistica", Orden = 37 },
+        new() { Id = "skin_aurora", Nombre = "Adlai", Descripcion = "Tarjetas con efecto de aurora boreal animada", Icono = "🌌", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1200, SkinCssClass = "skin-aurora", Orden = 44 },
+        new() { Id = "skin_mistica", Nombre = "Skin Mística", Descripcion = "Tarjetas con estética cósmica púrpura", Icono = "🔮", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-mistica", Orden = 36 },
         new() { Id = "skin_dragon", Nombre = "Skin Dragón", Descripcion = "Tarjetas con textura de escamas de dragón", Icono = "🐉", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-dragon", Orden = 38 },
         new() { Id = "skin_rgb", Nombre = "Skin RGB", Descripcion = "Tarjetas con animación de colores rojo, verde y azul", Icono = "💈", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-rgb", Orden = 39 },
-        new() { Id = "skin_aurora_viva", Nombre = "Aurora Viva", Descripcion = "Estrellas vivas, aurora boreal y efecto holográfico iridiscente", Icono = "🌌", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1, SkinCssClass = "skin-aurora-viva", Orden = 40 },
-        new() { Id = "skin_bioluminiscente", Nombre = "Bioluminiscente", Descripcion = "Fondo oceánico profundo con criaturas luminiscentes y burbujas", Icono = "🪼", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1, SkinCssClass = "skin-bioluminiscente", Orden = 41 },
-        new() { Id = "skin_chrome", Nombre = "Chrome Líquido", Descripcion = "Superficie metálica viva con reflejos iridiscentes de mercurio", Icono = "🪞", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1, SkinCssClass = "skin-chrome", Orden = 42 },
-        new() { Id = "skin_volcanica", Nombre = "Volcánica", Descripcion = "Obsidiana oscura con grietas de lava y brasas flotantes", Icono = "🌋", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1, SkinCssClass = "skin-volcanica", Orden = 43 },
+        new() { Id = "skin_bioluminiscente", Nombre = "Bioluminiscente", Descripcion = "Fondo oceánico profundo con criaturas luminiscentes y burbujas", Icono = "🪼", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1200, SkinCssClass = "skin-bioluminiscente", Orden = 40 },
+        new() { Id = "skin_chrome", Nombre = "Chrome Líquido", Descripcion = "Superficie metálica viva con reflejos iridiscentes de mercurio", Icono = "🪞", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1200, SkinCssClass = "skin-chrome", Orden = 41 },
+        new() { Id = "skin_volcanica", Nombre = "Volcánica", Descripcion = "Obsidiana oscura con grietas de lava y brasas flotantes", Icono = "🌋", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1200, SkinCssClass = "skin-volcanica", Orden = 42 },
+        new() { Id = "skin_celestial", Nombre = "Cielo Celestial", Descripcion = "Cielo angelical con rayos de luz dorada, nubes y destellos divinos", Icono = "☁️", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1200, SkinCssClass = "skin-celestial", Orden = 43 },
 
         // Extended Titles
         new() { Id = "titulo_cabra", Nombre = "La CABRA", Descripcion = "El mas grande de todos los tiempos... o por cabrear?", Icono = "🐐", Categoria = CategoriaArticulo.TituloTienda, Precio = 400, TituloId = "shop_cabra", TituloIcono = "🐐", Orden = 39 },
@@ -83,7 +83,7 @@ public class TiendaService : ITiendaService
         new() { Id = "titulo_leyenda", Nombre = "Leyenda Financiera", Descripcion = "Tu nombre se susurra en las cuentas de banco del reino.", Icono = "🏆", Categoria = CategoriaArticulo.TituloTienda, Precio = 1, TituloId = "shop_leyenda", TituloIcono = "🏆", Orden = 54 },
 
         // New Card Skins
-        new() { Id = "skin_sakura", Nombre = "Skin Sakura", Descripcion = "Tarjetas con estética de flor de cereza japonesa", Icono = "🌸", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-sakura", Orden = 55 },
+        new() { Id = "skin_sakura", Nombre = "Skin Sakura", Descripcion = "Tarjetas con estética de flor de cereza japonesa", Icono = "🌸", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-sakura", Orden = 37 },
     };
 
     public TiendaService(IStorageService storage, IGamificacionService gamificacionService)
