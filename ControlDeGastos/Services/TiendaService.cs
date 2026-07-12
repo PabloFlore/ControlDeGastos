@@ -64,9 +64,22 @@ public class TiendaService : ITiendaService
         // Extended Titles
         new() { Id = "titulo_cabra", Nombre = "La CABRA", Descripcion = "El mas grande de todos los tiempos... o por cabrear?", Icono = "🐐", Categoria = CategoriaArticulo.TituloTienda, Precio = 400, TituloId = "shop_cabra", TituloIcono = "🐐", Orden = 39 },
         new() { Id = "titulo_son_of_god", Nombre = "Son of God", Descripcion = "Demuestra que no estas solo, sino caminando en El", Icono = "💫", Categoria = CategoriaArticulo.TituloTienda, Precio = 600, TituloId = "shop_son_of_god", TituloIcono = "💫", Orden = 44 },
-        new() { Id = "titulo_aura_10k", Nombre = "+10,000 de aura", Descripcion = "Derramas mucha Aura.", Icono = "✨", Categoria = CategoriaArticulo.TituloTienda, Precio = 400, TituloId = "shop_aura_10k", TituloIcono = "✨", Orden = 41 },
-        new() { Id = "titulo_aura_negativa", Nombre = "Aura Negativa", Descripcion = "Ya no le muevas porfa", Icono = "💀", Categoria = CategoriaArticulo.TituloTienda, Precio = 400, TituloId = "shop_aura_negativa", TituloIcono = "💀", Orden = 42 },
-        new() { Id = "titulo_deudor_aura", Nombre = "Deudor de Aura", Descripcion = "Debes aura, pa", Icono = "💳", Categoria = CategoriaArticulo.TituloTienda, Precio = 400, TituloId = "shop_deudor_aura", TituloIcono = "💳", Orden = 43 },
+        new() { Id = "titulo_aura_10k", Nombre = "+10,000 de aura", Descripcion = "Derramas mucha Aura.", Icono = "✨", Categoria = CategoriaArticulo.TituloTienda, Precio = 400, TituloId = "shop_aura_10k", TituloIcono = "✨", Orden = 45 },
+        new() { Id = "titulo_aura_negativa", Nombre = "Aura Negativa", Descripcion = "Ya no le muevas porfa", Icono = "💀", Categoria = CategoriaArticulo.TituloTienda, Precio = 400, TituloId = "shop_aura_negativa", TituloIcono = "💀", Orden = 46 },
+        new() { Id = "titulo_deudor_aura", Nombre = "Deudor de Aura", Descripcion = "Debes aura, pa", Icono = "💳", Categoria = CategoriaArticulo.TituloTienda, Precio = 400, TituloId = "shop_deudor_aura", TituloIcono = "💳", Orden = 47 },
+
+        // New Titles
+        new() { Id = "titulo_ahorrador", Nombre = "Ahorrador Emérito", Descripcion = "Cada centavo cuenta tu historia de disciplina financiera.", Icono = "🏦", Categoria = CategoriaArticulo.TituloTienda, Precio = 1, TituloId = "shop_ahorrador", TituloIcono = "🏦", Orden = 48 },
+        new() { Id = "titulo_gastador", Nombre = "Gastador Compulsivo", Descripcion = "Tu cartera tiembla cada vez que abres la app.", Icono = "💸", Categoria = CategoriaArticulo.TituloTienda, Precio = 1, TituloId = "shop_gastador", TituloIcono = "💸", Orden = 49 },
+        new() { Id = "titulo_free_rider", Nombre = "Free Rider", Descripcion = "Vives la vida sin compromisos financieros... por ahora.", Icono = "🦅", Categoria = CategoriaArticulo.TituloTienda, Precio = 1, TituloId = "shop_free_rider", TituloIcono = "🦅", Orden = 50 },
+        new() { Id = "titulo_sigma", Nombre = "Sigma Financiero", Descripcion = "Rutina de grinding financiero. No distractions, only numbers.", Icono = "📈", Categoria = CategoriaArticulo.TituloTienda, Precio = 1, TituloId = "shop_sigma", TituloIcono = "📈", Orden = 51 },
+        new() { Id = "titulo_maestro", Nombre = "Maestro del Gasto", Descripcion = "Dominas el arte de registrar cada movimiento con precision letal.", Icono = "🎯", Categoria = CategoriaArticulo.TituloTienda, Precio = 1, TituloId = "shop_maestro", TituloIcono = "🎯", Orden = 52 },
+        new() { Id = "titulo_padre", Nombre = "Padre del Ahorro", Descripcion = "La sabiduría financiera fluye de ti como rio caudaloso.", Icono = "👴", Categoria = CategoriaArticulo.TituloTienda, Precio = 1, TituloId = "shop_padre", TituloIcono = "👴", Orden = 53 },
+        new() { Id = "titulo_leyenda", Nombre = "Leyenda Financiera", Descripcion = "Tu nombre se susurra en las cuentas de banco del reino.", Icono = "🏆", Categoria = CategoriaArticulo.TituloTienda, Precio = 1, TituloId = "shop_leyenda", TituloIcono = "🏆", Orden = 54 },
+
+        // New Card Skins
+        new() { Id = "skin_sakura", Nombre = "Skin Sakura", Descripcion = "Tarjetas con estética de flor de cereza japonesa", Icono = "🌸", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1, SkinCssClass = "skin-sakura", Orden = 55 },
+        new() { Id = "skin_cristal", Nombre = "Skin Cristal", Descripcion = "Tarjetas transparentes con refracción prismática de luz", Icono = "💎", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1, SkinCssClass = "skin-cristal", Orden = 56 },
     };
 
     public TiendaService(IStorageService storage, IGamificacionService gamificacionService)

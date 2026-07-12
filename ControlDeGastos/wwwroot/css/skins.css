@@ -2637,3 +2637,312 @@ body.rpg-theme .gasto-item.skin-aurora .gasto-icono {
 }
 body.rpg-theme .gasto-item.skin-aurora .monto-gasto { color: #ff5566; }
 body.rpg-theme .gasto-item.skin-aurora .monto-ingreso { color: #00ff88; }
+
+/* --- SKIN SAKURA (Flor de Cereza / Cherry Blossom) --- */
+@keyframes skin-sakura-petal-fall {
+    0%   { transform: translateY(0) rotate(0deg) translateX(0); opacity: 0; }
+    10%  { opacity: 0.8; }
+    90%  { opacity: 0.6; }
+    100% { transform: translateY(100%) rotate(360deg) translateX(30px); opacity: 0; }
+}
+
+@keyframes skin-sakura-glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(255, 182, 193, 0.2), 0 0 16px rgba(255, 105, 140, 0.05); }
+    50% { box-shadow: 0 0 16px rgba(255, 182, 193, 0.4), 0 0 32px rgba(255, 105, 140, 0.12), 0 0 48px rgba(255, 182, 193, 0.04); }
+}
+
+@keyframes skin-sakura-shimmer {
+    0%   { left: -60%; opacity: 0; }
+    20%  { opacity: 0.6; }
+    80%  { opacity: 0.6; }
+    100% { left: 160%; opacity: 0; }
+}
+
+.gasto-item.skin-sakura {
+    position: relative;
+    background:
+        radial-gradient(ellipse 80% 40% at 20% 20%, rgba(255, 182, 193, 0.1) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 35% at 80% 80%, rgba(255, 105, 140, 0.06) 0%, transparent 60%),
+        linear-gradient(135deg, rgba(255, 220, 230, 0.08), rgba(255, 182, 193, 0.04), rgba(255, 240, 245, 0.06));
+    border-color: #ffb6c1;
+    box-shadow: 0 0 8px rgba(255, 182, 193, 0.1);
+    overflow: hidden;
+}
+
+.gasto-item.skin-sakura::before {
+    content: "\2740";
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 0.75rem;
+    color: rgba(255, 105, 140, 0.2);
+    pointer-events: none;
+    transition: color 0.3s ease;
+}
+
+.gasto-item.skin-sakura::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 220, 235, 0.4) 50%, transparent 70%);
+    transform: skewX(-25deg);
+    pointer-events: none;
+    animation: skin-sakura-shimmer 4s ease-in-out infinite;
+    animation-delay: 2s;
+    opacity: 0;
+}
+
+.gasto-item.skin-sakura .skin-sakura-petals {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.gasto-item.skin-sakura .skin-sakura-petals span {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 182, 193, 0.5);
+    border-radius: 50% 0 50% 50%;
+    top: -10px;
+    animation: skin-sakura-petal-fall 6s ease-in-out infinite;
+}
+
+.gasto-item.skin-sakura .skin-sakura-petals span:nth-child(1) { left: 15%; animation-delay: 0s; animation-duration: 7s; }
+.gasto-item.skin-sakura .skin-sakura-petals span:nth-child(2) { left: 35%; animation-delay: 2s; animation-duration: 5s; }
+.gasto-item.skin-sakura .skin-sakura-petals span:nth-child(3) { left: 60%; animation-delay: 4s; animation-duration: 8s; }
+.gasto-item.skin-sakura .skin-sakura-petals span:nth-child(4) { left: 80%; animation-delay: 1s; animation-duration: 6s; }
+
+.gasto-item.skin-sakura:hover {
+    border-color: #ff69b4;
+    animation: skin-sakura-glow 2.5s ease-in-out infinite;
+}
+
+.gasto-item.skin-sakura:hover::before {
+    color: rgba(255, 105, 140, 0.5);
+}
+
+.gasto-item.skin-sakura .gasto-categoria { color: #d4708a; font-weight: 500; }
+.gasto-item.skin-sakura .gasto-descripcion { color: rgba(200, 120, 150, 0.55); }
+.gasto-item.skin-sakura .gasto-fecha { color: rgba(200, 140, 160, 0.4); }
+
+.gasto-item.skin-sakura .gasto-icono {
+    border: 1px solid rgba(255, 182, 193, 0.25);
+    background: rgba(255, 182, 193, 0.06);
+}
+
+.gasto-item.skin-sakura .monto-gasto { color: #c0392b; }
+.gasto-item.skin-sakura .monto-ingreso { color: #27ae60; }
+
+/* Sakura RPG Theme */
+body.rpg-theme .gasto-item.skin-sakura {
+    position: relative;
+    background:
+        radial-gradient(ellipse 80% 40% at 20% 20%, rgba(255, 140, 170, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 35% at 80% 80%, rgba(200, 60, 100, 0.08) 0%, transparent 60%),
+        linear-gradient(135deg, rgba(40, 15, 25, 0.8), rgba(30, 10, 20, 0.9));
+    border-color: rgba(255, 140, 170, 0.4);
+    box-shadow: 0 0 10px rgba(255, 140, 170, 0.1), inset 0 0 0 1px rgba(255, 140, 170, 0.04);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-sakura::before {
+    content: "\2740";
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    font-size: 0.75rem;
+    color: rgba(255, 140, 170, 0.25);
+    pointer-events: none;
+    transition: color 0.3s ease;
+}
+
+body.rpg-theme .gasto-item.skin-sakura::after {
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 140, 170, 0.08) 50%, transparent 70%);
+    animation: skin-sakura-shimmer 4s ease-in-out infinite;
+    animation-delay: 2s;
+}
+
+body.rpg-theme .gasto-item.skin-sakura .skin-sakura-petals span {
+    background: rgba(255, 140, 170, 0.55);
+}
+
+body.rpg-theme .gasto-item.skin-sakura:hover {
+    border-color: rgba(255, 140, 170, 0.65);
+    animation: skin-sakura-glow 2.5s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-sakura:hover::before {
+    color: rgba(255, 140, 170, 0.5);
+}
+
+body.rpg-theme .gasto-item.skin-sakura .gasto-categoria { color: #ff8ca8; }
+body.rpg-theme .gasto-item.skin-sakura .gasto-descripcion { color: rgba(255, 140, 170, 0.45); }
+body.rpg-theme .gasto-item.skin-sakura .gasto-fecha { color: rgba(255, 140, 170, 0.3); }
+body.rpg-theme .gasto-item.skin-sakura .gasto-icono {
+    border: 1px solid rgba(255, 140, 170, 0.2);
+    background: rgba(255, 140, 170, 0.06);
+}
+body.rpg-theme .gasto-item.skin-sakura .monto-gasto { color: #ff4466; }
+body.rpg-theme .gasto-item.skin-sakura .monto-ingreso { color: #ff8ca8; }
+
+/* --- SKIN CRISTAL (Prismatic / Refracted Light) --- */
+@keyframes skin-cristal-prism {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes skin-cristal-glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(200, 220, 255, 0.2), 0 0 16px rgba(180, 200, 255, 0.06); }
+    33% { box-shadow: 0 0 12px rgba(255, 200, 230, 0.25), 0 0 24px rgba(200, 180, 255, 0.1); }
+    66% { box-shadow: 0 0 14px rgba(180, 230, 255, 0.25), 0 0 28px rgba(200, 255, 230, 0.1); }
+}
+
+@keyframes skin-cristal-refract {
+    0%   { left: -80%; opacity: 0; }
+    15%  { opacity: 0.7; }
+    85%  { opacity: 0.7; }
+    100% { left: 180%; opacity: 0; }
+}
+
+.gasto-item.skin-cristal {
+    position: relative;
+    background:
+        linear-gradient(135deg, rgba(200, 220, 255, 0.06) 0%, transparent 25%),
+        linear-gradient(225deg, rgba(255, 200, 230, 0.05) 0%, transparent 25%),
+        linear-gradient(45deg, rgba(180, 255, 220, 0.04) 0%, transparent 25%),
+        linear-gradient(315deg, rgba(255, 240, 180, 0.04) 0%, transparent 25%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(240, 245, 255, 0.4) 100%);
+    border-color: rgba(180, 200, 240, 0.5);
+    box-shadow:
+        0 0 8px rgba(200, 220, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        inset 0 0 0 1px rgba(200, 220, 255, 0.08);
+    overflow: hidden;
+}
+
+.gasto-item.skin-cristal::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        transparent 20%,
+        rgba(255, 180, 200, 0.06) 30%,
+        rgba(180, 255, 220, 0.06) 40%,
+        rgba(180, 200, 255, 0.06) 50%,
+        rgba(255, 240, 180, 0.06) 60%,
+        transparent 70%
+    );
+    background-size: 200% 200%;
+    animation: skin-cristal-prism 8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.gasto-item.skin-cristal::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        110deg,
+        transparent 20%,
+        rgba(255, 200, 220, 0.15) 35%,
+        rgba(200, 255, 230, 0.2) 45%,
+        rgba(200, 220, 255, 0.2) 55%,
+        rgba(255, 240, 200, 0.15) 65%,
+        transparent 80%
+    );
+    transform: skewX(-20deg);
+    pointer-events: none;
+    animation: skin-cristal-refract 5s ease-in-out infinite;
+    animation-delay: 1s;
+}
+
+.gasto-item.skin-cristal:hover {
+    border-color: rgba(160, 190, 255, 0.7);
+    animation: skin-cristal-glow 3s ease-in-out infinite;
+}
+
+.gasto-item.skin-cristal:hover::after {
+    animation-duration: 3s;
+}
+
+.gasto-item.skin-cristal .gasto-categoria { color: #7090c0; font-weight: 500; letter-spacing: 0.3px; }
+.gasto-item.skin-cristal .gasto-descripcion { color: rgba(120, 150, 190, 0.5); }
+.gasto-item.skin-cristal .gasto-fecha { color: rgba(140, 160, 200, 0.4); }
+
+.gasto-item.skin-cristal .gasto-icono {
+    border: 1px solid rgba(180, 200, 240, 0.25);
+    background: rgba(200, 220, 255, 0.08);
+}
+
+.gasto-item.skin-cristal .monto-gasto { color: #c0392b; }
+.gasto-item.skin-cristal .monto-ingreso { color: #27ae60; }
+
+/* Cristal RPG Theme */
+body.rpg-theme .gasto-item.skin-cristal {
+    position: relative;
+    background:
+        linear-gradient(135deg, rgba(100, 140, 220, 0.08) 0%, transparent 25%),
+        linear-gradient(225deg, rgba(180, 100, 180, 0.06) 0%, transparent 25%),
+        linear-gradient(45deg, rgba(80, 180, 160, 0.05) 0%, transparent 25%),
+        linear-gradient(315deg, rgba(180, 160, 80, 0.05) 0%, transparent 25%),
+        linear-gradient(180deg, rgba(15, 20, 40, 0.8) 0%, rgba(10, 15, 30, 0.9) 100%);
+    border-color: rgba(150, 180, 240, 0.35);
+    box-shadow:
+        0 0 10px rgba(150, 180, 240, 0.08),
+        inset 0 1px 0 rgba(200, 220, 255, 0.04),
+        inset 0 0 0 1px rgba(150, 180, 240, 0.03);
+    overflow: hidden;
+}
+
+body.rpg-theme .gasto-item.skin-cristal::before {
+    background: linear-gradient(
+        135deg,
+        transparent 20%,
+        rgba(255, 140, 180, 0.08) 30%,
+        rgba(140, 255, 200, 0.08) 40%,
+        rgba(140, 180, 255, 0.08) 50%,
+        rgba(255, 220, 140, 0.08) 60%,
+        transparent 70%
+    );
+    background-size: 200% 200%;
+    animation: skin-cristal-prism 8s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-cristal::after {
+    background: linear-gradient(
+        110deg,
+        transparent 20%,
+        rgba(255, 160, 200, 0.1) 35%,
+        rgba(160, 255, 210, 0.12) 45%,
+        rgba(160, 200, 255, 0.12) 55%,
+        rgba(255, 220, 160, 0.1) 65%,
+        transparent 80%
+    );
+    animation: skin-cristal-refract 5s ease-in-out infinite;
+    animation-delay: 1s;
+}
+
+body.rpg-theme .gasto-item.skin-cristal:hover {
+    border-color: rgba(150, 180, 240, 0.6);
+    animation: skin-cristal-glow 3s ease-in-out infinite;
+}
+
+body.rpg-theme .gasto-item.skin-cristal .gasto-categoria { color: #90b0e0; }
+body.rpg-theme .gasto-item.skin-cristal .gasto-descripcion { color: rgba(150, 180, 230, 0.4); }
+body.rpg-theme .gasto-item.skin-cristal .gasto-fecha { color: rgba(150, 180, 230, 0.25); }
+body.rpg-theme .gasto-item.skin-cristal .gasto-icono {
+    border: 1px solid rgba(150, 180, 240, 0.15);
+    background: rgba(150, 180, 240, 0.05);
+}
+body.rpg-theme .gasto-item.skin-cristal .monto-gasto { color: #ff4466; }
+body.rpg-theme .gasto-item.skin-cristal .monto-ingreso { color: #33ff99; }
