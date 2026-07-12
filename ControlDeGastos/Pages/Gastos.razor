@@ -359,12 +359,12 @@
 <Modal Title="@(editandoRecurrencia ? "Editar recurrencia" : "Nueva recurrencia")" Visible="@modalRecurrenciaFormAbierto" OnClose="CerrarModalRecurrenciaForm">
     <Body>
         <div class="tipo-toggle">
-            <button class="tipo-btn @((recurrenciaFormMonto ?? 0) >= 0 ? "tipo-activo tipo-gasto" : "")"
-                    @onclick="() => { recurrenciaFormMonto = Math.Abs(recurrenciaFormMonto ?? 0); }">
+            <button class="tipo-btn @(!recurrenciaFormEsIngreso ? "tipo-activo tipo-gasto" : "")"
+                    @onclick="() => { if (recurrenciaFormEsIngreso) { recurrenciaFormEsIngreso = false; recurrenciaFormMonto = recurrenciaFormMonto == null ? null : Math.Abs(recurrenciaFormMonto.Value); recurrenciaFormCategoriaId = Guid.Empty; } }">
                 💸 Gasto
             </button>
-            <button class="tipo-btn @((recurrenciaFormMonto ?? 0) < 0 ? "tipo-activo tipo-ingreso" : "")"
-                    @onclick="() => { recurrenciaFormMonto = -Math.Abs(recurrenciaFormMonto ?? 0); }">
+            <button class="tipo-btn @(recurrenciaFormEsIngreso ? "tipo-activo tipo-ingreso" : "")"
+                    @onclick="() => { if (!recurrenciaFormEsIngreso) { recurrenciaFormEsIngreso = true; recurrenciaFormMonto = recurrenciaFormMonto == null ? -1 : -Math.Abs(recurrenciaFormMonto.Value); recurrenciaFormCategoriaId = Guid.Empty; } }">
                 💰 Ingreso
             </button>
         </div>
@@ -372,7 +372,7 @@
         <div class="campo">
             <label class="campo-label">Categoría</label>
             <div class="categoria-grid">
-                @foreach (var cat in categorias)
+                @foreach (var cat in categoriasRecurrenciaFiltradas)
                 {
                     <div class="categoria-item @(recurrenciaFormCategoriaId == cat.Id ? "cat-seleccionada" : "")"
                          style="--cat-color: @cat.Color"
@@ -380,6 +380,10 @@
                         <span class="cat-icono">@cat.Icono</span>
                         <span class="cat-nombre">@cat.Nombre</span>
                     </div>
+                }
+                @if (!categoriasRecurrenciaFiltradas.Any())
+                {
+                    <p class="campo-error">No hay categorías disponibles</p>
                 }
             </div>
         </div>
@@ -890,6 +894,12 @@
             .OrderBy(c => c.Orden)
             .ToList();
 
+    private List<Categoria> categoriasRecurrenciaFiltradas =>
+        categorias
+            .Where(c => c.Tipo == (recurrenciaFormEsIngreso ? TipoGasto.Ingreso : TipoGasto.Gasto))
+            .OrderBy(c => c.Orden)
+            .ToList();
+
     private string ObtenerNombreCategoria(Guid categoriaId)
     {
         var cat = categorias.FirstOrDefault(c => c.Id == categoriaId);
@@ -1206,10 +1216,11 @@
 
     private Guid recurrenciaFormCategoriaId = Guid.Empty;
     private decimal? recurrenciaFormMonto;
+    private bool recurrenciaFormEsIngreso;
     private decimal recurrenciaFormMontoAbs
     {
         get => Math.Abs(recurrenciaFormMonto ?? 0);
-        set => recurrenciaFormMonto = (recurrenciaFormMonto ?? 0) >= 0 ? value : -value;
+        set => recurrenciaFormMonto = recurrenciaFormEsIngreso ? -value : value;
     }
     private string recurrenciaFormDesc = "";
     private string recurrenciaFormPeriodo = "Mensual";
@@ -1219,7 +1230,7 @@
     private bool RecurrenciaFormValida =>
         recurrenciaFormCategoriaId != Guid.Empty &&
         (recurrenciaFormMonto ?? 0) != 0 &&
-        categorias.Any(c => c.Id == recurrenciaFormCategoriaId);
+        categoriasRecurrenciaFiltradas.Any(c => c.Id == recurrenciaFormCategoriaId);
 
     private string LabelRecurrencia(Recurrencia r)
     {
@@ -1266,6 +1277,7 @@
         editandoRecurrenciaId = null;
         recurrenciaFormCategoriaId = Guid.Empty;
         recurrenciaFormMonto = null;
+        recurrenciaFormEsIngreso = false;
         recurrenciaFormDesc = "";
         recurrenciaFormPeriodo = "Mensual";
         recurrenciaFormActiva = true;
@@ -1276,8 +1288,11 @@
     {
         editandoRecurrencia = true;
         editandoRecurrenciaId = rec.Id;
-        recurrenciaFormCategoriaId = rec.CategoriaId ?? Guid.Empty;
+        recurrenciaFormEsIngreso = rec.Monto < 0;
         recurrenciaFormMonto = rec.Monto;
+        recurrenciaFormCategoriaId = rec.CategoriaId ?? Guid.Empty;
+        if (!categoriasRecurrenciaFiltradas.Any(c => c.Id == recurrenciaFormCategoriaId))
+            recurrenciaFormCategoriaId = Guid.Empty;
         recurrenciaFormDesc = rec.Descripcion ?? "";
         recurrenciaFormPeriodo = rec.TipoRecurrencia switch
         {
@@ -1340,7 +1355,6 @@
                     Descripcion = string.IsNullOrWhiteSpace(recurrenciaFormDesc) ? null : recurrenciaFormDesc.Trim(),
                     TipoRecurrencia = tipo,
                     FechaInicio = DateTime.UtcNow,
-                    ProximaFecha = DateTime.UtcNow,
                     Activa = recurrenciaFormActiva,
                 };
                 await RecurrenciaService.CrearRecurrenciaAsync(rec);
@@ -1350,7 +1364,10 @@
             var generados = await RecurrenciaService.GenerarPendientesAsync();
             if (generados.Count > 0)
             {
-                ToastService.ShowSuccess($"💸 Gasto generado: {generados[0].Descripcion ?? "recurrencia"}");
+                var esIngreso = generados[0].Monto < 0;
+                ToastService.ShowSuccess(esIngreso
+                    ? $"💰 Ingreso generado: {generados[0].Descripcion ?? "recurrencia"}"
+                    : $"💸 Gasto generado: {generados[0].Descripcion ?? "recurrencia"}");
             }
 
             await CargarRecurrenciasAsync();
