@@ -78,8 +78,8 @@ public class TiendaService : ITiendaService
         new() { Id = "titulo_leyenda", Nombre = "Leyenda Financiera", Descripcion = "Tu nombre se susurra en las cuentas de banco del reino.", Icono = "🏆", Categoria = CategoriaArticulo.TituloTienda, Precio = 1, TituloId = "shop_leyenda", TituloIcono = "🏆", Orden = 54 },
 
         // New Card Skins
-        new() { Id = "skin_sakura", Nombre = "Skin Sakura", Descripcion = "Tarjetas con estética de flor de cereza japonesa", Icono = "🌸", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1, SkinCssClass = "skin-sakura", Orden = 55 },
-        new() { Id = "skin_cristal", Nombre = "Skin Cristal", Descripcion = "Tarjetas transparentes con refracción prismática de luz", Icono = "💎", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1, SkinCssClass = "skin-cristal", Orden = 56 },
+        new() { Id = "skin_sakura", Nombre = "Skin Sakura", Descripcion = "Tarjetas con estética de flor de cereza japonesa", Icono = "🌸", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-sakura", Orden = 55 },
+        new() { Id = "skin_cristal", Nombre = "Skin Cristal", Descripcion = "Tarjetas transparentes con refracción prismática de luz", Icono = "💎", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 600, SkinCssClass = "skin-cristal", Orden = 56 },
     };
 
     public TiendaService(IStorageService storage, IGamificacionService gamificacionService)
