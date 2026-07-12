@@ -176,10 +176,6 @@
                             {
                                 <div class="skin-bio-bubbles"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                             }
-                            @if (_skinActiva == "skin-volcanica")
-                            {
-                                <div class="volcanic-embers"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-                            }
                             @if (gasto.RecurrenciaId is not null)
                             {
                                 <span class="gasto-corner corner-recurrencia"></span>
@@ -376,7 +372,7 @@
                 💸 Gasto
             </button>
             <button class="tipo-btn @(recurrenciaFormEsIngreso ? "tipo-activo tipo-ingreso" : "")"
-                    @onclick="() => { if (!recurrenciaFormEsIngreso) { recurrenciaFormEsIngreso = true; recurrenciaFormMonto = recurrenciaFormMonto == null ? -1 : -Math.Abs(recurrenciaFormMonto.Value); recurrenciaFormCategoriaId = Guid.Empty; } }">
+                    @onclick="() => { if (!recurrenciaFormEsIngreso) { recurrenciaFormEsIngreso = true; recurrenciaFormMonto = recurrenciaFormMonto == null ? null : -Math.Abs(recurrenciaFormMonto.Value); recurrenciaFormCategoriaId = Guid.Empty; } }">
                 💰 Ingreso
             </button>
         </div>
