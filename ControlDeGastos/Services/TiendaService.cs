@@ -57,11 +57,11 @@ public class TiendaService : ITiendaService
         new() { Id = "skin_hacker", Nombre = "Skin Hacker", Descripcion = "Tarjetas con estética matrix verde", Icono = "💚", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-hacker", Orden = 33 },
         new() { Id = "skin_oro", Nombre = "Skin Oro", Descripcion = "Tarjetas de gasto con acabado dorado", Icono = "✨", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-oro", Orden = 34 },
         new() { Id = "skin_retro", Nombre = "Skin Retro", Descripcion = "Tarjetas con estilo vaporwave retro", Icono = "🕹️", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-retro", Orden = 35 },
-        new() { Id = "skin_aurora", Nombre = "Aurora Boreal", Descripcion = "Tarjetas con efecto de aurora boreal animada", Icono = "🌌", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1200, SkinCssClass = "skin-aurora", Orden = 44 },
+        new() { Id = "skin_aurora", Nombre = "Aurora Boreal", Descripcion = "Tarjetas con efecto de aurora boreal animada", Icono = "🌌", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1200, SkinCssClass = "skin-aurora", Orden = 43 },
         new() { Id = "skin_mistica", Nombre = "Skin Mística", Descripcion = "Tarjetas con estética cósmica púrpura", Icono = "🔮", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-mistica", Orden = 36 },
         new() { Id = "skin_dragon", Nombre = "Skin Dragón", Descripcion = "Tarjetas con textura de escamas de dragón", Icono = "🐉", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-dragon", Orden = 38 },
         new() { Id = "skin_rgb", Nombre = "Skin RGB", Descripcion = "Tarjetas con animación de colores rojo, verde y azul", Icono = "💈", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1000, SkinCssClass = "skin-rgb", Orden = 39 },
-        new() { Id = "skin_bioluminiscente", Nombre = "Adlai", Descripcion = "Fondo oceánico profundo con criaturas luminiscentes y burbujas", Icono = "🪼", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1200, SkinCssClass = "skin-bioluminiscente", Orden = 40 },
+        new() { Id = "skin_bioluminiscente", Nombre = "Adlai", Descripcion = "Fondo oceánico profundo con criaturas luminiscentes y burbujas", Icono = "🪼", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1250, SkinCssClass = "skin-bioluminiscente", Orden = 44 },
         new() { Id = "skin_chrome", Nombre = "Chrome Líquido", Descripcion = "Superficie metálica viva con reflejos iridiscentes de mercurio", Icono = "🪞", Categoria = CategoriaArticulo.SkinTarjeta, Precio = 1200, SkinCssClass = "skin-chrome", Orden = 41 },
 
         // Extended Titles
