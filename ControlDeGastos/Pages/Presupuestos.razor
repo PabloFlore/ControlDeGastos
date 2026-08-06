@@ -2,7 +2,10 @@
 @inject IPresupuestoService PresupuestoService
 @inject ICategoriaService CategoriaService
 @inject IGastoService GastoService
+@inject IUsuarioService UsuarioService
+@inject IGamificacionService GamificacionService
 @inject IToastService ToastService
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Presupuestos - Control de Gastos</PageTitle>
 
@@ -110,6 +113,7 @@
                             <div class="card-actions">
                                 @if (!item.EsVencido)
                                 {
+                                    <button class="btn-agregar-gasto" @onclick="() => AbrirModalNuevoGasto(item)" title="Registrar gasto">➕</button>
                                     <button class="btn-editar" @onclick="() => AbrirModalEditar(item)">✏️</button>
                                     <button class="btn-finalizar" @onclick="() => finalizandoId = item.Id" title="Finalizar ahora">🔚</button>
                                 }
@@ -375,6 +379,53 @@
     </Footer>
 </Modal>
 
+<Modal Title="Nuevo gasto" Visible="@gastoModalAbierto" OnClose="CerrarModalNuevoGasto">
+    <Body>
+        <div class="campo">
+            <label class="campo-label">Categoría</label>
+            <div class="gasto-modal-categoria-fija">
+                <span class="gasto-modal-categoria-icono" style="background: @(gastoModalItem?.Color + "22")">@gastoModalItem?.Icono</span>
+                <span class="gasto-modal-categoria-nombre">@gastoModalItem?.Nombre</span>
+            </div>
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Monto</label>
+            <div class="monto-input-wrapper">
+                <span class="monto-simbolo">$</span>
+                <input type="number"
+                       class="monto-input"
+                       @bind="gastoMonto"
+                       @bind:event="oninput"
+                       @onfocus="() => gastoMontoTocado = true"
+                       step="0.01"
+                       min="0"
+                       placeholder="0.00" />
+            </div>
+            @if (gastoMontoTocado && (gastoMonto ?? 0) <= 0)
+            {
+                <span class="campo-error">El monto debe ser mayor a 0</span>
+            }
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Descripción <span class="campo-opcional">(opcional)</span></label>
+            <input type="text" class="campo-input" @bind="gastoDescripcion" placeholder="¿En qué gastaste?" />
+        </div>
+
+        <div class="campo">
+            <label class="campo-label">Fecha</label>
+            <input type="date" class="campo-input" @bind="gastoFecha" />
+        </div>
+    </Body>
+    <Footer>
+        <button class="btn-footer btn-cancelar" @onclick="CerrarModalNuevoGasto">Cancelar</button>
+        <button class="btn-footer btn-guardar" @onclick="GuardarNuevoGastoAsync" disabled="@((gastoMonto ?? 0) <= 0 || guardandoGasto)">
+            @(guardandoGasto ? "Guardando..." : "Guardar")
+        </button>
+    </Footer>
+</Modal>
+
 @code {
     private List<PresupuestoItem>? items;
     private List<Categoria> categoriasGasto = new();
@@ -410,6 +461,15 @@
     private decimal? fondosMonto;
     private string? fondosDescripcion;
     private bool guardandoFondos;
+
+    // Nuevo gasto modal
+    private bool gastoModalAbierto;
+    private PresupuestoItem? gastoModalItem;
+    private decimal? gastoMonto;
+    private bool gastoMontoTocado;
+    private string gastoDescripcion = "";
+    private DateTime gastoFecha = DateTime.Now;
+    private bool guardandoGasto;
 
     private int mesSeleccionado = DateTime.Now.Month;
     private int anioSeleccionado = DateTime.Now.Year;
@@ -732,6 +792,98 @@
         }
 
         guardandoFondos = false;
+    }
+
+    private void AbrirModalNuevoGasto(PresupuestoItem item)
+    {
+        if (item.EsVencido) return;
+        gastoModalItem = item;
+        gastoMonto = null;
+        gastoMontoTocado = false;
+        gastoDescripcion = "";
+        gastoFecha = DateTime.Now;
+        gastoModalAbierto = true;
+    }
+
+    private void CerrarModalNuevoGasto()
+    {
+        gastoModalAbierto = false;
+        gastoModalItem = null;
+        gastoMonto = null;
+        gastoMontoTocado = false;
+        gastoDescripcion = "";
+        guardandoGasto = false;
+    }
+
+    private async Task GuardarNuevoGastoAsync()
+    {
+        if (gastoModalItem is null || (gastoMonto ?? 0) <= 0) return;
+
+        guardandoGasto = true;
+        StateHasChanged();
+
+        var monto = Math.Abs(gastoMonto ?? 0);
+        var nivelAntes = 1;
+        var hpAntes = 100;
+        var monedasAntes = 0;
+
+        try
+        {
+            var usuario = await UsuarioService.ObtenerUsuarioAsync();
+            if (usuario?.ModoGamificadoActivo == true)
+            {
+                var p = await GamificacionService.ObtenerProgresoAsync();
+                nivelAntes = p.Nivel;
+                hpAntes = p.HpActual;
+                monedasAntes = p.Monedas;
+            }
+
+            var gasto = new Gasto
+            {
+                CategoriaId = gastoModalItem.CategoriaId ?? Guid.Empty,
+                Monto = monto,
+                Descripcion = string.IsNullOrWhiteSpace(gastoDescripcion) ? null : gastoDescripcion.Trim(),
+                Fecha = gastoFecha.ToUniversalTime()
+            };
+
+            await GastoService.CrearGastoAsync(gasto);
+            ToastService.ShowSuccess("Gasto registrado");
+
+            usuario = await UsuarioService.ObtenerUsuarioAsync();
+            if (usuario?.ModoGamificadoActivo == true)
+            {
+                var nuevosLogros = await GamificacionService.VerificarYDesbloquearLogrosAsync();
+                foreach (var logro in nuevosLogros)
+                {
+                    ToastService.ShowSuccess($"🏅 ¡Logro desbloqueado: {logro.Nombre}!");
+                }
+
+                var progreso = await GamificacionService.ObtenerProgresoAsync();
+                if (progreso.Nivel > nivelAntes)
+                {
+                    await JSRuntime.InvokeVoidAsync("rpgEffects.levelUpFlash");
+                    ToastService.ShowSuccess($"🎉 ¡Subiste al nivel {progreso.Nivel}!");
+                }
+                if (progreso.HpActual < hpAntes)
+                {
+                    await JSRuntime.InvokeVoidAsync("rpgEffects.damageFlash");
+                    ToastService.ShowWarning($"💔 Perdiste {hpAntes - progreso.HpActual} HP");
+                }
+                if (progreso.Monedas > monedasAntes)
+                {
+                    ToastService.ShowSuccess($"🪙 ¡Ganaste {progreso.Monedas - monedasAntes} monedas!");
+                }
+            }
+
+            CerrarModalNuevoGasto();
+            await CargarDatosAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+
+        guardandoGasto = false;
     }
 
     private void CancelarFinalizar()
