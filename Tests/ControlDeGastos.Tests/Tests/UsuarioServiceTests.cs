@@ -99,4 +99,17 @@ public class UsuarioServiceTests
         var actualizado = await service.ObtenerUsuarioAsync();
         Assert.True(actualizado.ModoGamificadoActivo);
     }
+
+    [Fact]
+    public async Task CambiarMostrarGraficaIngresosAsync_AlternaFlag()
+    {
+        var service = CrearService();
+        var original = await service.ObtenerUsuarioAsync();
+        Assert.False(original.MostrarGraficaIngresos);
+
+        await service.CambiarMostrarGraficaIngresosAsync(true);
+
+        var actualizado = await service.ObtenerUsuarioAsync();
+        Assert.True(actualizado.MostrarGraficaIngresos);
+    }
 }

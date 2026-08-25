@@ -210,6 +210,45 @@
             }
         </div>
 
+        @if (mostrarGraficaIngresos && ingresosPorCategoria.Any())
+        {
+            <div class="chart-card" @key="@("home-pie-chart-ingresos")">
+                <label class="chart-toggle" title="Mostrar/Ocultar gráfico">
+                    <span>💰</span>
+                    <span class="toggle-switch">
+                        <input type="checkbox" checked="@mostrarGraficoIngresos" @onchange="ToggleGraficoIngresos" />
+                        <span class="toggle-slider"></span>
+                    </span>
+                </label>
+                <h2 class="chart-titulo">Ingresos por categoría</h2>
+                @if (mostrarGraficoIngresos)
+                {
+                    <div class="chart-container">
+                        <PieChart Series="seriesIngresos"
+                                  InitialRotation="-45"
+                                  MaxAngle="360"
+                                  TooltipPosition="LiveChartsCore.Measure.TooltipPosition.Top" />
+                    </div>
+                    <div class="chart-leyenda">
+                        @foreach (var item in (mostrarTodasLeyendaIngresos ? ingresosPorCategoria : ingresosPorCategoria.Take(5)))
+                        {
+                            <div @key="item.CategoriaId" class="leyenda-item">
+                                <span class="leyenda-color" style="background: @item.Color"></span>
+                                <span class="leyenda-nombre">@item.Nombre</span>
+                                <span class="leyenda-monto leyenda-monto-ingreso">@FormatearMonto(item.Total)</span>
+                            </div>
+                        }
+                        @if (ingresosPorCategoria.Count > 5)
+                        {
+                            <div class="leyenda-item leyenda-mas" @onclick="() => mostrarTodasLeyendaIngresos = !mostrarTodasLeyendaIngresos">
+                                @(mostrarTodasLeyendaIngresos ? "▲ Mostrar menos" : $"+{ingresosPorCategoria.Count - 5} más")
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
         <div class="acciones-rapidas">
             <a class="accion-btn accion-gasto" href="/gastos?nuevo=true">
                 <span class="accion-icono">＋</span>
@@ -333,6 +372,7 @@
     private ProgresoRPG? progreso;
     private bool modoGamificado;
     private bool mostrarMinutos;
+    private bool mostrarGraficaIngresos;
     private bool cargando = true;
     private bool huboError;
     private bool mostrarAvisoPrivacidad;
@@ -351,6 +391,7 @@
 
     private List<Gasto> gastosRecientes = new();
     private List<(Guid CategoriaId, string Nombre, string Color, decimal Total)> gastosPorCategoria = new();
+    private List<(Guid CategoriaId, string Nombre, string Color, decimal Total)> ingresosPorCategoria = new();
 
     private List<Presupuesto> presupuestosActivos = new();
     private Dictionary<Guid, decimal> gastadoPorPresupuesto = new();
@@ -367,10 +408,13 @@
 
     private bool EsMesActual => mesSeleccionado == DateTime.Now.Month && añoSeleccionado == DateTime.Now.Year;
     private bool mostrarGrafico = true;
+    private bool mostrarGraficoIngresos = true;
+    private bool mostrarTodasLeyendaIngresos;
     private int añoSeleccionado = DateTime.Now.Year;
     private int mesSeleccionado = DateTime.Now.Month;
 
     private ISeries[] seriesGastos = Array.Empty<ISeries>();
+    private ISeries[] seriesIngresos = Array.Empty<ISeries>();
 
     private int PorcentajeHP => progreso?.HpMaximo > 0 ? (int)Math.Round(progreso.HpActual * 100.0 / progreso.HpMaximo) : 100;
     private int PorcentajeEXP => progreso?.ExpRequerida > 0 ? (int)Math.Round(progreso.ExpActual * 100.0 / progreso.ExpRequerida) : 0;
@@ -400,6 +444,11 @@
         mostrarGrafico = (bool)(e.Value ?? false);
     }
 
+    private void ToggleGraficoIngresos(ChangeEventArgs e)
+    {
+        mostrarGraficoIngresos = (bool)(e.Value ?? false);
+    }
+
     private void ToggleLogros(ChangeEventArgs e)
     {
         mostrarLogros = (bool)(e.Value ?? false);
@@ -417,6 +466,7 @@
             }
             modoGamificado = usuario.ModoGamificadoActivo;
             mostrarMinutos = usuario.MostrarMinutos;
+            mostrarGraficaIngresos = usuario.MostrarGraficaIngresos;
 
             var licencia = await LicenciaService.ObtenerEstadoLicenciaAsync();
             if (licencia is null || !licencia.Valida)
@@ -492,6 +542,32 @@
             gastosPorCategoria = agrupados;
 
             seriesGastos = agrupados.Select(g => new PieSeries<double>
+            {
+                Values = new double[] { Math.Round((double)g.Total, 2) },
+                Name = g.Nombre,
+                Fill = new SolidColorPaint(SafeParseColor(g.Color)),
+                Stroke = null,
+            }).Cast<ISeries>().ToArray();
+
+            var ingresosAgrupados = gastosMes
+                .Where(g => g.Monto < 0)
+                .GroupBy(g => g.CategoriaId)
+                .Select(g =>
+                {
+                    var cat = cacheCategorias.GetValueOrDefault(g.Key);
+                    return (
+                        CategoriaId: g.Key,
+                        Nombre: cat?.Nombre ?? "Sin categoría",
+                        Color: cat?.Color ?? "#6c757d",
+                        Total: g.Sum(x => Math.Abs(x.Monto))
+                    );
+                })
+                .OrderByDescending(g => g.Total)
+                .ToList();
+
+            ingresosPorCategoria = ingresosAgrupados;
+
+            seriesIngresos = ingresosAgrupados.Select(g => new PieSeries<double>
             {
                 Values = new double[] { Math.Round((double)g.Total, 2) },
                 Name = g.Nombre,

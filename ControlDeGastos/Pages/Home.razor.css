@@ -772,6 +772,10 @@ body.rpg-theme .seccion-link {
     color: var(--accent-green);
 }
 
+.leyenda-monto-ingreso {
+    color: var(--accent-green);
+}
+
 body.rpg-theme .movimiento-item + .movimiento-item {
     border-color: var(--rpg-border);
 }
@@ -781,6 +785,10 @@ body.rpg-theme .monto-gasto {
 }
 
 body.rpg-theme .monto-ingreso {
+    color: var(--rpg-accent-green);
+}
+
+body.rpg-theme .leyenda-monto-ingreso {
     color: var(--rpg-accent-green);
 }
 

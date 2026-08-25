@@ -14,6 +14,7 @@ public class Usuario
     public bool ExcluirRecurrentesDePresupuesto { get; set; } = false;
     public bool ExcluirCreditosDePresupuesto { get; set; } = false;
     public bool MostrarMinutos { get; set; } = false;
+    public bool MostrarGraficaIngresos { get; set; } = false;
     public string? HogarId { get; set; }
     public string? HogarCodigo { get; set; }
     public string? SupabaseUserId { get; set; }

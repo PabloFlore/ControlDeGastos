@@ -139,4 +139,11 @@ public class UsuarioService : IUsuarioService
         usuario.MostrarMinutos = mostrar;
         await GuardarUsuarioAsync(usuario);
     }
+
+    public async Task CambiarMostrarGraficaIngresosAsync(bool mostrar)
+    {
+        var usuario = await ObtenerUsuarioAsync();
+        usuario.MostrarGraficaIngresos = mostrar;
+        await GuardarUsuarioAsync(usuario);
+    }
 }
