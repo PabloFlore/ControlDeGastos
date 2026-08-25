@@ -249,6 +249,45 @@
             </div>
         }
 
+        @if (mostrarGraficaPresupuestos && gananciaPorPresupuesto.Any())
+        {
+            <div class="chart-card" @key="@("home-pie-chart-presupuestos")">
+                <label class="chart-toggle" title="Mostrar/Ocultar gráfico">
+                    <span>💼</span>
+                    <span class="toggle-switch">
+                        <input type="checkbox" checked="@mostrarGraficoPresupuestos" @onchange="ToggleGraficoPresupuestos" />
+                        <span class="toggle-slider"></span>
+                    </span>
+                </label>
+                <h2 class="chart-titulo">Ganancia de presupuestos</h2>
+                @if (mostrarGraficoPresupuestos)
+                {
+                    <div class="chart-container">
+                        <PieChart Series="seriesPresupuestos"
+                                  InitialRotation="-45"
+                                  MaxAngle="360"
+                                  TooltipPosition="LiveChartsCore.Measure.TooltipPosition.Top" />
+                    </div>
+                    <div class="chart-leyenda">
+                        @foreach (var item in (mostrarTodasLeyendaPresupuestos ? gananciaPorPresupuesto : gananciaPorPresupuesto.Take(5)))
+                        {
+                            <div @key="item.Nombre" class="leyenda-item">
+                                <span class="leyenda-color" style="background: @item.Color"></span>
+                                <span class="leyenda-nombre">@item.Nombre</span>
+                                <span class="leyenda-monto leyenda-monto-ingreso">@FormatearMonto(item.Ganancia)</span>
+                            </div>
+                        }
+                        @if (gananciaPorPresupuesto.Count > 5)
+                        {
+                            <div class="leyenda-item leyenda-mas" @onclick="() => mostrarTodasLeyendaPresupuestos = !mostrarTodasLeyendaPresupuestos">
+                                @(mostrarTodasLeyendaPresupuestos ? "▲ Mostrar menos" : $"+{gananciaPorPresupuesto.Count - 5} más")
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
         <div class="acciones-rapidas">
             <a class="accion-btn accion-gasto" href="/gastos?nuevo=true">
                 <span class="accion-icono">＋</span>
@@ -373,6 +412,7 @@
     private bool modoGamificado;
     private bool mostrarMinutos;
     private bool mostrarGraficaIngresos;
+    private bool mostrarGraficaPresupuestos;
     private bool cargando = true;
     private bool huboError;
     private bool mostrarAvisoPrivacidad;
@@ -392,6 +432,7 @@
     private List<Gasto> gastosRecientes = new();
     private List<(Guid CategoriaId, string Nombre, string Color, decimal Total)> gastosPorCategoria = new();
     private List<(Guid CategoriaId, string Nombre, string Color, decimal Total)> ingresosPorCategoria = new();
+    private List<(string Nombre, string Color, decimal Ganancia)> gananciaPorPresupuesto = new();
 
     private List<Presupuesto> presupuestosActivos = new();
     private Dictionary<Guid, decimal> gastadoPorPresupuesto = new();
@@ -409,12 +450,15 @@
     private bool EsMesActual => mesSeleccionado == DateTime.Now.Month && añoSeleccionado == DateTime.Now.Year;
     private bool mostrarGrafico = true;
     private bool mostrarGraficoIngresos = true;
+    private bool mostrarGraficoPresupuestos = true;
     private bool mostrarTodasLeyendaIngresos;
+    private bool mostrarTodasLeyendaPresupuestos;
     private int añoSeleccionado = DateTime.Now.Year;
     private int mesSeleccionado = DateTime.Now.Month;
 
     private ISeries[] seriesGastos = Array.Empty<ISeries>();
     private ISeries[] seriesIngresos = Array.Empty<ISeries>();
+    private ISeries[] seriesPresupuestos = Array.Empty<ISeries>();
 
     private int PorcentajeHP => progreso?.HpMaximo > 0 ? (int)Math.Round(progreso.HpActual * 100.0 / progreso.HpMaximo) : 100;
     private int PorcentajeEXP => progreso?.ExpRequerida > 0 ? (int)Math.Round(progreso.ExpActual * 100.0 / progreso.ExpRequerida) : 0;
@@ -449,6 +493,11 @@
         mostrarGraficoIngresos = (bool)(e.Value ?? false);
     }
 
+    private void ToggleGraficoPresupuestos(ChangeEventArgs e)
+    {
+        mostrarGraficoPresupuestos = (bool)(e.Value ?? false);
+    }
+
     private void ToggleLogros(ChangeEventArgs e)
     {
         mostrarLogros = (bool)(e.Value ?? false);
@@ -467,6 +516,7 @@
             modoGamificado = usuario.ModoGamificadoActivo;
             mostrarMinutos = usuario.MostrarMinutos;
             mostrarGraficaIngresos = usuario.MostrarGraficaIngresos;
+            mostrarGraficaPresupuestos = usuario.MostrarGraficaPresupuestos;
 
             var licencia = await LicenciaService.ObtenerEstadoLicenciaAsync();
             if (licencia is null || !licencia.Valida)
@@ -641,6 +691,35 @@
             {
                 var gastado = await PresupuestoService.ObtenerGastadoEnPeriodoAsync(pres);
                 gastadoPorPresupuesto[pres.Id] = gastado;
+            }
+
+            if (mostrarGraficaPresupuestos)
+            {
+                var gastosFiltrados = await PresupuestoService.FiltrarGastosParaPresupuestoAsync(todosGastos);
+                var ganancias = new List<(string Nombre, string Color, decimal Ganancia)>();
+                foreach (var pres in todosPresupuestos)
+                {
+                    var gastado = await PresupuestoService.CalcularGastadoAsync(pres, gastosFiltrados);
+                    var ganancia = pres.MontoLimite - gastado;
+                    if (ganancia <= 0) continue;
+
+                    var cat = pres.CategoriaId is Guid cid ? cacheCategorias.GetValueOrDefault(cid) : null;
+                    ganancias.Add((cat?.Nombre ?? "General", cat?.Color ?? "#6c757d", ganancia));
+                }
+
+                gananciaPorPresupuesto = ganancias
+                    .GroupBy(g => g.Nombre)
+                    .Select(g => (g.Key, g.First().Color, g.Sum(x => x.Ganancia)))
+                    .OrderByDescending(x => x.Item3)
+                    .ToList();
+
+                seriesPresupuestos = gananciaPorPresupuesto.Select(g => new PieSeries<double>
+                {
+                    Values = new double[] { Math.Round((double)g.Ganancia, 2) },
+                    Name = g.Nombre,
+                    Fill = new SolidColorPaint(SafeParseColor(g.Color)),
+                    Stroke = null,
+                }).Cast<ISeries>().ToArray();
             }
         }
         catch (Exception ex)

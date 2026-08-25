@@ -14,4 +14,5 @@ public interface IUsuarioService
     Task CambiarExcluirCreditosAsync(bool excluir);
     Task CambiarMostrarMinutosAsync(bool mostrar);
     Task CambiarMostrarGraficaIngresosAsync(bool mostrar);
+    Task CambiarMostrarGraficaPresupuestosAsync(bool mostrar);
 }

@@ -89,6 +89,18 @@ else
                     <span class="toggle-slider"></span>
                 </label>
             </div>
+            <div class="toggle-row">
+                <div class="toggle-info">
+                    <div class="toggle-label">Gráfica de ganancias de presupuestos en Principal</div>
+                    <div class="toggle-desc">
+                        Muestra una gráfica de pastel con lo disponible (ganancia) de cada presupuesto, vencidos o vigentes
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" checked="@mostrarGraficaPresupuestos" @onchange="OnToggleGraficaPresupuestosAsync" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
         </div>
     </section>
 
@@ -408,6 +420,7 @@ else
     private bool excluirCreditos;
     private bool mostrarMinutos;
     private bool mostrarGraficaIngresos;
+    private bool mostrarGraficaPresupuestos;
     private bool mostrarCambioPlan;
     private bool mostrarAvisoPrivacidadConfig;
     private string nuevoToken = "";
@@ -472,6 +485,7 @@ else
             excluirCreditos = usuario.ExcluirCreditosDePresupuesto;
             mostrarMinutos = usuario.MostrarMinutos;
             mostrarGraficaIngresos = usuario.MostrarGraficaIngresos;
+            mostrarGraficaPresupuestos = usuario.MostrarGraficaPresupuestos;
 
             nombreInput = usuario.Nombre;
             monedaInput = usuario.Moneda;
@@ -607,6 +621,23 @@ else
             ToastService.ShowSuccess(nuevoValor
                 ? "Gráfica de ingresos activada en Principal"
                 : "Gráfica de ingresos desactivada");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task OnToggleGraficaPresupuestosAsync(ChangeEventArgs e)
+    {
+        var nuevoValor = (bool)(e.Value ?? false);
+        try
+        {
+            await UsuarioService.CambiarMostrarGraficaPresupuestosAsync(nuevoValor);
+            mostrarGraficaPresupuestos = nuevoValor;
+            ToastService.ShowSuccess(nuevoValor
+                ? "Gráfica de ganancias de presupuestos activada en Principal"
+                : "Gráfica de ganancias de presupuestos desactivada");
         }
         catch (Exception ex)
         {
